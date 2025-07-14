@@ -1,9 +1,10 @@
 import React from "react";
-import { FiCheck, FiLink, FiFileText } from "react-icons/fi";
+import { FiCheck, FiLink } from "react-icons/fi";
 import { TransferType, Quote } from "@/types";
 import AssetAvator from "./asset-avator";
 import { Button } from "@/components/ui/button";
 import CountryAvator from "./country-avator";
+import TransactionsModal from "@/components/modals/transactions-modal";
 
 interface SuccessCardProps {
   transactionHash?: string;
@@ -32,10 +33,10 @@ const SuccessCard: React.FC<SuccessCardProps> = ({
     totalAmount = Number(quote.fiatAmount) + Number(quote.feeInFiat);
   }
   return (
-    <div className="min-h-screen w-full mt-10 md:mt-0 md:w-1/3 text-white flex items-center justify-center bg-black">
+    <div className="min-h-screen w-full mt-10 !bg-[#181818] md:mt-0 md:w-1/3 text-white flex items-center justify-center md:bg-black">
       <div className="w-full h-full max-w-lg">
         {/* Main Card */}
-        <div className="bg-[#181818] rounded-2xl overflow-hidden">
+        <div className="bg-[#181818]  overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-[#232323]">
             <div className="flex items-center gap-3">
@@ -48,7 +49,7 @@ const SuccessCard: React.FC<SuccessCardProps> = ({
               onClick={onGetReceipt}
               className="text-gray-400 hover:text-white transition-colors"
             >
-              <FiFileText size={24} />
+              <TransactionsModal />
             </button>
           </div>
 
@@ -85,13 +86,6 @@ const SuccessCard: React.FC<SuccessCardProps> = ({
                 </div>
               </div>
 
-              {/* Arrow positioned in the middle */}
-              {/* <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
-                <div className="bg-[#181818] border-4 border-[#232323] rounded-xl p-2 md:p-3 shadow-lg text-green-500">
-                  <FiArrowRight size={20} />
-                </div>
-              </div> */}
-
               {/* Destination Card - Changes based on Transfer Type */}
               <div className="flex-1 bg-[#232323] rounded-xl p-6 w-full h-44 flex flex-col items-center justify-center">
                 <div className="mb-4 flex items-center justify-center relative size-24">
@@ -127,9 +121,9 @@ const SuccessCard: React.FC<SuccessCardProps> = ({
             <div className="space-y-4">
               {/* Source TX */}
               <div className="flex items-center justify-between">
-                <span className="text-gray-400">Source TX</span>
+                <h2 className="text-gray-400 text-sm">Source TX</h2>
                 <div className="flex items-center gap-2">
-                  <span className="text-white font-mono text-sm">
+                  <h2 className="text-white font-mono text-sm">
                     {transactionHash
                       ? `${transactionHash.slice(
                           0,
@@ -138,51 +132,51 @@ const SuccessCard: React.FC<SuccessCardProps> = ({
                       : `${quote.address.slice(0, 6)}...${quote.address.slice(
                           -6
                         )}`}
-                  </span>
+                  </h2>
                   <FiCheck size={16} color="#10b981" />
                 </div>
               </div>
 
               {/* Destination TX */}
               <div className="flex items-center justify-between">
-                <span className="text-gray-400">Order ID</span>
+                <h2 className="text-gray-400 text-sm">Order ID</h2>
                 <div className="flex items-center gap-2">
-                  <span className="text-white font-mono text-sm">
+                  <h2 className="text-white font-mono text-sm">
                     {quote.quoteId.slice(0, 6)}...{quote.quoteId.slice(-6)}
-                  </span>
+                  </h2>
                   <FiCheck size={16} color="#10b981" />
                 </div>
               </div>
 
               {/* Divider */}
-              <div className="border-t border-[#232323] my-4"></div>
+              <div className="border-t !border-[#232323] my-4"></div>
 
               {/* Recipient Address */}
               <div className="flex items-center justify-between">
-                <span className="text-gray-400">Recipient address</span>
-                <span className="text-white font-mono text-sm">
+                <h2 className="text-gray-400 text-sm">Recipient address</h2>
+                <h2 className="text-white font-mono text-sm">
                   {quote.address.slice(0, 6)}...{quote.address.slice(-6)}
-                </span>
+                </h2>
               </div>
 
               {/* Timestamp */}
               <div className="flex items-center justify-between">
-                <span className="text-gray-400">Timestamp</span>
-                <span className="text-white text-sm">{currentDate}</span>
+                <h2 className="text-gray-400 text-sm">Timestamp</h2>
+                <h2 className="text-white text-sm">{currentDate}</h2>
               </div>
 
               {/* Explorer Link */}
               {quote.transferType === TransferType.TransferOut &&
                 exploreUrl && (
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-400">View Transaction</span>
+                    <h2 className="text-gray-400 text-sm">View Transaction</h2>
                     <a
                       href={exploreUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-1 text-blue-400 hover:text-blue-300 transition-colors"
                     >
-                      <span className="text-sm">Explorer</span>
+                      <h2 className="text-sm">Explorer</h2>
                       <FiLink size={14} />
                     </a>
                   </div>
@@ -193,7 +187,7 @@ const SuccessCard: React.FC<SuccessCardProps> = ({
             <div className="mt-8">
               <Button
                 onClick={onNewPayment}
-                className="w-full bg-blue-500 hover:bg-blue-600 text-white text-lg font-semibold h-14 rounded-xl transition-colors"
+                className="w-full bg-blue-500 hover:bg-blue-600 text-white text-base md:text-lg font-semibold h-14 rounded-xl transition-colors"
               >
                 {quote.transferType === TransferType.TransferIn
                   ? "New Payment"

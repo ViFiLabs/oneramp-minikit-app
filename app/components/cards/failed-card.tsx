@@ -1,28 +1,28 @@
 import React from "react";
-import { FiLink } from "react-icons/fi";
-import { Loader } from "lucide-react";
-import { TransferType, Quote, Transfer } from "@/types";
+import { FiCheck, FiLink, FiXCircle } from "react-icons/fi";
+import { TransferType, Quote } from "@/types";
 import AssetAvator from "./asset-avator";
-import CountryAvator from "./country-avator";
 import { Button } from "@/components/ui/button";
+import CountryAvator from "./country-avator";
+import SupportButton from "../buttons/support-button";
 import TransactionsModal from "@/components/modals/transactions-modal";
 
-interface ProcessingCardProps {
+interface FailedCardProps {
   transactionHash?: string;
   exploreUrl?: string;
   quote: Quote;
-  transfer?: Transfer;
-  onCancel: () => void;
+  onNewPayment: () => void;
   onGetReceipt: () => void;
+  transferId?: string;
 }
 
-const ProcessingCard: React.FC<ProcessingCardProps> = ({
+const FailedCard: React.FC<FailedCardProps> = ({
   transactionHash,
   exploreUrl,
   quote,
-  transfer,
+  onNewPayment,
   onGetReceipt,
-  onCancel,
+  transferId,
 }) => {
   const currentDate =
     new Date().toLocaleDateString("en-CA") +
@@ -37,23 +37,22 @@ const ProcessingCard: React.FC<ProcessingCardProps> = ({
   }
 
   return (
-    <div className="min-h-screen text-white flex items-center w-full md:w-1/3 justify-center bg-black">
+    <div className="min-h-screen w-full  md:w-1/3 text-white flex items-center justify-center bg-black">
       <div className="w-full h-full max-w-lg">
         {/* Main Card */}
         <div className="bg-[#181818]  overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-[#232323]">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
-                <Loader size={16} className="animate-spin text-white" />
+              <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
+                <FiXCircle size={16} color="#fff" />
               </div>
-              <h2 className="text-xl font-medium text-white">Processing</h2>
+              <h2 className="text-xl font-medium text-red-500">Failed</h2>
             </div>
             <button
               onClick={onGetReceipt}
               className="text-gray-400 hover:text-white transition-colors"
             >
-              {/* <FiFileText size={24} /> */}
               <TransactionsModal />
             </button>
           </div>
@@ -62,7 +61,7 @@ const ProcessingCard: React.FC<ProcessingCardProps> = ({
           <div className="p-6">
             <div className="relative flex items-center gap-2 mb-8">
               {/* Source Card - Changes based on Transfer Type */}
-              <div className="flex-1 bg-[#232323] rounded-xl p-6 h-44 flex flex-col items-center justify-center">
+              <div className="flex-1 bg-[#232323] rounded-xl p-6 w-full h-44 flex flex-col items-center justify-center">
                 <div className="mb-4 flex items-center justify-center relative size-24">
                   {quote.transferType === TransferType.TransferIn ? (
                     <CountryAvator country={quote.country} iconOnly />
@@ -81,7 +80,7 @@ const ProcessingCard: React.FC<ProcessingCardProps> = ({
                       : quote.network.charAt(0).toUpperCase() +
                         quote.network.slice(1)}
                   </h1>
-                  <h2 className="text-gray-300 font-mono text-sm">
+                  <h2 className="text-gray-300 font-mono text-base font-semibold">
                     {quote.transferType === TransferType.TransferIn
                       ? `${totalAmount.toFixed(2)} ${quote.fiatType}`
                       : `${Number(quote.amountPaid).toFixed(3)} ${
@@ -91,15 +90,8 @@ const ProcessingCard: React.FC<ProcessingCardProps> = ({
                 </div>
               </div>
 
-              {/* Arrow positioned in the middle */}
-              {/* <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
-                <div className="bg-[#181818] border-4 border-[#232323] rounded-xl p-2 md:p-3 shadow-lg text-yellow-500">
-                  <FiArrowRight size={20} />
-                </div>
-              </div> */}
-
               {/* Destination Card - Changes based on Transfer Type */}
-              <div className="flex-1 bg-[#232323] rounded-xl p-6 h-44 flex flex-col items-center justify-center">
+              <div className="flex-1 bg-[#232323] rounded-xl p-6 w-full h-44 flex flex-col items-center justify-center">
                 <div className="mb-4 flex items-center justify-center relative size-24">
                   {quote.transferType === TransferType.TransferIn ? (
                     <AssetAvator
@@ -118,7 +110,7 @@ const ProcessingCard: React.FC<ProcessingCardProps> = ({
                         quote.network.slice(1)
                       : quote.fiatType}
                   </h1>
-                  <h2 className="text-gray-300 font-mono text-sm">
+                  <h2 className="text-gray-300 font-mono text-base font-semibold text-center">
                     {quote.transferType === TransferType.TransferIn
                       ? `${Number(quote.amountPaid).toFixed(3)} ${
                           quote.cryptoType
@@ -132,36 +124,36 @@ const ProcessingCard: React.FC<ProcessingCardProps> = ({
             {/* Transaction Details */}
             <div className="space-y-4">
               {/* Source TX */}
-              {transactionHash && (
-                <div className="flex items-center justify-between">
-                  <h2 className="text-gray-400 text-sm">Source TX</h2>
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-white font-mono text-sm">
-                      {transactionHash
-                        ? `${transactionHash.slice(
-                            0,
-                            6
-                          )}...${transactionHash.slice(-6)}`
-                        : `${quote.address.slice(0, 6)}...${quote.address.slice(
-                            -6
-                          )}`}
-                    </h2>
-                    <div className="w-4 h-4 bg-yellow-500 rounded-full flex items-center justify-center">
-                      <Loader size={12} className="animate-spin text-white" />
-                    </div>
-                  </div>
+              <div className="flex items-center justify-between">
+                <h2 className="text-gray-400 text-sm">Source TX</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-white font-mono text-sm">
+                    {transactionHash
+                      ? `${transactionHash.slice(
+                          0,
+                          6
+                        )}...${transactionHash.slice(-6)}`
+                      : `${quote.address.slice(0, 6)}...${quote.address.slice(
+                          -6
+                        )}`}
+                  </h2>
+                  <FiCheck size={16} color="#10b981" />
                 </div>
-              )}
+              </div>
 
-              {/* Order ID */}
+              {/* Destination TX */}
               <div className="flex items-center justify-between">
                 <h2 className="text-gray-400 text-sm">Order ID</h2>
                 <div className="flex items-center gap-2">
                   <h2 className="text-white font-mono text-sm">
                     {quote.quoteId.slice(0, 6)}...{quote.quoteId.slice(-6)}
                   </h2>
+                  <FiCheck size={16} color="#10b981" />
                 </div>
               </div>
+
+              {/* Divider */}
+              <div className="border-t !border-[#232323] my-4"></div>
 
               {/* Recipient Address */}
               <div className="flex items-center justify-between">
@@ -173,32 +165,11 @@ const ProcessingCard: React.FC<ProcessingCardProps> = ({
 
               {/* Timestamp */}
               <div className="flex items-center justify-between">
-                <h2 className="text-gray-400 text-sm">Started at</h2>
+                <h2 className="text-gray-400 text-sm">Timestamp</h2>
                 <h2 className="text-white text-sm">{currentDate}</h2>
               </div>
 
-              {/* Status */}
-              <div className="flex items-center justify-between">
-                <h2 className="text-gray-400 text-sm">Status</h2>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-yellow-500 text-sm font-medium">
-                    Processing
-                  </h2>
-                  <Loader size={14} className="animate-spin text-yellow-500" />
-                </div>
-              </div>
-
-              {/* Institution (if available) */}
-              {transfer?.userActionDetails?.institutionName && (
-                <div className="flex items-center justify-between">
-                  <h2 className="text-gray-400 text-sm">Institution</h2>
-                  <h2 className="text-white text-sm">
-                    {transfer.userActionDetails.institutionName}
-                  </h2>
-                </div>
-              )}
-
-              {/* Explorer Link (if processing TransferOut) */}
+              {/* Explorer Link */}
               {quote.transferType === TransferType.TransferOut &&
                 exploreUrl && (
                   <div className="flex items-center justify-between">
@@ -214,19 +185,18 @@ const ProcessingCard: React.FC<ProcessingCardProps> = ({
                     </a>
                   </div>
                 )}
-
-              <div className="flex items-center justify-between">
-                <Button
-                  onClick={() => onCancel()}
-                  className="w-full bg-blue-500 hover:bg-blue-600 text-white text-lg font-semibold h-14 rounded-xl transition-colors"
-                >
-                  Swap Again
-                </Button>
-              </div>
             </div>
 
             {/* Action Button */}
-            <div className="mt-8"></div>
+            <div className="mt-8 w-full flex flex-row gap-4">
+              <Button
+                onClick={onNewPayment}
+                className="w-1/2 !bg-neutral-800  hover:bg-transparent text-neutral-300 text-sm font-semibold h-14 rounded-xl transition-colors"
+              >
+                Try again
+              </Button>
+              <SupportButton transactionId={transferId || ""} />
+            </div>
           </div>
         </div>
       </div>
@@ -234,4 +204,4 @@ const ProcessingCard: React.FC<ProcessingCardProps> = ({
   );
 };
 
-export default ProcessingCard;
+export default FailedCard;

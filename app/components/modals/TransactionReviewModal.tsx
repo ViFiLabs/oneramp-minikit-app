@@ -513,13 +513,13 @@ export function TransactionReviewModal() {
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black">
-        <div className="bg-[#181818] rounded-2xl max-w-md w-[90%] shadow-xl p-6">
-          <div className="flex flex-col gap-4">
-            <h1 className="text-2xl font-bold text-white">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#181818] md:bg-black">
+        <div className="bg-[#181818] md:rounded-2xl max-w-md md:w-[90%] md:shadow-xl p-6">
+          <div className="flex flex-col md:gap-4">
+            <h1 className="text-xl md:text-2xl font-bold text-white">
               Review transaction
             </h1>
-            <p className="text-neutral-400 mb-4">
+            <p className="text-neutral-400 mb-4 text-sm md:text-base">
               Verify transaction details before you send
             </p>
 
@@ -527,7 +527,7 @@ export function TransactionReviewModal() {
             <div className="space-y-5">
               {/* Amount */}
               <div className="flex justify-between items-center">
-                <span className="text-neutral-400 text-lg">Amount</span>
+                <h2 className="text-neutral-400 text-base">Amount</h2>
                 <AssetAvator
                   cryptoType={quote.cryptoType}
                   cryptoAmount={quote.amountPaid}
@@ -536,33 +536,33 @@ export function TransactionReviewModal() {
 
               {/* Total value */}
               <div className="flex justify-between items-center">
-                <span className="text-neutral-400 text-lg">Total value</span>
-                <span className="text-white text-lg font-medium">
+                <h2 className="text-neutral-400 text-base">Total value</h2>
+                <h2 className="text-white text-base font-medium">
                   {totalAmount.toFixed(2)} {quote.fiatType}
-                </span>
+                </h2>
               </div>
 
               {/* Recipient */}
               {quote.transferType === TransferType.TransferOut && (
                 <div className="flex justify-between items-center">
-                  <span className="text-neutral-400 text-lg">Recipient</span>
-                  <span className="text-white text-lg font-medium">
+                  <h2 className="text-neutral-400 text-base">Recipient</h2>
+                  <h2 className="text-white text-base font-medium">
                     {transfer?.transferAddress?.slice(0, 4)}...
                     {transfer?.transferAddress?.slice(-4)}
-                  </span>
+                  </h2>
                 </div>
               )}
 
               {/* Account */}
               {accountNumber && institution && (
                 <div className="flex justify-between items-center">
-                  <span className="text-neutral-400 text-lg">Account</span>
-                  <div className="text-white text-lg font-medium flex items-center">
-                    <span>
+                  <h2 className="text-neutral-400 text-base">Account</h2>
+                  <div className="text-white text-base font-medium flex items-center">
+                    <h2>
                       {accountNumber?.slice(0, 4)}...{accountNumber?.slice(-4)}
-                    </span>
-                    <span className="text-neutral-400 mx-2">•</span>
-                    <span>{institution?.name.slice(0, 4)}</span>
+                    </h2>
+                    <h2 className="text-neutral-400 mx-2">•</h2>
+                    <h2 className="text-sm">{institution?.name.slice(0, 4)}</h2>
                   </div>
                 </div>
               )}
@@ -570,7 +570,7 @@ export function TransactionReviewModal() {
               {/* Network */}
               {currentNetwork && (
                 <div className="flex justify-between items-center">
-                  <span className="text-neutral-400 text-lg">Network</span>
+                  <h2 className="text-neutral-400 text-base">Network</h2>
                   <div className="flex items-center gap-2">
                     <Image
                       src={currentNetwork.logo}
@@ -579,9 +579,9 @@ export function TransactionReviewModal() {
                       height={24}
                       className="rounded-full"
                     />
-                    <span className="text-white text-lg font-medium">
+                    <h2 className="text-white text-base font-medium">
                       {currentNetwork.name}
-                    </span>
+                    </h2>
                   </div>
                 </div>
               )}
@@ -607,7 +607,7 @@ export function TransactionReviewModal() {
                   <circle cx="12" cy="16" r="1" fill="#666" />
                 </svg>
               </div>
-              <p className="text-neutral-400 text-xs">
+              <p className="text-neutral-400 text-sm">
                 Ensure the details above are correct. Failed transaction due to
                 wrong details may attract a refund fee
               </p>

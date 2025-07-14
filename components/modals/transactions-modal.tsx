@@ -114,7 +114,12 @@ const TransactionsModal = () => {
     error: processingError,
   } = useQuery({
     queryKey: ["transactions", address, "processing"],
-    queryFn: () => getTransactions(address!, TransactionStatus.IN_PROGRESS),
+    queryFn: () => {
+      if (!address) {
+        throw new Error("Address is required");
+      }
+      return getTransactions(address, TransactionStatus.IN_PROGRESS);
+    },
     enabled: !!address && isConnected,
     refetchInterval: 10000, // Refetch every 10 seconds
     select: (data) => data.map(transformTransaction),
@@ -126,7 +131,12 @@ const TransactionsModal = () => {
     error: completedError,
   } = useQuery({
     queryKey: ["transactions", address, "completed"],
-    queryFn: () => getTransactions(address!, TransactionStatus.DONE),
+    queryFn: () => {
+      if (!address) {
+        throw new Error("Address is required");
+      }
+      return getTransactions(address, TransactionStatus.DONE);
+    },
     enabled: !!address && isConnected,
     refetchInterval: 30000, // Refetch every 30 seconds
     select: (data) => data.map(transformTransaction),
@@ -138,7 +148,12 @@ const TransactionsModal = () => {
     error: failedError,
   } = useQuery({
     queryKey: ["transactions", address, "failed"],
-    queryFn: () => getTransactions(address!, TransactionStatus.FAILED),
+    queryFn: () => {
+      if (!address) {
+        throw new Error("Address is required");
+      }
+      return getTransactions(address, TransactionStatus.FAILED);
+    },
     enabled: !!address && isConnected,
     refetchInterval: 60000, // Refetch every minute
     select: (data) => data.map(transformTransaction),

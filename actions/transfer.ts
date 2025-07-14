@@ -167,6 +167,10 @@ export const getTransactions = async (
   status: TransactionStatus
 ): Promise<Transaction[]> => {
   try {
+    if (!address) {
+      throw new Error("Address is required");
+    }
+
     const response = await oneRampApi.get(
       `/address-orders/${address}/${status}`
     );

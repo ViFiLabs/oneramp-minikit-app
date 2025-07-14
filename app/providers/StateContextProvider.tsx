@@ -10,6 +10,7 @@ import useWalletGetInfo from "@/hooks/useWalletGetInfo";
 import { getKYC } from "@/actions/kyc";
 import { useEffect } from "react";
 import { useKYCStore } from "@/store/kyc-store";
+import OrderFailed from "../components/cards/order-failed";
 
 const StateContextProvider = () => {
   const { orderStep } = useUserSelectionStore();
@@ -56,6 +57,10 @@ const StateContextProvider = () => {
 
   if (orderStep === OrderStep.PaymentCompleted) {
     return <OrderSuccessful />;
+  }
+
+  if (orderStep === OrderStep.PaymentFailed) {
+    return <OrderFailed />;
   }
 
   return null;
