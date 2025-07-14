@@ -37,7 +37,7 @@ const ProcessingCard: React.FC<ProcessingCardProps> = ({
   }
 
   return (
-    <div className="min-h-screen text-white flex items-center w-full md:w-1/3 justify-center bg-black">
+    <div className="min-h-screen !bg-[#181818] text-white flex items-center w-full md:w-1/3 justify-center md:bg-black">
       <div className="w-full h-full max-w-lg">
         {/* Main Card */}
         <div className="bg-[#181818]  overflow-hidden">
