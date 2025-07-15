@@ -102,6 +102,7 @@ export interface UserSelectionGlobalState {
   orderStep: OrderStep;
   appState: AppState;
   pastedAddress?: string;
+  countryPanelOnTop?: boolean;
 }
 
 export interface MINMAX {
