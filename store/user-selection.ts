@@ -24,6 +24,7 @@ const initialState: UserSelectionGlobalState = {
   orderStep: OrderStep.Initial,
   appState: AppState.Idle,
   pastedAddress: undefined,
+  countryPanelOnTop: false,
 };
 
 const defaultState = {

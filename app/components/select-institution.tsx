@@ -30,13 +30,17 @@ interface FormInputs {
 }
 
 const SelectInstitution = ({ buy }: { buy?: boolean }) => {
-  const { institution, country, updateSelection } = useUserSelectionStore();
+  const { institution, country, updateSelection, countryPanelOnTop } =
+    useUserSelectionStore();
   const [showInstitutionModal, setShowInstitutionModal] = useState(false);
   const [showKYCModal, setShowKYCModal] = useState(false);
   const [buttonDisabled, setButtonDisabled] = useState(true);
   const [buttonText, setButtonText] = useState("Connect Wallet");
-  const { isValid: isAmountValid, amount: userAmountEntered } =
-    useAmountStore();
+  const {
+    isValid: isAmountValid,
+    amount: userAmountEntered,
+    cryptoAmount,
+  } = useAmountStore();
   const userPayLoad = useUserSelectionStore();
   const { kycData } = useKYCStore();
 
@@ -429,6 +433,10 @@ const SelectInstitution = ({ buy }: { buy?: boolean }) => {
       fiatType: country?.currency,
       network: currentNetwork?.name.toLowerCase(),
     };
+
+    if (countryPanelOnTop) {
+      payload.cryptoAmount = cryptoAmount;
+    }
 
     createMutation.mutate(payload);
 

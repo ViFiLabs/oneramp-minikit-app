@@ -8,9 +8,11 @@ import { useUserSelectionStore } from "@/store/user-selection";
 import { Country } from "@/types";
 import { useEffect, useMemo } from "react";
 import SelectCountryModal from "./modals/select-country-modal";
+import CurrencyValueInput from "./inputs/CurrencyValueInput";
 
 const SelectCountry = () => {
-  const { country, updateSelection, paymentMethod } = useUserSelectionStore();
+  const { country, updateSelection, paymentMethod, countryPanelOnTop } =
+    useUserSelectionStore();
   const { amount, setIsValid, setFiatAmount } = useAmountStore();
   const { exchangeRate, setExchangeRate, setError } = useExchangeRateStore();
 
@@ -91,20 +93,26 @@ const SelectCountry = () => {
       <div className="flex items-center gap-3">
         <SelectCountryModal handleCountrySelect={handleCountrySelect} />
 
-        <div className="flex-1 text-right">
-          <span
-            className={cn(
-              "text-2xl md:text-4xl font-semibold text-neutral-300"
-            )}
-          >
-            {calculatedAmount
-              ? parseFloat(calculatedAmount).toLocaleString("en-US", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })
-              : "0.00"}
-          </span>
-        </div>
+        {countryPanelOnTop ? (
+          <CurrencyValueInput />
+        ) : (
+          <div className="flex-1 text-right">
+            <h1
+              className={cn(
+                "!text-3xl font-semibold",
+                "text-neutral-300",
+                isAmountValid ? "" : ""
+              )}
+            >
+              {calculatedAmount
+                ? parseFloat(calculatedAmount).toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })
+                : "0.00"}
+            </h1>
+          </div>
+        )}
       </div>
     </>
   );

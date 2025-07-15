@@ -23,7 +23,7 @@ const networks: Network[] = SUPPORTED_NETWORKS_WITH_RPC_URLS;
 
 export function SwapPanel() {
   const [selectedCurrency, setSelectedCurrency] = useState<Asset>(assets[0]);
-  const [countryPanelOnTop, setCountryPanelOnTop] = useState(false);
+  const { countryPanelOnTop, updateSelection } = useUserSelectionStore();
   const { setCurrentNetwork } = useNetworkStore();
   const [selectedCountryCurrency] = useState<null | {
     name: string;
@@ -36,7 +36,7 @@ export function SwapPanel() {
   const starknetConnected = !!starknetAddress;
 
   const { country } = useUserSelectionStore();
-  const { isValid: isAmountValid } = useAmountStore();
+  const { isValid: isAmountValid, setAmount } = useAmountStore();
 
   // Used to show wallet requirement in the network modal
   const canSwitchNetwork = (network: Network) => {
@@ -105,7 +105,10 @@ export function SwapPanel() {
 
             {/* Arrow in the middle */}
             <SwapArrow
-              onClick={() => setCountryPanelOnTop(!countryPanelOnTop)}
+              onClick={() => {
+                updateSelection({ countryPanelOnTop: !countryPanelOnTop });
+                setAmount("0");
+              }}
             />
 
             <motion.div
@@ -144,7 +147,10 @@ export function SwapPanel() {
 
             {/* Arrow in the middle */}
             <SwapArrow
-              onClick={() => setCountryPanelOnTop(!countryPanelOnTop)}
+              onClick={() => {
+                updateSelection({ countryPanelOnTop: !countryPanelOnTop });
+                setAmount("0");
+              }}
             />
 
             <motion.div
