@@ -1,6 +1,7 @@
 import React from "react";
 import { useUserSelectionStore } from "@/store/user-selection";
 import { useExchangeRateStore } from "@/store/exchange-rate-store";
+import { cn } from "@/lib/utils";
 
 const ExchangeRateComponent = ({
   default: isDefault,
@@ -11,7 +12,11 @@ const ExchangeRateComponent = ({
   const { exchangeRate } = useExchangeRateStore();
 
   return (
-    <>
+    <div
+      className={cn(
+        isDefault && "w-full flex flex-col items-center justify-center"
+      )}
+    >
       {country && (
         <div className="mx-4 md:mx-10 mb-4 flex justify-between text-sm">
           <span className="text-neutral-400 flex items-center gap-2">
@@ -31,7 +36,7 @@ const ExchangeRateComponent = ({
           )}
         </div>
       )}
-    </>
+    </div>
   );
 };
 
