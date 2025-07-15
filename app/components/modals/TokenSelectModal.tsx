@@ -50,35 +50,23 @@ export function TokenSelectModal({ open, onClose }: TokenSelectModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="bg-[#232323] w-full max-w-md shadow-2xl h-screen flex flex-col">
+    <div 
+      className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div 
+        className="fixed bottom-0 left-0 right-0 bg-[#181818] w-full max-w-none rounded-t-3xl shadow-2xl max-h-[75vh] flex flex-col animate-slide-up-from-bottom"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
-        <div className="flex items-center py-4 border-b border-[#3a4155]">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-[#232323]">
+          <h2 className="text-xl font-bold text-white">Select A Token</h2>
           <Button
             variant="ghost"
-            className="text-neutral-400 hover:text-white mr-4"
+            className="text-neutral-400 hover:text-white p-2"
             onClick={onClose}
           >
-            <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-              <path
-                d="M19 12H5M5 12l7-7m-7 7l7 7"
-                stroke="#fff"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </Button>
-          <h3 className="text-xl text-white font-medium flex-1 text-center">
-            Select A Token
-          </h3>
-
-          <Button
-            variant="ghost"
-            className="text-neutral-400 hover:text-white mr-4"
-            onClick={onClose}
-          >
-            <X className="text-white" />
+            <X className="text-white w-6 h-6" />
           </Button>
         </div>
 
@@ -166,7 +154,7 @@ export function TokenSelectModal({ open, onClose }: TokenSelectModalProps) {
         </div>
 
         {/* Token List */}
-        <div className="overflow-y-auto flex-1">
+        <div className="overflow-y-auto flex-1 pb-8">
           {filteredTokens.length > 0 ? (
             selectedNetwork === "All Networks" ? (
               // Show all tokens grouped by networks

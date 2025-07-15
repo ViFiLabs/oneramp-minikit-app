@@ -11,7 +11,6 @@ const ConnectedWalletCard = () => {
   }
 
   const networkLogo = "/logos/base.png";
-  // network === "evm" ? "/logos/ethereum.png" : "/logos/starknet.png";
 
   return (
     <Card className="bg-transparent border-neutral-500 text-white">
@@ -30,7 +29,6 @@ const ConnectedWalletCard = () => {
               {address?.slice(0, 6)}...{address?.slice(-4)}
             </span>
             <span className="text-neutral-400 text-sm">
-              {/* {network === "evm" ? "EVM" : "Starknet"} */}
               Base Wallet
             </span>
           </div>

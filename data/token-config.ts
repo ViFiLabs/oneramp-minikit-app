@@ -22,8 +22,7 @@ export const TOKEN_CONFIGS: Record<string, TokenConfig> = {
       137: "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
       // Celo
       42220: "0xcebA9300f2b948710d2653dD7B07f33A8B32118C",
-      // Starknet (converted from hex)
-      [0x534e5f4d41494e]: "0x053C91253BC9682c04929cA02ED00b3E423f6710D2ee7e0D5EBB06F3eCF368A8",
+
     },
   },
   USDT: {
@@ -36,8 +35,6 @@ export const TOKEN_CONFIGS: Record<string, TokenConfig> = {
       137: "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
       // Celo (6 decimals)
       42220: "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e",
-      // Starknet (converted from hex)
-      [0x534e5f4d41494e]: "0x068F5c6a61780768455de69077E07e89787839bf8166dEcfBf92B645209c0fB8",
     },
   },
 };
@@ -77,6 +74,4 @@ export const NETWORK_TOKEN_SUPPORT = {
   137: ["USDC", "USDT"],
   // Celo - USDC and USDT
   42220: ["USDC", "USDT"],
-  // Starknet - USDC and USDT
-  [0x534e5f4d41494e]: ["USDC", "USDT"],
 }; 

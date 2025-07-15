@@ -49,13 +49,7 @@ const ProcessingCard: React.FC<ProcessingCardProps> = ({
               </div>
               <h2 className="text-xl font-medium text-white">Processing</h2>
             </div>
-            <button
-              onClick={onGetReceipt}
-              className="text-gray-400 hover:text-white transition-colors"
-            >
-              {/* <FiFileText size={24} /> */}
-              <TransactionsModal />
-            </button>
+            <TransactionsModal />
           </div>
 
           {/* Transaction Flow */}

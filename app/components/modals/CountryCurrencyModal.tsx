@@ -23,14 +23,14 @@ export function CountryCurrencyModal({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
-        className="fixed inset-0 z-50 bg-[#181818] border-none text-white p-0 m-0 w-screen h-screen max-w-none max-h-none rounded-none shadow-none flex flex-col animate-slide-in-top"
+        className="fixed bottom-0 left-0 right-0 z-50 bg-[#181818] border-none text-white p-0 m-0 w-full max-w-none rounded-t-3xl shadow-2xl flex flex-col animate-slide-up-from-bottom max-h-[70vh]"
         style={{ padding: 0 }}
       >
         <div className="flex flex-col h-full w-full">
           <div className="flex items-center justify-between px-6 py-5 border-b border-[#232323]">
             <h2 className="text-xl font-bold">Select Country</h2>
           </div>
-          <div className="flex-1 overflow-y-auto px-4 by-6 flex flex-col gap-4">
+          <div className="flex-1 overflow-y-auto px-4 py-6 flex flex-col gap-4">
             {countries.map((country) => (
               <Button
                 key={country.name}

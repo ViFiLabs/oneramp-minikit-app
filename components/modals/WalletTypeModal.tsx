@@ -6,7 +6,7 @@ import Image from "next/image";
 interface WalletTypeModalProps {
   open: boolean;
   onClose: () => void;
-  onSelectWalletType: (type: "evm" | "starknet") => void;
+  onSelectWalletType: (type: "evm") => void;
 }
 
 export function WalletTypeModal({
@@ -60,30 +60,6 @@ export function WalletTypeModal({
               </span>
               <span className="text-neutral-400 text-xs">
                 MetaMask, WalletConnect, etc.
-              </span>
-            </div>
-          </Button>
-
-          <Button
-            onClick={() => onSelectWalletType("starknet")}
-            className="flex justify-start items-center  gap-4 w-full h-16  border-[#232323] hover:bg-[#2a2a2a] rounded-2xl transition-all hover:scale-[1.02] border  hover:border-[#353535] group"
-          >
-            <div className="p-2 bg-[#353535] rounded-lg group-hover:bg-[#454545] transition-colors">
-              <Image
-                src="/logos/starknet.png"
-                alt="Starknet"
-                width={24}
-                height={24}
-                className="rounded-lg"
-              />
-            </div>
-
-            <div className="flex flex-col items-start">
-              <span className="text-white font-medium text-base">
-                Starknet Wallet
-              </span>
-              <span className="text-neutral-400 text-xs">
-                Argent X, Braavos
               </span>
             </div>
           </Button>

@@ -126,6 +126,20 @@
 .animate-slide-in-top {
   animation: slideInTop 0.45s cubic-bezier(0.4, 0.2, 0.2, 1) both;
 }
+@keyframes slideUpFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up-from-bottom {
+  animation: slideUpFromBottom 0.3s cubic-bezier(0.4, 0.0, 0.2, 1) both;
+}
 
 @layer base {
   * {

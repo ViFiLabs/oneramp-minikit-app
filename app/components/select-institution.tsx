@@ -341,9 +341,7 @@ const SelectInstitution = ({ buy }: { buy?: boolean }) => {
       setButtonText("Connect Wallet");
     } else if (!hasRequiredWallet()) {
       setButtonText(
-        currentNetwork?.type === "starknet"
-          ? "Connect Starknet Wallet"
-          : "Connect EVM Wallet"
+        "Connect EVM Wallet"
       );
     } else if (!institution) {
       if (!buy) {
@@ -663,9 +661,7 @@ const SelectInstitution = ({ buy }: { buy?: boolean }) => {
           {/* Show wallet requirement message if needed */}
           {!hasRequiredWallet() && isConnected && (
             <div className="text-center mt-2 text-xs text-amber-400 font-medium">
-              {currentNetwork?.type === "starknet"
-                ? "Starknet wallet required for this network"
-                : "EVM wallet required for this network"}
+              "EVM wallet required for this network"
             </div>
           )}
         </div>

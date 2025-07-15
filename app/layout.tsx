@@ -4,7 +4,6 @@ import "./globals.css";
 import "@coinbase/onchainkit/styles.css";
 
 import EVMProvider from "./providers/EVMProvider";
-import StarknetProvider from "./providers/StarknetProvider";
 import { headers } from "next/headers";
 import { Toaster } from "@/components/ui/sonner";
 import { MiniKitContextProvider } from "./context/minikit-provider";
@@ -70,7 +69,7 @@ export default async function RootLayout({
       >
         <MiniKitContextProvider>
           <EVMProvider cookies={cookies}>
-            <StarknetProvider>{children}</StarknetProvider>
+            {children}
           </EVMProvider>
         </MiniKitContextProvider>
         <Toaster />

@@ -4,7 +4,6 @@ import { useState } from "react";
 import { erc20Abi, TransactionReceipt, parseUnits } from "viem";
 import { useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 
-// Starknet imports
 
 export type TransactionPayload = {
   recipient: string;

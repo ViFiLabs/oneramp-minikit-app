@@ -3,7 +3,6 @@ import { ConnectSingleWallet } from "@/components/connect-single-wallet";
 import { Button } from "@/components/ui/button";
 import useWalletInfo from "@/hooks/useWalletGetInfo";
 import useEVMPay from "@/onchain/useEVMPay";
-import usePayStarknet from "@/onchain/usePayStarknet";
 import { useKYCStore } from "@/store/kyc-store";
 import { useNetworkStore } from "@/store/network";
 import { useQuoteStore } from "@/store/quote-store";
@@ -59,10 +58,6 @@ export function TransactionReviewModal() {
 
   const { payWithEVM, isLoading, resetState, isError } = useEVMPay();
 
-  // Initialize Starknet pay
-  const starknetPay = usePayStarknet(
-    asset?.networks["Starknet"]?.tokenAddress ?? ""
-  );
 
   const { chainId, address, isConnected } = useWalletInfo();
 
@@ -118,9 +113,7 @@ export function TransactionReviewModal() {
       // Only reset states, not the mutation
       if (currentNetwork?.type === ChainTypes.EVM) {
         resetState();
-      } else if (currentNetwork?.type === ChainTypes.Starknet) {
-        starknetPay.resetState();
-      }
+      } 
     };
   }, []);
 
@@ -129,9 +122,7 @@ export function TransactionReviewModal() {
     if (quote && currentOrderStep === OrderStep.GotQuote) {
       if (currentNetwork?.type === ChainTypes.EVM) {
         resetState();
-      } else if (currentNetwork?.type === ChainTypes.Starknet) {
-        starknetPay.resetState();
-      }
+      } 
     }
   }, [quote?.quoteId, currentOrderStep]);
 
@@ -175,9 +166,7 @@ export function TransactionReviewModal() {
     submitTxHashMutation.reset();
     if (currentNetwork?.type === ChainTypes.EVM) {
       resetState();
-    } else if (currentNetwork?.type === ChainTypes.Starknet) {
-      starknetPay.resetState();
-    }
+    } 
     resetToDefault();
     submitTransferIn.reset();
     router.refresh();
@@ -205,24 +194,9 @@ export function TransactionReviewModal() {
         tokenAddress: contractAddress,
       };
 
-      const isStarknet = currentNetwork.type === ChainTypes.Starknet;
-
-      if (isStarknet) {
-        const strkPayload = {
-          recipient,
-          amount: quote.amountPaid,
-          tokenAddress: contractAddress,
-        };
-        updateSelection({ appState: AppState.Processing });
-        starknetPay.payWithStarknet(
-          strkPayload,
-          handleStarknetPaySuccess,
-          handleStarknetPayFailed
-        );
-      } else {
-        updateSelection({ appState: AppState.Processing });
-        payWithEVM(transactionPayload, handleEVMPaySuccess, handleEVMPayFailed);
-      }
+      updateSelection({ appState: AppState.Processing });
+      payWithEVM(transactionPayload, handleEVMPaySuccess, handleEVMPayFailed);
+      
     } catch (error) {
       console.error("Error initiating blockchain transaction:", error);
       setLoading(false);
@@ -260,47 +234,9 @@ export function TransactionReviewModal() {
     return error;
   };
 
-  const handleStarknetPaySuccess = async (txHash: {
-    transaction_hash: string;
-  }) => {
-    const transactionHash = txHash.transaction_hash;
 
-    if (
-      !transfer?.transferId ||
-      !transactionHash ||
-      wrongChainState.isWrongChain ||
-      currentNetwork?.type !== ChainTypes.Starknet
-    ) {
-      return;
-    }
 
-    setTransactionHash(transactionHash);
 
-    console.log("====================================");
-    console.log("INITIATING STARKNET TX HASH");
-    console.log("====================================");
-
-    // Wait for 10 seconds
-    await new Promise((resolve) => setTimeout(resolve, 10000));
-
-    console.log("====================================");
-    console.log("SUBMITTING STARKNET TX HASH");
-    console.log("====================================");
-
-    submitTxHashMutation.mutate({
-      transferId: transfer.transferId,
-      txHash: transactionHash,
-    });
-
-    updateSelection({ orderStep: OrderStep.GotTransfer });
-
-    setLoading(false);
-  };
-
-  const handleStarknetPayFailed = (error: Error) => {
-    // console.log("Starknet Transaction failed", error.message);
-    return error;
-  };
 
   const handleSubmitTransferIn = async () => {
     if (!quote) return;
