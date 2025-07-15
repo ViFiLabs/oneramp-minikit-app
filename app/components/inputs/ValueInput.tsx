@@ -42,12 +42,14 @@ const ValueInput: React.FC<ValueInputProps> = ({
     return convertedAmount.toFixed(4);
   }, [amount, country, exchangeRate]);
 
-  // Update crypto amount when calculated amount changes
-  useEffect(() => {
-    if (calculatedAmount !== null) {
+   // Update crypto amount when calculated amount changes
+   useEffect(() => {
+    if (calculatedAmount) {
       setCryptoAmount(calculatedAmount);
     }
   }, [calculatedAmount, setCryptoAmount]);
+
+
 
   const formatNumber = (num: string) => {
     // Remove any non-digit characters except decimal point and first decimal only
