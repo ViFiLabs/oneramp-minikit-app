@@ -8,6 +8,7 @@ import StateContextProvider from "./providers/StateContextProvider";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
 import { useEffect, useState } from "react";
 import sdk from "@farcaster/frame-sdk";
+import { HeroText } from "./components/HeroText";
 
 export default function Home() {
   const [isSDKLoaded, setIsSDKLoaded] = useState(false);
@@ -58,6 +59,7 @@ export default function Home() {
           {/* Center section - Main content */}
           <div className="flex flex-col items-center justify-start w-full pt-6 pb-2 md:pt-16">
             <StateContextProvider />
+            <HeroText />
             <SwapBuyTabs />
           </div>
 
