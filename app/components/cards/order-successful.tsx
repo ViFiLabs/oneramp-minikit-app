@@ -48,10 +48,7 @@ const OrderSuccessful = () => {
         setExploreUrl(
           currentNetwork?.blockExplorers?.default.url + "/tx/" + transactionHash
         );
-      } else if (currentNetwork?.type === ChainTypes.Starknet) {
-        const url = "https://voyager.online/tx/" + transactionHash;
-        setExploreUrl(url);
-      }
+      } 
     }
   }, [transactionHash, currentNetwork]);
 

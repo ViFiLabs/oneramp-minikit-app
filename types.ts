@@ -3,7 +3,6 @@ import { SUPPORTED_NETWORK_NAMES } from "./data/networks";
 
 export enum ChainTypes {
   EVM = "evm",
-  Starknet = "starknet",
 }
 
 export enum OrderStep {

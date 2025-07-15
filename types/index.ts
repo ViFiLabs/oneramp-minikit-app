@@ -27,5 +27,5 @@ export interface Network {
   };
   testnet: boolean;
   logo: string;
-  type: "evm" | "starknet";
+  type: "evm";
 }

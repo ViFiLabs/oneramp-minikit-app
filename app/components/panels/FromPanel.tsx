@@ -5,7 +5,6 @@ import useWalletGetInfo from "@/hooks/useWalletGetInfo";
 import { useAmountStore } from "@/store/amount-store";
 import { useNetworkStore } from "@/store/network";
 import { Asset, Network } from "@/types";
-import { useAccount as useStarknetAccount } from "@starknet-react/core";
 import ValueInput from "../inputs/ValueInput";
 import { NetworkSelector } from "../NetworkSelector";
 
@@ -27,8 +26,7 @@ export function FromPanel({
 
   // Wallet connection states
   const { isConnected: evmConnected } = useWalletGetInfo();
-  const { address: starknetAddress } = useStarknetAccount();
-  const starknetConnected = !!starknetAddress;
+
 
   // Token balance hook
   const {
@@ -47,7 +45,7 @@ export function FromPanel({
 
   // Handle Max button click
   const handleMaxClick = () => {
-    if (!isCurrentTokenSupported || (!evmConnected && !starknetConnected))
+    if (!isCurrentTokenSupported || (!evmConnected))
       return;
 
     // Use the balance for the current network
@@ -100,7 +98,7 @@ export function FromPanel({
   const canClickMax = () => {
     return (
       isCurrentTokenSupported &&
-      (evmConnected || starknetConnected) &&
+      (evmConnected ) &&
       parseFloat(getCurrentBalance()) > 0
     );
   };
@@ -136,7 +134,7 @@ export function FromPanel({
         </div>
         <ValueInput
           maxBalance={getMaxBalance()}
-          isWalletConnected={evmConnected || starknetConnected}
+          isWalletConnected={evmConnected}
           isBalanceLoading={isBalanceLoading()}
         />
       </div>

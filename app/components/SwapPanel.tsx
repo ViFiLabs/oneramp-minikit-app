@@ -7,7 +7,6 @@ import { useAmountStore } from "@/store/amount-store";
 import { useNetworkStore } from "@/store/network";
 import { useUserSelectionStore } from "@/store/user-selection";
 import { Asset, Network } from "@/types";
-import { useAccount as useStarknetAccount } from "@starknet-react/core";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import SubmitButton from "./buttons/submit-button";
@@ -32,19 +31,16 @@ export function SwapPanel() {
 
   // Wallet connection states
   const { isConnected: evmConnected } = useWalletGetInfo();
-  const { address: starknetAddress } = useStarknetAccount();
-  const starknetConnected = !!starknetAddress;
+
 
   const { country } = useUserSelectionStore();
   const { isValid: isAmountValid, setAmount } = useAmountStore();
 
   // Used to show wallet requirement in the network modal
   const canSwitchNetwork = (network: Network) => {
-    if (network.type === "starknet") {
-      return starknetConnected;
-    } else {
+   
       return evmConnected;
-    }
+    
   };
 
   // Update handleNetworkSelect to use global state

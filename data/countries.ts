@@ -116,8 +116,8 @@ export const countries: Country[] = [
     phoneCode: "+234",
     exchangeRate: 1_588.69,
     institutions: countryInstitutions.Nigeria,
-    fiatMinMax: { min: 2_600, max: 480_000 },
-    cryptoMinMax: { min: 2, max: 2_500 },
+    fiatMinMax: { min: 1_000, max: 480_000 },
+    cryptoMinMax: { min: 1, max: 2_500 },
     accountNumberLength: {
       bankLength: 10,
       mobileLength: 9,
@@ -176,7 +176,7 @@ export const countries: Country[] = [
     phoneCode: "+256",
     exchangeRate: 3_804.44,
     institutions: countryInstitutions.Uganda,
-    fiatMinMax: { min: 3_500.44, max: 4_556_194 },
+    fiatMinMax: { min: 1_500.44, max: 4_556_194 },
     cryptoMinMax: { min: 1, max: 2_500 },
     accountNumberLength: {
       bankLength: 10,
@@ -192,7 +192,7 @@ export const countries: Country[] = [
     exchangeRate: 2_941.0,
     institutions: countryInstitutions.Tanzania,
     fiatMinMax: { min: 2_800.0, max: 13_475_000 },
-    cryptoMinMax: { min: 5, max: 2_500 },
+    cryptoMinMax: { min: 1, max: 2_500 },
     accountNumberLength: {
       bankLength: 12,
       mobileLength: 10,

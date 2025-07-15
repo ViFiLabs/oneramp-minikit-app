@@ -2,7 +2,6 @@
 import { ConnectButton } from "@/components/connect-button";
 import { useNetworkStore } from "@/store/network";
 import { useDisconnect } from "@reown/appkit/react";
-import { useAccount as useStarknetAccount } from "@starknet-react/core";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useBalance, useToken } from "wagmi";
@@ -27,10 +26,6 @@ export function Header({ logoOnly }: { logoOnly?: boolean }) {
   // Track both wallet types separately
   const [evmConnected, setEvmConnected] = useState(false);
   const [evmAddress, setEvmAddress] = useState<string | undefined>();
-  const [starknetConnected, setStarknetConnected] = useState(false);
-  const [starknetWalletAddress, setStarknetWalletAddress] = useState<
-    string | undefined
-  >();
 
   // const [setShowWalletModal] = useState(false);
   const [showWalletDetails, setShowWalletDetails] = useState(false);
@@ -61,8 +56,7 @@ export function Header({ logoOnly }: { logoOnly?: boolean }) {
     },
   });
 
-  // Get Starknet account
-  const { address: starknetAddress } = useStarknetAccount();
+
 
   // Listen for AppKit connection changes for EVM
   useEffect(() => {
@@ -85,16 +79,7 @@ export function Header({ logoOnly }: { logoOnly?: boolean }) {
     };
   }, []);
 
-  // Check if connected to Starknet
-  useEffect(() => {
-    if (starknetAddress) {
-      setStarknetConnected(true);
-      setStarknetWalletAddress(starknetAddress);
-    } else {
-      setStarknetConnected(false);
-      setStarknetWalletAddress(undefined);
-    }
-  }, [starknetAddress]);
+
 
   // Listen for network changes
   useEffect(() => {
@@ -124,9 +109,7 @@ export function Header({ logoOnly }: { logoOnly?: boolean }) {
   }, [supportedNetworks, setCurrentNetwork]);
 
   // Determine what to show on the connect wallet button
-  const anyWalletConnected = evmConnected || starknetConnected;
-  // const primaryAddress = evmConnected ? evmAddress : starknetWalletAddress;
-
+  const anyWalletConnected = evmConnected 
   const handleConnectFromDetails = () => {
     // Close wallet details modal first
     setShowWalletDetails(false);
@@ -211,8 +194,6 @@ export function Header({ logoOnly }: { logoOnly?: boolean }) {
           onClose={() => setShowWalletDetails(false)}
           evmAddress={evmAddress}
           evmConnected={evmConnected}
-          starknetAddress={starknetWalletAddress}
-          starknetConnected={starknetConnected}
           onDisconnect={handleDisconnect}
           onConnectWallet={handleConnectFromDetails}
         />
