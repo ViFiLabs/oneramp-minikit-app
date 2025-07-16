@@ -3,13 +3,9 @@
 import { useNetworkStore } from "@/store/network";
 import {
   useAppKitAccount,
-  useAppKitEvents,
   useAppKitNetwork,
-  useAppKitState,
-  useAppKitTheme,
 } from "@reown/appkit/react";
 import { useEffect, useState } from "react";
-import { useClientMounted } from "./useClientMounted";
 import { useUserSelectionStore } from "@/store/user-selection";
 
 const useWalletInfo = () => {
@@ -21,20 +17,12 @@ const useWalletInfo = () => {
   const { pastedAddress } = useUserSelectionStore();
 
   // EVM Wallet data
-  const kitTheme = useAppKitTheme();
-  const state = useAppKitState();
   const {
     address: evmAddress,
-    caipAddress,
     isConnected: evmIsConnected,
-    embeddedWalletInfo,
   } = useAppKitAccount();
-  const events = useAppKitEvents();
-  const mounted = useClientMounted();
   const {
     chainId: evmChainId,
-    caipNetworkId,
-    caipNetwork,
   } = useAppKitNetwork();
 
 
@@ -76,17 +64,9 @@ const useWalletInfo = () => {
   ]);
 
   return {
-    kitTheme,
-    state, //
-    address, //
-    caipAddress,
+    address,
     isConnected, 
-    embeddedWalletInfo,
-    events,
-    mounted,
-    chainId, //
-    caipNetworkId,
-    caipNetwork,
+    chainId,
   };
 };
 

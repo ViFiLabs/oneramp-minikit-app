@@ -35,7 +35,7 @@ const TxPage = () => {
       transferStatus?.status === TransferStatusEnum.TransferComplete &&
       !isLoading
     ) {
-      //   updateSelection({ orderStep: OrderStep.PaymentCompleted });
+      // Order step update will be handled by the parent component
     }
   }, [transferStatus?.status, isLoading]);
 
@@ -52,7 +52,7 @@ const TxPage = () => {
   };
 
   const handleGetReceipt = () => {
-    console.log("Get receipt for:", id);
+    // Receipt generation functionality to be implemented
   };
 
   // Generate explorer URL based on network

@@ -1,6 +1,5 @@
-import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import useWalletGetInfo from "@/hooks/useWalletGetInfo";
-// import { ChainTypes } from "@/types";
 import Image from "next/image";
 
 const ConnectedWalletCard = () => {
@@ -34,16 +33,6 @@ const ConnectedWalletCard = () => {
           </div>
         </CardTitle>
       </CardHeader>
-      <CardFooter className="flex w-full">
-        {/* <Button
-          // variant="outline"
-          onClick={disconnect}
-          className="w-full rounded-md flex flex-row items-center bg-neutral-500 text-sm"
-        >
-          <ArrowLeft className="size-3 mr-2" />
-          Disconnect
-        </Button> */}
-      </CardFooter>
     </Card>
   );
 };

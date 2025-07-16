@@ -41,8 +41,7 @@ const OrderFailed = () => {
   };
 
   const handleGetReceipt = () => {
-    // TODO: Implement receipt generation
-    console.log("Get receipt clicked");
+    // Receipt generation functionality to be implemented
   };
 
   if (!quote) return null;

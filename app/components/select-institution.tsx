@@ -609,7 +609,7 @@ const SelectInstitution = ({ buy }: { buy?: boolean }) => {
       )}
 
       {userPayLoad.pastedAddress && buy ? (
-        // Add a console.log statement here
+    
         <SubmitButton
           onClick={onSubmit}
           disabled={
@@ -636,7 +636,7 @@ const SelectInstitution = ({ buy }: { buy?: boolean }) => {
         //   <div className="flex w-full justify-center my-4">
         //     <ModalConnectButton large />
         //   </div>
-        // Put a console.log statement here
+
         <div className="mb-4">
           <SubmitButton
             onClick={onSubmit}

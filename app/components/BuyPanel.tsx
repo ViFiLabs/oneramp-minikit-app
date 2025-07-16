@@ -81,8 +81,9 @@ export function BuyPanel() {
     fetchExchangeRate();
   }, [country?.countryCode, paymentMethod, setExchangeRate, setError]);
 
-  // Handler for buy confirmation
-  const handleConfirmBuy = () => {};
+  const handleConfirmBuy = () => {
+    // Buy confirmation functionality to be implemented
+  };
 
   const handleCountrySelect = (selectedCountry: Country) => {
     const rate = exchangeRate?.exchange ?? selectedCountry.exchangeRate;
