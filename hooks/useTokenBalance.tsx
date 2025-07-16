@@ -107,7 +107,7 @@ export function useTokenBalance(tokenSymbol: string, specificChainId?: number): 
 
       return { balance: balanceString, formatted, decimals };
     } catch (error) {
-      console.error(`Error fetching balance for chain ${chainId}:`, error);
+
       const errorMessage = error instanceof Error ? error.message : "Failed to fetch balance";
       
       setEvmBalances(prev => ({

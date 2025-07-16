@@ -21,7 +21,6 @@ export const FetchingAccountDetails = () => {
 const AccountDetails = ({ accountNumber }: { accountNumber: string }) => {
   const { paymentMethod, country, institution, setAppState, updateSelection } =
     useUserSelectionStore();
-  //   const [isLoading, setIsLoading] = useState(false);
   const [showKYCModal, setShowKYCModal] = useState(false);
 
   const { setIsCheckingKyc, kycData } = useKYCStore();
@@ -47,10 +46,6 @@ const AccountDetails = ({ accountNumber }: { accountNumber: string }) => {
   });
 
   useEffect(() => {
-    // if (isLoading && kycData && kycData?.message?.link) {
-    //   setAppState(AppState.Processing);
-    // }
-
     if (isLoading) {
       setAppState(AppState.Processing);
     }

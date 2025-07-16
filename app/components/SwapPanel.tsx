@@ -54,13 +54,11 @@ export function SwapPanel() {
   };
 
   const handleSettingsClick = () => {
-    // Add settings functionality here
-    console.log("Settings clicked");
+    // Settings functionality to be implemented
   };
 
   const handleBeneficiarySelect = () => {
-    // Add beneficiary selection functionality here
-    console.log("Beneficiary select clicked");
+    // Beneficiary selection functionality to be implemented
   };
 
   return (

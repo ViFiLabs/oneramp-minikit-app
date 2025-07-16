@@ -78,7 +78,6 @@ export function TransactionReviewModal() {
     onError: (error: Error) => {
       submitTxHashMutation.reset();
       submitTransferIn.reset();
-      console.error("Transaction submission error:", error);
     },
   });
 
@@ -179,7 +178,6 @@ export function TransactionReviewModal() {
     const contractAddress = asset.networks[networkName]?.tokenAddress;
 
     if (!contractAddress) {
-      console.log("No contract address found for network:", networkName);
       return;
     }
 
@@ -198,7 +196,6 @@ export function TransactionReviewModal() {
       payWithEVM(transactionPayload, handleEVMPaySuccess, handleEVMPayFailed);
       
     } catch (error) {
-      console.error("Error initiating blockchain transaction:", error);
       setLoading(false);
     }
   };
@@ -229,7 +226,7 @@ export function TransactionReviewModal() {
   };
 
   const handleEVMPayFailed = (error: Error) => {
-    // console.log("EVM Transaction failed", error.message);
+    
     // toast.error("Transaction failed");
     return error;
   };

@@ -45,12 +45,7 @@ const SuccessCard: React.FC<SuccessCardProps> = ({
               </div>
               <h2 className="text-xl font-medium text-white">Completed</h2>
             </div>
-            <button
-              onClick={onGetReceipt}
-              className="text-gray-400 hover:text-white transition-colors"
-            >
-              <TransactionsModal />
-            </button>
+            <TransactionsModal />
           </div>
 
           {/* Transaction Flow */}

@@ -86,11 +86,7 @@ export const submitTransactionHash = async (
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      console.log(`Attempt ${attempt} to submit transaction hash:`, payload);
-
       const response = await oneRampApi.post(`/tx`, payload);
-
-      console.log("Transaction hash submission successful:", response.data);
 
       return {
         success: true,
@@ -109,19 +105,8 @@ export const submitTransactionHash = async (
         axiosError.response?.data?.error ||
         "Failed to submit transaction hash";
 
-      console.error(
-        `Attempt ${attempt} failed with status ${status}:`,
-        message
-      );
-
       // If it's a 500 error and we have retries left, continue to next attempt
       if (status === 500 && attempt < maxRetries) {
-        console.log(
-          `Attempt ${attempt} failed with 500, retrying in ${
-            1000 * attempt
-          }ms...`
-        );
-
         // Add exponential backoff delay between retries
         await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
 
@@ -132,10 +117,6 @@ export const submitTransactionHash = async (
       // Last attempt or non-500 error - decide what to return
       if (status === 500) {
         // This is the final attempt with a 500 error - treat as acceptable
-        console.log(
-          "500 error encountered on final attempt, treating as acceptable:",
-          message
-        );
         return {
           success: true, // Treat 500s as acceptable per your requirement
           status: status,

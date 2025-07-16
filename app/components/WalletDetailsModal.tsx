@@ -59,9 +59,9 @@ export function WalletDetailsModal({
         // appKit.
       }
       onClose();
-    } catch (error) {
-      console.error("Error connecting to EVM wallet:", error);
-    }
+          } catch (error) {
+        // Error connecting to EVM wallet
+      }
   }
 
   const handleConnectWallet = (walletId: string) => {

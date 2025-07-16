@@ -192,9 +192,9 @@ export const ConnectButton = ({ large }: { large?: boolean }) => {
                   EVM Wallet
                 </span>
               </div>
-              <Button className="bg-white text-black rounded-md hover:bg-neutral-200 text-sm">
+              <div className="bg-white text-black rounded-md hover:bg-neutral-200 text-sm px-4 py-2 transition-colors">
                 Connect
-              </Button>
+              </div>
             </Button>
           )}
         </div>
