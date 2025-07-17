@@ -27,9 +27,7 @@ const ConnectedWalletCard = () => {
             <span className="text-white text-base font-medium">
               {address?.slice(0, 6)}...{address?.slice(-4)}
             </span>
-            <span className="text-neutral-400 text-sm">
-              Base Wallet
-            </span>
+            <span className="text-neutral-400 text-sm">Base Wallet here</span>
           </div>
         </CardTitle>
       </CardHeader>

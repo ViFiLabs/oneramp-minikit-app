@@ -58,7 +58,6 @@ export function TransactionReviewModal() {
 
   const { payWithEVM, isLoading, resetState, isError } = useEVMPay();
 
-
   const { chainId, address, isConnected } = useWalletInfo();
 
   // Create the mutation with reset capability
@@ -76,6 +75,7 @@ export function TransactionReviewModal() {
       return response;
     },
     onError: (error: Error) => {
+      console.log("Error in submitTxHashMutation", error);
       submitTxHashMutation.reset();
       submitTransferIn.reset();
     },
@@ -112,7 +112,7 @@ export function TransactionReviewModal() {
       // Only reset states, not the mutation
       if (currentNetwork?.type === ChainTypes.EVM) {
         resetState();
-      } 
+      }
     };
   }, []);
 
@@ -121,7 +121,7 @@ export function TransactionReviewModal() {
     if (quote && currentOrderStep === OrderStep.GotQuote) {
       if (currentNetwork?.type === ChainTypes.EVM) {
         resetState();
-      } 
+      }
     }
   }, [quote?.quoteId, currentOrderStep]);
 
@@ -165,7 +165,7 @@ export function TransactionReviewModal() {
     submitTxHashMutation.reset();
     if (currentNetwork?.type === ChainTypes.EVM) {
       resetState();
-    } 
+    }
     resetToDefault();
     submitTransferIn.reset();
     router.refresh();
@@ -194,8 +194,8 @@ export function TransactionReviewModal() {
 
       updateSelection({ appState: AppState.Processing });
       payWithEVM(transactionPayload, handleEVMPaySuccess, handleEVMPayFailed);
-      
     } catch (error) {
+      console.log("Error in makeBlockchainTransaction", error);
       setLoading(false);
     }
   };
@@ -226,14 +226,9 @@ export function TransactionReviewModal() {
   };
 
   const handleEVMPayFailed = (error: Error) => {
-    
     // toast.error("Transaction failed");
     return error;
   };
-
-
-
-
 
   const handleSubmitTransferIn = async () => {
     if (!quote) return;

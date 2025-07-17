@@ -27,7 +27,6 @@ export function FromPanel({
   // Wallet connection states
   const { isConnected: evmConnected } = useWalletGetInfo();
 
-
   // Token balance hook
   const {
     formatted: tokenBalance,
@@ -45,8 +44,7 @@ export function FromPanel({
 
   // Handle Max button click
   const handleMaxClick = () => {
-    if (!isCurrentTokenSupported || (!evmConnected))
-      return;
+    if (!isCurrentTokenSupported || !evmConnected) return;
 
     // Use the balance for the current network
     const currentChainId = currentNetwork?.chainId;
@@ -98,7 +96,7 @@ export function FromPanel({
   const canClickMax = () => {
     return (
       isCurrentTokenSupported &&
-      (evmConnected ) &&
+      evmConnected &&
       parseFloat(getCurrentBalance()) > 0
     );
   };

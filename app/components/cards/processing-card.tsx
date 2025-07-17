@@ -6,6 +6,7 @@ import AssetAvator from "./asset-avator";
 import CountryAvator from "./country-avator";
 import { Button } from "@/components/ui/button";
 import TransactionsModal from "@/components/modals/transactions-modal";
+import { useUserSelectionStore } from "@/store/user-selection";
 
 interface ProcessingCardProps {
   transactionHash?: string;
@@ -21,9 +22,9 @@ const ProcessingCard: React.FC<ProcessingCardProps> = ({
   exploreUrl,
   quote,
   transfer,
-  onGetReceipt,
   onCancel,
 }) => {
+  const { isPayout } = useUserSelectionStore();
   const currentDate =
     new Date().toLocaleDateString("en-CA") +
     " " +
@@ -63,7 +64,9 @@ const ProcessingCard: React.FC<ProcessingCardProps> = ({
                   ) : (
                     <AssetAvator
                       cryptoType={quote.cryptoType}
-                      cryptoAmount={quote.amountPaid}
+                      cryptoAmount={
+                        isPayout ? quote.cryptoAmount : quote.amountPaid
+                      }
                       iconOnly
                     />
                   )}
@@ -76,11 +79,23 @@ const ProcessingCard: React.FC<ProcessingCardProps> = ({
                         quote.network.slice(1)}
                   </h1>
                   <h2 className="text-gray-300 font-mono text-sm">
-                    {quote.transferType === TransferType.TransferIn
-                      ? `${totalAmount.toFixed(2)} ${quote.fiatType}`
-                      : `${Number(quote.amountPaid).toFixed(3)} ${
-                          quote.cryptoType
-                        }`}
+                    {isPayout ? (
+                      <>
+                        {quote.transferType === TransferType.TransferIn
+                          ? `${totalAmount.toFixed(2)} ${quote.fiatType}`
+                          : `${Number(quote.cryptoAmount).toFixed(3)} ${
+                              quote.cryptoType
+                            }`}
+                      </>
+                    ) : (
+                      <>
+                        {quote.transferType === TransferType.TransferIn
+                          ? `${totalAmount.toFixed(2)} ${quote.fiatType}`
+                          : `${Number(quote.amountPaid).toFixed(3)} ${
+                              quote.cryptoType
+                            }`}
+                      </>
+                    )}
                   </h2>
                 </div>
               </div>

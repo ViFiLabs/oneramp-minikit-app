@@ -56,8 +56,6 @@ export function Header({ logoOnly }: { logoOnly?: boolean }) {
     },
   });
 
-
-
   // Listen for AppKit connection changes for EVM
   useEffect(() => {
     // Get the appKit instance that was created in WalletConnectionModal
@@ -78,8 +76,6 @@ export function Header({ logoOnly }: { logoOnly?: boolean }) {
       }
     };
   }, []);
-
-
 
   // Listen for network changes
   useEffect(() => {
@@ -109,7 +105,7 @@ export function Header({ logoOnly }: { logoOnly?: boolean }) {
   }, [supportedNetworks, setCurrentNetwork]);
 
   // Determine what to show on the connect wallet button
-  const anyWalletConnected = evmConnected 
+  const anyWalletConnected = evmConnected;
   const handleConnectFromDetails = () => {
     // Close wallet details modal first
     setShowWalletDetails(false);

@@ -21,7 +21,6 @@ const FailedCard: React.FC<FailedCardProps> = ({
   exploreUrl,
   quote,
   onNewPayment,
-  onGetReceipt,
   transferId,
 }) => {
   const currentDate =

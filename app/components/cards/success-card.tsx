@@ -5,6 +5,7 @@ import AssetAvator from "./asset-avator";
 import { Button } from "@/components/ui/button";
 import CountryAvator from "./country-avator";
 import TransactionsModal from "@/components/modals/transactions-modal";
+import { useUserSelectionStore } from "@/store/user-selection";
 
 interface SuccessCardProps {
   transactionHash?: string;
@@ -19,8 +20,8 @@ const SuccessCard: React.FC<SuccessCardProps> = ({
   exploreUrl,
   quote,
   onNewPayment,
-  onGetReceipt,
 }) => {
+  const { isPayout } = useUserSelectionStore();
   const currentDate =
     new Date().toLocaleDateString("en-CA") +
     " " +
@@ -59,11 +60,14 @@ const SuccessCard: React.FC<SuccessCardProps> = ({
                   ) : (
                     <AssetAvator
                       cryptoType={quote.cryptoType}
-                      cryptoAmount={quote.amountPaid}
+                      cryptoAmount={
+                        isPayout ? quote.cryptoAmount : quote.amountPaid
+                      }
                       iconOnly
                     />
                   )}
                 </div>
+
                 <div className="flex flex-col items-center text-center">
                   <h1 className="text-lg font-medium text-white mb-1">
                     {quote.transferType === TransferType.TransferIn
@@ -72,11 +76,23 @@ const SuccessCard: React.FC<SuccessCardProps> = ({
                         quote.network.slice(1)}
                   </h1>
                   <h2 className="text-gray-300 font-mono text-base font-semibold">
-                    {quote.transferType === TransferType.TransferIn
-                      ? `${totalAmount.toFixed(2)} ${quote.fiatType}`
-                      : `${Number(quote.amountPaid).toFixed(3)} ${
-                          quote.cryptoType
-                        }`}
+                    {isPayout ? (
+                      <>
+                        {quote.transferType === TransferType.TransferIn
+                          ? `${totalAmount.toFixed(2)} ${quote.fiatType}`
+                          : `${Number(quote.cryptoAmount).toFixed(3)} ${
+                              quote.cryptoType
+                            }`}
+                      </>
+                    ) : (
+                      <>
+                        {quote.transferType === TransferType.TransferIn
+                          ? `${totalAmount.toFixed(2)} ${quote.fiatType}`
+                          : `${Number(quote.amountPaid).toFixed()} ${
+                              quote.cryptoType
+                            }`}
+                      </>
+                    )}
                   </h2>
                 </div>
               </div>

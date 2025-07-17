@@ -340,9 +340,7 @@ const SelectInstitution = ({ buy }: { buy?: boolean }) => {
     if (!isConnected) {
       setButtonText("Connect Wallet");
     } else if (!hasRequiredWallet()) {
-      setButtonText(
-        "Connect EVM Wallet"
-      );
+      setButtonText("Connect EVM Wallet");
     } else if (!institution) {
       if (!buy) {
         setButtonText("Select institution");
@@ -609,7 +607,6 @@ const SelectInstitution = ({ buy }: { buy?: boolean }) => {
       )}
 
       {userPayLoad.pastedAddress && buy ? (
-    
         <SubmitButton
           onClick={onSubmit}
           disabled={
@@ -661,7 +658,7 @@ const SelectInstitution = ({ buy }: { buy?: boolean }) => {
           {/* Show wallet requirement message if needed */}
           {!hasRequiredWallet() && isConnected && (
             <div className="text-center mt-2 text-xs text-amber-400 font-medium">
-              "EVM wallet required for this network"
+              &quot;EVM wallet required for this network&quot;
             </div>
           )}
         </div>

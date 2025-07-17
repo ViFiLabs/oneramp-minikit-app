@@ -37,7 +37,6 @@ export const ModalConnectButton = ({ large }: { large?: boolean }) => {
   } = useNetworkStore();
   // const disconnectEvm = useDisconnectEVM();
 
-
   const { setKycData } = useKYCStore();
 
   const { mutate: getSaveKYCData } = useMutation({
@@ -68,10 +67,7 @@ export const ModalConnectButton = ({ large }: { large?: boolean }) => {
     }
   };
 
-
-  const handleWalletTypeSelect = async (
-    type?: "evm" | undefined
-  ) => {
+  const handleWalletTypeSelect = async (type?: "evm" | undefined) => {
     const chainType = type;
 
     if (!chainType) {
@@ -95,13 +91,12 @@ export const ModalConnectButton = ({ large }: { large?: boolean }) => {
     (network) => network.type === ChainTypes.EVM
   );
 
-
   return (
     <>
       {isConnected ? (
         <div className="flex items-center gap-2">
           <Button
-            disabled={true}
+            // disabled={true}
             className={cn(
               "rounded-full  px-6 py-1.5 text-sm font-semibold transition-colors bg-neutral-800 hover:bg-neutral-700 text-white",
               large && "w-full h-14 rounded-lg text-lg "
@@ -136,8 +131,7 @@ export const ModalConnectButton = ({ large }: { large?: boolean }) => {
           <div className="flex flex-col gap-4 px-4">
             <>
               {isConnected && hasAnyEvmNetwork ? (
-                <ConnectedWalletCard
-                />
+                <ConnectedWalletCard />
               ) : (
                 <Button
                   onClick={() => handleWalletTypeSelect("evm")}

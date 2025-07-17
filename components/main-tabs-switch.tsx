@@ -5,19 +5,31 @@ import { SwapPanel } from "@/app/components/SwapPanel";
 import { BuyPanel } from "@/app/components/BuyPanel";
 import { useUserSelectionStore } from "@/store/user-selection";
 import { useAmountStore } from "@/store/amount-store";
+import { countries } from "@/data/countries";
+import { PayPanel } from "@/app/components/PayPanel";
+import { useEffect, useState } from "react";
 
 export function MainTabsSwitch() {
   const { updateSelection } = useUserSelectionStore();
   const { setAmount } = useAmountStore();
+  const [hasMounted, setHasMounted] = useState(false);
 
-  const washTheseFields = (goingToBuy: boolean) => {
+  // Prevent hydration mismatch by only rendering after client mount
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  const washTheseFields = (goingToBuy: boolean, onPayPanel: boolean) => {
     updateSelection({
-      country: undefined,
+      country: onPayPanel
+        ? countries.find((c) => c.name === "Kenya")
+        : undefined,
       asset: undefined,
       accountNumber: undefined,
       accountName: undefined,
       institution: undefined,
       pastedAddress: undefined,
+      isPayout: onPayPanel ? true : false,
     });
 
     if (goingToBuy) {
@@ -25,28 +37,47 @@ export function MainTabsSwitch() {
     }
   };
 
+  // Show loading state during hydration
+  if (!hasMounted) {
+    return (
+      <div className="w-full">
+        <div className="grid bg-neutral-700/80 w-full sm:max-w-xs sm:mx-auto grid-cols-3 p-1 rounded-t-full h-12 animate-pulse" />
+      </div>
+    );
+  }
+
   return (
-    <Tabs defaultValue="Swap" className="w-full md:w-[500px]">
-      <TabsList className="grid w-[250px] mx-auto grid-cols-2 p-1 bg-transparent rounded-full mb-2 h-12">
+    <Tabs defaultValue="Pay" className="w-full ">
+      <TabsList className="grid bg-neutral-700/80 w-full sm:max-w-xs sm:mx-auto grid-cols-3 p-1 rounded-t-full h-12">
         <TabsTrigger
-          value="Swap"
-          onClick={() => washTheseFields(false)}
-          className="data-[state=active]:!bg-neutral-800 text-sm data-[state=active]:!text-white data-[state=active]:font-bold text-neutral-400 rounded-full transition-all"
+          value="Pay"
+          onClick={() => washTheseFields(false, true)}
+          className="data-[state=active]:!bg-neutral-600 data-[state=active]:!text-white text-sm data-[state=active]:font-semibold text-neutral-300 rounded-full transition-all"
         >
-          Swap
+          Pay
         </TabsTrigger>
         <TabsTrigger
-          value="Buy"
-          onClick={() => washTheseFields(true)}
-          className="data-[state=active]:!bg-neutral-800 text-sm data-[state=active]:!text-white data-[state=active]:font-bold text-neutral-400 rounded-full transition-all"
+          value="Withdraw"
+          onClick={() => washTheseFields(false, false)}
+          className="data-[state=active]:!bg-neutral-600 data-[state=active]:!text-white text-sm data-[state=active]:font-semibold text-neutral-300 rounded-full transition-all"
         >
-          Buy
+          Withdraw
+        </TabsTrigger>
+        <TabsTrigger
+          value="Deposit"
+          onClick={() => washTheseFields(true, false)}
+          className="data-[state=active]:!bg-neutral-600 data-[state=active]:!text-white text-sm data-[state=active]:font-semibold text-neutral-300 rounded-full transition-all"
+        >
+          Deposit
         </TabsTrigger>
       </TabsList>
-      <TabsContent value="Swap" className="w-full">
+      <TabsContent value="Pay" className="w-full">
+        <PayPanel />
+      </TabsContent>
+      <TabsContent value="Withdraw" className="w-full">
         <SwapPanel />
       </TabsContent>
-      <TabsContent value="Buy" className="w-full">
+      <TabsContent value="Deposit" className="w-full">
         <BuyPanel />
       </TabsContent>
     </Tabs>
