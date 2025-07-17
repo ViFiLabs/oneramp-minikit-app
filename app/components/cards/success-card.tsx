@@ -61,8 +61,13 @@ const SuccessCard: React.FC<SuccessCardProps> = ({
                     <AssetAvator
                       cryptoType={quote.cryptoType}
                       cryptoAmount={
-                        isPayout ? quote.cryptoAmount : quote.amountPaid
+                        quote.requestType === "fiat"
+                          ? quote.cryptoAmount
+                          : quote.amountPaid
                       }
+                      // cryptoAmount={
+                      //   isPayout ? quote.cryptoAmount : quote.amountPaid
+                      // }
                       iconOnly
                     />
                   )}

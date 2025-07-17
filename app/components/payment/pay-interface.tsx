@@ -182,8 +182,8 @@ export function PaymentInterface() {
         return {
           requestType: "bill" as const,
           accountName: "OneRamp", // Default name for bill payments
-          accountNumber: billTillPayout?.accountNumber || "",
-          businessNumber: billTillPayout?.billNumber || "",
+          accountNumber: billTillPayout?.billNumber || "",
+          businessNumber: billTillPayout?.accountNumber || "",
         };
       case "Send Money":
         // Format phone number with country code (same as select-institution component)
@@ -572,6 +572,11 @@ export function PaymentInterface() {
         return null;
     }
   };
+
+  // console.log("====================================");
+  // console.log("QUOTE", Number(quote?.cryptoAmount) + Number(quote?.fee));
+  // console.log("QUOTE", quote?.requestType);
+  // console.log("====================================");
 
   return (
     <div className=" mx-auto w-full bg-[#181818] text-white rounded-2xl overflow-hidden p-4 sm:p-6 space-y-4 sm:space-y-6 min-h-[500px]">

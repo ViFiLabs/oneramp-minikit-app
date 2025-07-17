@@ -65,8 +65,13 @@ const ProcessingCard: React.FC<ProcessingCardProps> = ({
                     <AssetAvator
                       cryptoType={quote.cryptoType}
                       cryptoAmount={
-                        isPayout ? quote.cryptoAmount : quote.amountPaid
+                        quote.requestType === "fiat"
+                          ? quote.cryptoAmount
+                          : quote.amountPaid
                       }
+                      // cryptoAmount={
+                      //   isPayout ? quote.cryptoAmount : quote.amountPaid
+                      // }
                       iconOnly
                     />
                   )}

@@ -62,7 +62,12 @@ const FailedCard: React.FC<FailedCardProps> = ({
                   ) : (
                     <AssetAvator
                       cryptoType={quote.cryptoType}
-                      cryptoAmount={quote.amountPaid}
+                      // cryptoAmount={quote.amountPaid}
+                      cryptoAmount={
+                        quote.requestType === "fiat"
+                          ? quote.cryptoAmount
+                          : quote.amountPaid
+                      }
                       iconOnly
                     />
                   )}
