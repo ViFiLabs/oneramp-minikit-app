@@ -499,6 +499,7 @@ export function PaymentInterface() {
             <div className="relative">
               <Input
                 value={billTillPayout?.tillNumber || ""}
+                type="number"
                 onChange={(e) =>
                   updateBillTillPayout({ tillNumber: e.target.value })
                 }
@@ -519,6 +520,7 @@ export function PaymentInterface() {
               <div className="relative">
                 <Input
                   value={billTillPayout?.billNumber || ""}
+                  type="number"
                   onChange={(e) =>
                     updateBillTillPayout({ billNumber: e.target.value })
                   }
@@ -535,6 +537,7 @@ export function PaymentInterface() {
               <div className="relative">
                 <Input
                   value={billTillPayout?.accountNumber || ""}
+                  type="number"
                   onChange={(e) =>
                     updateBillTillPayout({ accountNumber: e.target.value })
                   }
@@ -555,6 +558,7 @@ export function PaymentInterface() {
             <div className="relative">
               <Input
                 value={billTillPayout?.phoneNumber || ""}
+                type="tel"
                 onChange={(e) =>
                   updateBillTillPayout({ phoneNumber: e.target.value })
                 }
