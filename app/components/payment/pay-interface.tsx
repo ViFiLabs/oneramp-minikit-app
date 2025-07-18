@@ -119,21 +119,8 @@ export function PaymentInterface() {
     }
   }, [country?.name, selectedPaymentType]);
 
-  // Set default country to Kenya and pre-fetch exchange rates
-  useEffect(() => {
-    if (!country) {
-      const defaultCountry = payEnabledCountries.find(
-        (c) => c.name === "Kenya"
-      );
-      if (defaultCountry) {
-        // Set the minimum amount for the default country
-        setAmountForCountry(defaultCountry);
-        updateSelection({ country: defaultCountry });
-      }
-    }
-  }, [country, updateSelection]);
-
   // Pre-fetch exchange rates for all supported countries when component mounts
+  // (No default country - user must select one)
   useEffect(() => {
     // This will trigger the useAllCountryExchangeRates hook to fetch rates
     // even before a country is selected, improving the user experience
@@ -582,42 +569,44 @@ export function PaymentInterface() {
   };
 
   return (
-    <div className=" mx-auto w-full bg-[#181818] text-white rounded-2xl overflow-hidden p-4 sm:p-6 space-y-4 sm:space-y-6 min-h-[500px]">
+    <div className="mx-auto w-full bg-[#181818] text-white rounded-2xl overflow-hidden p-4 sm:p-6 space-y-4 sm:space-y-6 min-h-[500px]">
       {/* Pay Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-lg sm:text-xl">Pay</h2>
-        <div className="flex items-center gap-2">
-          <Select
-            value={asset?.symbol || "USDC"}
-            onValueChange={handleAssetSelect}
-          >
-            <SelectTrigger className="bg-transparent border-none text-sm sm:text-base text-white p-0 h-auto">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="bg-neutral-900 !border-neutral-700 border">
-              {assets.map((assetItem) => (
-                <SelectItem
-                  key={assetItem.symbol}
-                  value={assetItem.symbol}
-                  className="focus:bg-neutral-800 focus:text-white data-[highlighted]:bg-neutral-800 data-[highlighted]:text-white"
-                >
-                  <div className="flex items-center gap-3 p-1">
-                    <Image
-                      src={assetItem.logo}
-                      alt={assetItem.symbol}
-                      className="w-4 h-4"
-                      width={20}
-                      height={20}
-                    />
-                    <h1 className="text-sm sm:text-base text-white">
-                      {assetItem.symbol}
-                    </h1>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        {country && (
+          <div className="flex items-center gap-2">
+            <Select
+              value={asset?.symbol || "USDC"}
+              onValueChange={handleAssetSelect}
+            >
+              <SelectTrigger className="bg-transparent border-none text-sm sm:text-base text-white p-0 h-auto">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-neutral-900 !border-neutral-700 border">
+                {assets.map((assetItem) => (
+                  <SelectItem
+                    key={assetItem.symbol}
+                    value={assetItem.symbol}
+                    className="focus:bg-neutral-800 focus:text-white data-[highlighted]:bg-neutral-800 data-[highlighted]:text-white"
+                  >
+                    <div className="flex items-center gap-3 p-1">
+                      <Image
+                        src={assetItem.logo}
+                        alt={assetItem.symbol}
+                        className="w-4 h-4"
+                        width={16}
+                        height={16}
+                      />
+                      <h1 className="text-sm sm:text-base text-white">
+                        {assetItem.symbol}
+                      </h1>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </div>
 
       {/* Country Selection */}
@@ -641,7 +630,7 @@ export function PaymentInterface() {
                     alt={countryItem.name}
                     className="w-6 h-4 rounded-sm object-cover"
                     width={24}
-                    height={24}
+                    height={16}
                   />
                   <h1 className="text-sm sm:text-base text-white">
                     {countryItem.name}
@@ -653,195 +642,203 @@ export function PaymentInterface() {
         </Select>
       </div>
 
-      {/* Payment Type Buttons */}
-      <div className="grid grid-cols-3 gap-3">
-        {["Buy Goods", "Paybill", "Send Money"].map((type) => {
-          const isSupported = isPaymentTypeSupported(type);
-          const isSelected = selectedPaymentType === type;
+      {/* Progressive UI - Only show when country is selected */}
+      {country && (
+        <>
+          {/* Payment Type Buttons */}
+          <div className="grid grid-cols-3 gap-3">
+            {["Buy Goods", "Paybill", "Send Money"].map((type) => {
+              const isSupported = isPaymentTypeSupported(type);
+              const isSelected = selectedPaymentType === type;
 
-          return (
-            <Button
-              key={type}
-              variant="ghost"
-              disabled={!isSupported}
-              className={`h-12 rounded-lg text-sm sm:text-base font-medium transition-all w-full ${
-                isSelected && isSupported
-                  ? "!bg-neutral-600 !border-neutral-500 text-white shadow-sm"
-                  : isSupported
-                  ? "!bg-neutral-800 !border-neutral-600 text-gray-300 hover:!bg-neutral-700 hover:text-white border"
-                  : "!bg-neutral-900 !border-neutral-700 text-gray-500 border cursor-not-allowed opacity-50"
-              }`}
-              onClick={() => isSupported && setSelectedPaymentType(type)}
-            >
-              <h2 className="text-xs sm:text-sm">{type}</h2>
-            </Button>
-          );
-        })}
-      </div>
-
-      {/* Dynamic Payment Fields */}
-      <div className="min-h-[80px]">{renderPaymentFields()}</div>
-
-      {/* Amount Section */}
-      <div className="space-y-3">
-        <div className="text-gray-400 text-sm sm:text-base">
-          <h3>Amount in {country?.currency || "KES"}</h3>
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-gray-300 text-xl sm:text-2xl font-medium">
-            {country?.currency || "KES"}
-          </span>
-          <Input
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            className="text-right bg-transparent border-none text-xl sm:text-2xl text-white p-0 h-auto"
-            placeholder="0"
-          />
-        </div>
-        <div className="h-px bg-gray-700"></div>
-
-        {!isAmountValidForCountry && country && (
-          <div className="text-red-400 text-xs">
-            <p>
-              Amount should be between {country.fiatMinMax.min.toLocaleString()}{" "}
-              and {country.fiatMinMax.max.toLocaleString()} {country.currency}
-            </p>
+              return (
+                <Button
+                  key={type}
+                  variant="ghost"
+                  disabled={!isSupported}
+                  className={`h-12 rounded-lg text-sm sm:text-base font-medium transition-all w-full ${
+                    isSelected && isSupported
+                      ? "!bg-neutral-600 !border-neutral-500 text-white shadow-sm"
+                      : isSupported
+                      ? "!bg-neutral-800 !border-neutral-600 text-gray-300 hover:!bg-neutral-700 hover:text-white border"
+                      : "!bg-neutral-900 !border-neutral-700 text-gray-500 border cursor-not-allowed opacity-50"
+                  }`}
+                  onClick={() => isSupported && setSelectedPaymentType(type)}
+                >
+                  <h2 className="text-xs sm:text-sm">{type}</h2>
+                </Button>
+              );
+            })}
           </div>
-        )}
-      </div>
 
-      {/* You'll Pay Section */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-gray-300 text-sm sm:text-base">
-            You&apos;ll pay
-          </h3>
-          <div className="flex items-center gap-2 text-gray-400">
-            <ArrowUpDown className="w-4 h-4" />
-          </div>
-        </div>
+          {/* Dynamic Payment Fields */}
+          <div className="min-h-[80px]">{renderPaymentFields()}</div>
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Select
-              value={currentNetwork?.name || "Base"}
-              onValueChange={handleNetworkSelect}
-            >
-              <SelectTrigger className="bg-transparent border-none text-sm sm:text-base text-white p-0 h-auto">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-neutral-900 !border-neutral-700 border">
-                {asset?.networks &&
-                  Object.values(asset.networks).map((network) => (
-                    <SelectItem
-                      key={network.name}
-                      value={network.name}
-                      className="focus:bg-neutral-800 focus:text-white data-[highlighted]:bg-neutral-800 data-[highlighted]:text-white"
-                    >
-                      <div className="flex items-center gap-3 p-1">
-                        <Image
-                          src={network.logo}
-                          alt={network.name}
-                          className="w-4 h-4"
-                          width={20}
-                          height={20}
-                        />
-                        <h1 className="text-sm sm:text-base text-white">
-                          {network.name}
-                        </h1>
-                      </div>
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="text-right">
-            {isExchangeRateLoading ? (
-              <CryptoAmountSkeleton />
-            ) : (
-              <>
-                <div className="text-xl sm:text-2xl">
-                  <p>{Number(calculatedCryptoAmount).toFixed(2)}</p>
-                </div>
-                <div className="text-xs md:text-sm text-gray-400">
-                  <p>Balance: {isBalanceLoading ? "..." : currentBalance}</p>
-                </div>
-              </>
+          {/* Amount Section */}
+          <div className="space-y-3">
+            <div className="text-gray-400 text-sm sm:text-base">
+              <h3>Amount in {country?.currency || "KES"}</h3>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-gray-300 text-xl sm:text-2xl font-medium">
+                {country?.currency || "KES"}
+              </span>
+              <Input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="text-right bg-transparent border-none text-xl sm:text-2xl text-white p-0 h-auto"
+                placeholder="0"
+              />
+            </div>
+            <div className="h-px bg-gray-700"></div>
+
+            {!isAmountValidForCountry && country && (
+              <div className="text-red-400 text-xs">
+                <p>
+                  Amount should be between{" "}
+                  {country.fiatMinMax.min.toLocaleString()} and{" "}
+                  {country.fiatMinMax.max.toLocaleString()} {country.currency}
+                </p>
+              </div>
             )}
           </div>
-        </div>
 
-        {isExchangeRateLoading ? (
-          <ExchangeRateSkeleton />
-        ) : (
-          <div className="flex items-center justify-between text-xs md:text-sm text-gray-400">
-            <p>
-              1 {asset?.symbol || "USD"} ={" "}
-              {exchangeRate ? exchangeRate.exchange.toLocaleString() : "--"}{" "}
-              {country?.currency || ""}
-            </p>
-            <p>Swap usually completes in 30s</p>
-          </div>
-        )}
-      </div>
+          {/* You'll Pay Section */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-gray-300 text-sm sm:text-base">
+                You&apos;ll pay
+              </h3>
+              <div className="flex items-center gap-2 text-gray-400">
+                <ArrowUpDown className="w-4 h-4" />
+              </div>
+            </div>
 
-      {/* Error Display */}
-      {billPaymentMutation.isError && (
-        <div className="bg-red-900/20 border border-red-600/50 rounded-lg p-3">
-          <div className="flex items-center justify-between">
-            <p className="text-red-400 text-sm">
-              ❌ Payment failed: {billPaymentMutation.error?.message}
-            </p>
-            <Button
-              onClick={() => billPaymentMutation.reset()}
-              variant="ghost"
-              size="sm"
-              className="text-red-400 hover:text-red-300 p-1 h-auto"
-            >
-              ✕
-            </Button>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Select
+                  value={currentNetwork?.name || "Base"}
+                  onValueChange={handleNetworkSelect}
+                >
+                  <SelectTrigger className="bg-transparent border-none text-sm sm:text-base text-white p-0 h-auto">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-neutral-900 !border-neutral-700 border">
+                    {asset?.networks &&
+                      Object.values(asset.networks).map((network) => (
+                        <SelectItem
+                          key={network.name}
+                          value={network.name}
+                          className="focus:bg-neutral-800 focus:text-white data-[highlighted]:bg-neutral-800 data-[highlighted]:text-white"
+                        >
+                          <div className="flex items-center gap-3 p-1">
+                            <Image
+                              src={network.logo}
+                              alt={network.name}
+                              className="w-4 h-4"
+                              width={16}
+                              height={16}
+                            />
+                            <h1 className="text-sm sm:text-base text-white">
+                              {network.name}
+                            </h1>
+                          </div>
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="text-right">
+                {isExchangeRateLoading ? (
+                  <CryptoAmountSkeleton />
+                ) : (
+                  <>
+                    <div className="text-xl sm:text-2xl">
+                      <p>{Number(calculatedCryptoAmount).toFixed(2)}</p>
+                    </div>
+                    <div className="text-xs md:text-sm text-gray-400">
+                      <p>
+                        Balance: {isBalanceLoading ? "..." : currentBalance}
+                      </p>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {isExchangeRateLoading ? (
+              <ExchangeRateSkeleton />
+            ) : (
+              <div className="flex items-center justify-between text-xs md:text-sm text-gray-400">
+                <p>
+                  1 {asset?.symbol || "USD"} ={" "}
+                  {exchangeRate ? exchangeRate.exchange.toLocaleString() : "--"}{" "}
+                  {country?.currency || ""}
+                </p>
+                <p>Swap usually completes in 30s</p>
+              </div>
+            )}
           </div>
-        </div>
+
+          {/* Error Display */}
+          {billPaymentMutation.isError && (
+            <div className="bg-red-900/20 border border-red-600/50 rounded-lg p-3">
+              <div className="flex items-center justify-between">
+                <p className="text-red-400 text-sm">
+                  ❌ Payment failed: {billPaymentMutation.error?.message}
+                </p>
+                <Button
+                  onClick={() => billPaymentMutation.reset()}
+                  variant="ghost"
+                  size="sm"
+                  className="text-red-400 hover:text-red-300 p-1 h-auto"
+                >
+                  ✕
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Success Display */}
+          {billPaymentMutation.currentStep === "opening-wallet" && (
+            <div className="bg-green-900/20 border border-green-600/50 rounded-lg p-3">
+              <div className="flex items-center justify-between">
+                <p className="text-green-400 text-sm">
+                  ✅ Ready for wallet payment!
+                </p>
+                <Button
+                  onClick={() => billPaymentMutation.reset()}
+                  variant="ghost"
+                  size="sm"
+                  className="text-green-400 hover:text-green-300 p-1 h-auto"
+                >
+                  ✕
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Swipe to Pay Button */}
+          <SwipeToPayButton
+            onPaymentComplete={handlePaymentComplete}
+            isLoading={
+              billPaymentMutation.isPending || blockchainLoading || isEVMLoading
+            }
+            stepMessage={getStepMessage(billPaymentMutation.currentStep)}
+            disabled={
+              !country ||
+              !asset ||
+              !currentNetwork ||
+              !amount ||
+              !isAmountValidForCountry ||
+              !isConnected ||
+              !address ||
+              isExchangeRateLoading
+            }
+          />
+        </>
       )}
-
-      {/* Success Display */}
-      {billPaymentMutation.currentStep === "opening-wallet" && (
-        <div className="bg-green-900/20 border border-green-600/50 rounded-lg p-3">
-          <div className="flex items-center justify-between">
-            <p className="text-green-400 text-sm">
-              ✅ Ready for wallet payment!
-            </p>
-            <Button
-              onClick={() => billPaymentMutation.reset()}
-              variant="ghost"
-              size="sm"
-              className="text-green-400 hover:text-green-300 p-1 h-auto"
-            >
-              ✕
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Swipe to Pay Button */}
-      <SwipeToPayButton
-        onPaymentComplete={handlePaymentComplete}
-        isLoading={
-          billPaymentMutation.isPending || blockchainLoading || isEVMLoading
-        }
-        stepMessage={getStepMessage(billPaymentMutation.currentStep)}
-        disabled={
-          !country ||
-          !asset ||
-          !currentNetwork ||
-          !amount ||
-          !isAmountValidForCountry ||
-          !isConnected ||
-          !address ||
-          isExchangeRateLoading
-        }
-      />
     </div>
   );
 }
