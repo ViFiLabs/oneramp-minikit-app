@@ -219,9 +219,9 @@ const ProcessingCard: React.FC<ProcessingCardProps> = ({
               <div className="flex items-center justify-between">
                 <Button
                   onClick={() => onCancel()}
-                  className="w-full bg-blue-500 hover:bg-blue-600 text-white text-lg font-semibold h-14 rounded-xl transition-colors"
+                  className="w-full bg-blue-500 hover:bg-blue-600 text-white text-base md:text-lg font-semibold h-14 rounded-xl transition-colors"
                 >
-                  Swap Again
+                  Swap again
                 </Button>
               </div>
             </div>

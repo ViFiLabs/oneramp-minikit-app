@@ -194,7 +194,7 @@ const SuccessCard: React.FC<SuccessCardProps> = ({
               >
                 {quote.transferType === TransferType.TransferIn
                   ? "New Payment"
-                  : "Swap Again"}
+                  : "Swap again"}
               </Button>
             </div>
           </div>
