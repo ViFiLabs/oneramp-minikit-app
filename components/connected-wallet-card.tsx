@@ -38,7 +38,7 @@ const ConnectedWalletCard = () => {
   };
 
   return (
-    <Card className="!bg-neutral-900 !border-neutral-500 text-white">
+    <Card className="!bg-neutral-800 !border-none text-white px-0 py-4">
       <CardHeader>
         <CardTitle className="flex flex-row w-full items-center gap-3">
           <div className="size-12 !bg-neutral-600 rounded-full relative overflow-hidden">
@@ -53,12 +53,11 @@ const ConnectedWalletCard = () => {
             <span className="text-white text-base font-medium">
               {address?.slice(0, 6)}...{address?.slice(-4)}
             </span>
-            <span className="text-neutral-400 text-sm">Base Wallet here</span>
+            <span className="text-neutral-400 text-sm">Base Wallet</span>
           </div>
           <Button
             onClick={handleDisconnectWallet}
-            variant="outline"
-            className="text-red-400 border-red-400 hover:bg-red-400 hover:text-white transition-colors"
+            className="!text-red-400 rounded-lg hover:!text-red-500 !border-red-400 transition-colors"
           >
             Disconnect
           </Button>
