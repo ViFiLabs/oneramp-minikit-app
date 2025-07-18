@@ -21,7 +21,7 @@ const AssetAvator = ({
 
   const amount =
     quote.requestType === "fiat"
-      ? Number(quote.cryptoAmount) + Number(quote.fee)
+      ? Number(quote.cryptoAmount)
       : quote.amountPaid;
 
   return (

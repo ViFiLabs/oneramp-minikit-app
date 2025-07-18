@@ -5,19 +5,12 @@ import { BillQuoteRequest, QuoteRequest } from "@/types";
 
 export const createQuoteIn = async (payload: QuoteRequest) => {
   try {
-    console.log("====================================");
-    console.log("PAYLOAD", payload);
-    console.log("====================================");
-
     // Add an artificial delay
     // await delay(DELAY_TIME);
     const response = await oneRampApi.post("/quote-in", payload);
 
     return response.data;
   } catch (error) {
-    console.log("====================================");
-    console.log("ERROR", error);
-    console.log("====================================");
     throw new Error("Failed to create quote", { cause: error });
   }
 };

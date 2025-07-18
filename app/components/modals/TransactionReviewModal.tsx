@@ -439,10 +439,6 @@ export function TransactionReviewModal() {
     totalAmount = Number(quote.fiatAmount) + Number(quote.feeInFiat);
   }
 
-  console.log("====================================");
-  console.log("quote", quote);
-  console.log("====================================");
-
   return (
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#181818] md:bg-black">
@@ -467,7 +463,11 @@ export function TransactionReviewModal() {
               <div className="flex justify-between items-center">
                 <h2 className="text-neutral-400 text-base">Total value</h2>
                 <h2 className="text-white text-base font-medium">
-                  {totalAmount.toFixed(2)} {quote.fiatType}
+                  {totalAmount.toLocaleString(undefined, {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0,
+                  })}{" "}
+                  {quote.fiatType}
                 </h2>
               </div>
 
