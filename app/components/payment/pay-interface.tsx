@@ -155,7 +155,7 @@ export function PaymentInterface() {
     if (!billTillPayout) {
       updateSelection({
         billTillPayout: {
-          tillNumber: "40202250",
+          tillNumber: "",
           billNumber: "",
           accountNumber: "",
           phoneNumber: "",
@@ -504,7 +504,7 @@ export function PaymentInterface() {
                   updateBillTillPayout({ tillNumber: e.target.value })
                 }
                 className="!bg-neutral-800 !border-neutral-600 text-base text-white h-12 rounded-lg px-4 pr-12"
-                placeholder="40202250"
+                placeholder="Enter till number"
               />
             </div>
           </div>
