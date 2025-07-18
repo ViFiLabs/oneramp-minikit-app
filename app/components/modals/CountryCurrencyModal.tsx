@@ -23,7 +23,7 @@ export function CountryCurrencyModal({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
-        className="fixed bottom-0 left-0 right-0 z-50 bg-[#181818] border-none text-white p-0 m-0 w-full max-w-none rounded-t-3xl shadow-2xl flex flex-col animate-slide-up-from-bottom max-h-[70vh]"
+        className="fixed bottom-0 left-0 right-0 z-50 bg-[#181818] border-none text-white p-0 m-0 w-full max-w-none rounded-t-3xl shadow-2xl flex flex-col animate-slide-up-from-bottom h-[80vh]"
         style={{ padding: 0 }}
       >
         <div className="flex flex-col h-full w-full">
