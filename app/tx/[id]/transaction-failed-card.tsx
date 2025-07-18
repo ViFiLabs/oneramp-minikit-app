@@ -3,7 +3,7 @@
 import React from "react";
 import { FiCheck, FiLink, FiFileText, FiXCircle } from "react-icons/fi";
 import { TransferType, TransferStatus } from "@/types";
-import AssetAvator from "@/app/components/cards/asset-avator";
+// import AssetAvator from "@/app/components/cards/asset-avator";
 import { Button } from "@/components/ui/button";
 import CountryAvator from "@/app/components/cards/country-avator";
 import SupportButton from "@/app/components/buttons/support-button";
@@ -69,11 +69,12 @@ const TransactionFailedCard: React.FC<TransactionFailedCardProps> = ({
                   {transferStatus.transferType === TransferType.TransferIn ? (
                     <CountryAvator country="UG" iconOnly />
                   ) : (
-                    <AssetAvator
-                      cryptoType={transferStatus.cryptoType}
-                      cryptoAmount={transferStatus.amountReceived}
-                      iconOnly
-                    />
+                    // <AssetAvator
+                    //   cryptoType={transferStatus.cryptoType}
+                    //   cryptoAmount={transferStatus.amountReceived}
+                    //   iconOnly
+                    // />
+                    <></>
                   )}
                 </div>
                 <div className="flex flex-col items-center text-center">
@@ -98,11 +99,12 @@ const TransactionFailedCard: React.FC<TransactionFailedCardProps> = ({
               <div className="flex-1 bg-[#232323] rounded-xl p-6 h-44 flex flex-col items-center justify-center">
                 <div className="mb-4 flex items-center justify-center relative size-24">
                   {transferStatus.transferType === TransferType.TransferIn ? (
-                    <AssetAvator
-                      cryptoType={transferStatus.cryptoType}
-                      cryptoAmount={transferStatus.amountReceived}
-                      iconOnly
-                    />
+                    // <AssetAvator
+                    //   cryptoType={transferStatus.cryptoType}
+                    //   cryptoAmount={transferStatus.amountReceived}
+                    //   iconOnly
+                    // />
+                    <></>
                   ) : (
                     <CountryAvator country="UG" iconOnly />
                   )}
