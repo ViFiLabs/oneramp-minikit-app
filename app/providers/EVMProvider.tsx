@@ -3,7 +3,7 @@
 import { wagmiAdapter, projectId } from "@/config";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createAppKit } from "@reown/appkit/react";
-import { mainnet, celo, base } from "@reown/appkit/networks";
+import { mainnet, celo, base, polygon } from "@reown/appkit/networks";
 import React, { type ReactNode } from "react";
 import { cookieToInitialState, WagmiProvider, type Config } from "wagmi";
 
@@ -26,11 +26,13 @@ const metadata = {
 createAppKit({
   adapters: [wagmiAdapter],
   projectId,
-  networks: [base, celo, mainnet],
-  defaultNetwork: mainnet,
+  networks: [base, celo, mainnet, polygon],
+  defaultNetwork: base,
   metadata: metadata,
   features: {
     analytics: true, // Optional - defaults to your Cloud configuration
+    email: false,
+    socials: false,
   },
 });
 
