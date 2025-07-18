@@ -5,7 +5,6 @@ import { FiCheck, FiLink, FiFileText } from "react-icons/fi";
 import { TransferType, TransferStatus } from "@/types";
 
 import CountryAvator from "@/app/components/cards/country-avator";
-// import AssetAvator from "@/app/components/cards/asset-avator";
 
 interface TransactionSuccessCardProps {
   transferStatus: TransferStatus;

@@ -36,6 +36,8 @@
     "react-dom": "19.0.0",
     "react-hook-form": "^7.56.4",
     "react-icons": "^5.5.0",
+    "react-slide-button": "^2.0.0",
+    "react-swipeable": "^7.0.2",
     "react-use": "^17.6.0",
     "siwe": "^3.0.0",
     "sonner": "^2.0.3",
