@@ -34,7 +34,9 @@ export function TokenSelectModal({ open, onClose }: TokenSelectModalProps) {
     // Filter by network if a specific network is selected
     const matchesNetwork =
       selectedNetwork === "All Networks" ||
-      (selectedNetwork !== "All Networks" && token.networks[selectedNetwork]);
+      (selectedNetwork !== "All Networks" &&
+        token.networks[selectedNetwork] &&
+        token.networks[selectedNetwork].tokenAddress);
 
     return matchesSearch && matchesNetwork;
   });
@@ -53,7 +55,7 @@ export function TokenSelectModal({ open, onClose }: TokenSelectModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm animate-in fade-in duration-300"
+      className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
@@ -165,7 +167,11 @@ export function TokenSelectModal({ open, onClose }: TokenSelectModalProps) {
               // Show all tokens grouped by networks
               SUPPORTED_NETWORKS_WITH_RPC_URLS.map((network) =>
                 filteredTokens
-                  .filter((token) => token.networks[network.name])
+                  .filter(
+                    (token) =>
+                      token.networks[network.name] &&
+                      token.networks[network.name].tokenAddress
+                  )
                   .map((token) => (
                     <AssetCard
                       key={`${token.symbol}-${network.name}`}
@@ -178,7 +184,11 @@ export function TokenSelectModal({ open, onClose }: TokenSelectModalProps) {
             ) : (
               // Show tokens for selected network
               filteredTokens
-                .filter((token) => token.networks[selectedNetwork])
+                .filter(
+                  (token) =>
+                    token.networks[selectedNetwork] &&
+                    token.networks[selectedNetwork].tokenAddress
+                )
                 .map((token) => (
                   <AssetCard
                     key={`${token.symbol}-${selectedNetwork}`}

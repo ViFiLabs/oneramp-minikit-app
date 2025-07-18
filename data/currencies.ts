@@ -85,6 +85,15 @@ export const assets: Asset[] = [
         caipNetworkId: "eip155:42220",
         tokenAddress: "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e",
       },
+      Base: {
+        ...base,
+        logo: "/logos/base.png",
+        type: ChainTypes.EVM,
+        chainId: 8453,
+        chainNamespace: "eip155",
+        caipNetworkId: "eip155:8453",
+        tokenAddress: "", // USDT not supported on Base
+      },
     },
   },
 ];
