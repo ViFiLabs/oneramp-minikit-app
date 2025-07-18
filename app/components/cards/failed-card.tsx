@@ -21,7 +21,6 @@ const FailedCard: React.FC<FailedCardProps> = ({
   exploreUrl,
   quote,
   onNewPayment,
-  onGetReceipt,
   transferId,
 }) => {
   const currentDate =
@@ -61,11 +60,7 @@ const FailedCard: React.FC<FailedCardProps> = ({
                   {quote.transferType === TransferType.TransferIn ? (
                     <CountryAvator country={quote.country} iconOnly />
                   ) : (
-                    <AssetAvator
-                      cryptoType={quote.cryptoType}
-                      cryptoAmount={quote.amountPaid}
-                      iconOnly
-                    />
+                    <AssetAvator quote={quote} iconOnly />
                   )}
                 </div>
                 <div className="flex flex-col items-center text-center">
@@ -78,7 +73,7 @@ const FailedCard: React.FC<FailedCardProps> = ({
                   <h2 className="text-gray-300 font-mono text-base font-semibold">
                     {quote.transferType === TransferType.TransferIn
                       ? `${totalAmount.toFixed(2)} ${quote.fiatType}`
-                      : `${Number(quote.amountPaid).toFixed(3)} ${
+                      : `${Number(quote.cryptoAmount).toFixed(2)} ${
                           quote.cryptoType
                         }`}
                   </h2>
@@ -89,11 +84,7 @@ const FailedCard: React.FC<FailedCardProps> = ({
               <div className="flex-1 bg-[#232323] rounded-xl p-6 w-full h-44 flex flex-col items-center justify-center">
                 <div className="mb-4 flex items-center justify-center relative size-24">
                   {quote.transferType === TransferType.TransferIn ? (
-                    <AssetAvator
-                      cryptoType={quote.cryptoType}
-                      cryptoAmount={quote.amountPaid}
-                      iconOnly
-                    />
+                    <AssetAvator quote={quote} iconOnly />
                   ) : (
                     <CountryAvator country={quote.country} iconOnly />
                   )}
@@ -188,7 +179,7 @@ const FailedCard: React.FC<FailedCardProps> = ({
                 onClick={onNewPayment}
                 className="w-1/2 !bg-neutral-800  hover:bg-transparent text-neutral-300 text-sm font-semibold h-14 rounded-xl transition-colors"
               >
-                Try again
+                New Payment
               </Button>
               <SupportButton transactionId={transferId || ""} />
             </div>

@@ -68,6 +68,10 @@ const BuyValueInput = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawValue = e.target.value.replace(/,/g, "");
 
+    console.log("====================================");
+    console.log("RAW VALUE", rawValue);
+    console.log("====================================");
+
     // Allow typing decimal point and numbers
     if (rawValue === "" || rawValue === "." || /^\d*\.?\d*$/.test(rawValue)) {
       setAmount(rawValue);

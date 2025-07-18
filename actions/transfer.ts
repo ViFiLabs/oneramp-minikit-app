@@ -2,6 +2,7 @@
 
 import { oneRampApi, oneRampApiWithCustomHeaders } from "@/constants";
 import {
+  BillTillRequest,
   SubmitTransactionHashRequest,
   Transaction,
   TransactionStatus,
@@ -159,5 +160,57 @@ export const getTransactions = async (
     return response.data as Transaction[];
   } catch (error) {
     throw new Error("Failed to get transactions", { cause: error });
+  }
+};
+
+// BILL / TILL / PAYOUT
+export const createPayoutTransfer = async (payload: BillTillRequest) => {
+  try {
+    if (!payload.quoteId) {
+      throw new Error("Invalid payload", { cause: payload });
+    }
+
+    const idompetancyKey = uuidv4();
+
+    // Remove the requestType from the payload
+    const { requestType, ...rest } = payload;
+
+    if (requestType === "till") {
+      if (!payload.accountNumber) {
+        throw new Error("Account number is required", { cause: payload });
+      }
+
+      const response = await oneRampApiWithCustomHeaders({
+        "Idempotency-Key": idompetancyKey,
+      }).post("/till", rest);
+
+      return response.data;
+    }
+
+    if (requestType === "bill") {
+      if (!payload.accountNumber) {
+        throw new Error("Account number is required", { cause: payload });
+      }
+
+      const response = await oneRampApiWithCustomHeaders({
+        "Idempotency-Key": idompetancyKey,
+      }).post("/bill", rest);
+
+      return response.data;
+    }
+
+    if (requestType === "payout") {
+      if (!payload.accountNumber) {
+        throw new Error("Account number is required", { cause: payload });
+      }
+
+      const response = await oneRampApiWithCustomHeaders({
+        "Idempotency-Key": idompetancyKey,
+      }).post("/payout", rest);
+
+      return response.data;
+    }
+  } catch (error) {
+    throw new Error("Failed to create till transfer", { cause: error });
   }
 };

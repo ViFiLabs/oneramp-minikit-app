@@ -340,9 +340,7 @@ const SelectInstitution = ({ buy }: { buy?: boolean }) => {
     if (!isConnected) {
       setButtonText("Connect Wallet");
     } else if (!hasRequiredWallet()) {
-      setButtonText(
-        "Connect EVM Wallet"
-      );
+      setButtonText("Connect EVM Wallet");
     } else if (!institution) {
       if (!buy) {
         setButtonText("Select institution");
@@ -385,6 +383,10 @@ const SelectInstitution = ({ buy }: { buy?: boolean }) => {
     setValue("accountNumber", "");
     trigger("accountNumber");
   };
+
+  console.log("====================================");
+  console.log("countryPanelOnTop", countryPanelOnTop);
+  console.log("====================================");
 
   const onSubmit = handleSubmit((data) => {
     if (!userPayLoad) return;
@@ -432,9 +434,17 @@ const SelectInstitution = ({ buy }: { buy?: boolean }) => {
       network: currentNetwork?.name.toLowerCase(),
     };
 
+    console.log("====================================");
+    console.log("PAYLOAD", payload);
+    console.log("====================================");
+
     if (countryPanelOnTop) {
       payload.cryptoAmount = cryptoAmount;
     }
+
+    console.log("====================================");
+    console.log("PAYLOAD", payload);
+    console.log("====================================");
 
     createMutation.mutate(payload);
 
@@ -609,7 +619,6 @@ const SelectInstitution = ({ buy }: { buy?: boolean }) => {
       )}
 
       {userPayLoad.pastedAddress && buy ? (
-    
         <SubmitButton
           onClick={onSubmit}
           disabled={
@@ -661,7 +670,7 @@ const SelectInstitution = ({ buy }: { buy?: boolean }) => {
           {/* Show wallet requirement message if needed */}
           {!hasRequiredWallet() && isConnected && (
             <div className="text-center mt-2 text-xs text-amber-400 font-medium">
-              "EVM wallet required for this network"
+              &quot;EVM wallet required for this network&quot;
             </div>
           )}
         </div>

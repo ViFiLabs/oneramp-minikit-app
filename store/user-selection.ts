@@ -25,6 +25,7 @@ const initialState: UserSelectionGlobalState = {
   appState: AppState.Idle,
   pastedAddress: undefined,
   countryPanelOnTop: false,
+  isPayout: true,
 };
 
 const defaultState = {

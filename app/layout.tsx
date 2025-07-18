@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
 import "@coinbase/onchainkit/styles.css";
+import "./globals.css";
 
 import EVMProvider from "./providers/EVMProvider";
 import { headers } from "next/headers";
@@ -66,11 +66,10 @@ export default async function RootLayout({
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black`}
+        suppressHydrationWarning={true}
       >
         <MiniKitContextProvider>
-          <EVMProvider cookies={cookies}>
-            {children}
-          </EVMProvider>
+          <EVMProvider cookies={cookies}>{children}</EVMProvider>
         </MiniKitContextProvider>
         <Toaster />
       </body>

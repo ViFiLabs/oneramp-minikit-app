@@ -32,15 +32,13 @@ export function SwapPanel() {
   // Wallet connection states
   const { isConnected: evmConnected } = useWalletGetInfo();
 
-
   const { country } = useUserSelectionStore();
   const { isValid: isAmountValid, setAmount } = useAmountStore();
 
   // Used to show wallet requirement in the network modal
   const canSwitchNetwork = (network: Network) => {
-   
-      return evmConnected;
-    
+    console.log(network);
+    return evmConnected;
   };
 
   // Update handleNetworkSelect to use global state

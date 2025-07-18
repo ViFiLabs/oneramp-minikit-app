@@ -102,6 +102,15 @@ export interface UserSelectionGlobalState {
   appState: AppState;
   pastedAddress?: string;
   countryPanelOnTop?: boolean;
+  billTillPayout?: UserBillTillPayout;
+  isPayout?: boolean;
+}
+
+export interface UserBillTillPayout {
+  tillNumber?: string;
+  billNumber?: string;
+  accountNumber?: string;
+  phoneNumber?: string;
 }
 
 export interface MINMAX {
@@ -341,4 +350,55 @@ export interface Transaction {
   status: TransactionStatus;
   createdAt: string;
   txId: string;
+}
+
+// BILLS / TILL / PAYOUT
+export interface BillQuoteRequest {
+  fiatType: string;
+  cryptoType: string;
+  region: string;
+  fiatAmount: string;
+  network: string;
+  country: string;
+  address: string;
+  rawAmount: string;
+}
+export interface BillTillQuoteRequest {
+  fiatType: string;
+  cryptoType: string;
+  region: string;
+  fiatAmount: string;
+  network: string;
+  country: string;
+  address: string;
+  rawAmount: string;
+  quoteType: "bill" | "till" | "payout";
+}
+
+export interface TillRequest {
+  quoteId: string;
+  accountName: string;
+  accountNumber: string;
+}
+
+export interface BillTillRequest {
+  quoteId: string;
+  accountName: string;
+  accountNumber: string;
+  businessNumber?: string;
+  requestType: "bill" | "till" | "payout";
+}
+
+export interface TillRequest {
+  quoteId: string;
+  accountName: string;
+  accountNumber: string;
+}
+
+export interface BillTillRequest {
+  quoteId: string;
+  accountName: string;
+  accountNumber: string;
+  businessNumber?: string;
+  requestType: "bill" | "till" | "payout";
 }

@@ -4,6 +4,7 @@ import { useUserSelectionStore } from "@/store/user-selection";
 import { OrderStep } from "@/types";
 import OrderProcessing from "../components/cards/order-processing";
 import OrderSuccessful from "../components/cards/order-successful";
+import PayOrderProcessing from "../components/cards/pay-order-processing";
 import { TransactionReviewModal } from "../components/modals/TransactionReviewModal";
 import { useQuery } from "@tanstack/react-query";
 import useWalletGetInfo from "@/hooks/useWalletGetInfo";
@@ -49,6 +50,10 @@ const StateContextProvider = () => {
 
   if (orderStep === OrderStep.GotQuote) {
     return <TransactionReviewModal />;
+  }
+
+  if (orderStep === OrderStep.ProcessingPayment) {
+    return <PayOrderProcessing />;
   }
 
   if (orderStep === OrderStep.GotTransfer) {

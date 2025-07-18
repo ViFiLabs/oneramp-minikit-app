@@ -11,8 +11,7 @@ import { useEffect } from "react";
 import ProcessingCard from "./processing-card";
 
 const OrderProcessing = () => {
-  const { resetToDefault, updateSelection, paymentMethod } =
-    useUserSelectionStore();
+  const { resetToDefault, updateSelection } = useUserSelectionStore();
   const { transfer, resetTransfer } = useTransferStore();
   const { quote, resetQuote } = useQuoteStore();
   const router = useRouter();

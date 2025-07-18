@@ -58,7 +58,6 @@ export function TransactionReviewModal() {
 
   const { payWithEVM, isLoading, resetState, isError } = useEVMPay();
 
-
   const { chainId, address, isConnected } = useWalletInfo();
 
   // Create the mutation with reset capability
@@ -76,6 +75,7 @@ export function TransactionReviewModal() {
       return response;
     },
     onError: (error: Error) => {
+      console.log("Error in submitTxHashMutation", error);
       submitTxHashMutation.reset();
       submitTransferIn.reset();
     },
@@ -112,7 +112,7 @@ export function TransactionReviewModal() {
       // Only reset states, not the mutation
       if (currentNetwork?.type === ChainTypes.EVM) {
         resetState();
-      } 
+      }
     };
   }, []);
 
@@ -121,7 +121,7 @@ export function TransactionReviewModal() {
     if (quote && currentOrderStep === OrderStep.GotQuote) {
       if (currentNetwork?.type === ChainTypes.EVM) {
         resetState();
-      } 
+      }
     }
   }, [quote?.quoteId, currentOrderStep]);
 
@@ -165,7 +165,7 @@ export function TransactionReviewModal() {
     submitTxHashMutation.reset();
     if (currentNetwork?.type === ChainTypes.EVM) {
       resetState();
-    } 
+    }
     resetToDefault();
     submitTransferIn.reset();
     router.refresh();
@@ -188,14 +188,14 @@ export function TransactionReviewModal() {
 
       const transactionPayload = {
         recipient,
-        amount: quote.amountPaid.toString(),
+        amount: quote.cryptoAmount.toString(),
         tokenAddress: contractAddress,
       };
 
       updateSelection({ appState: AppState.Processing });
       payWithEVM(transactionPayload, handleEVMPaySuccess, handleEVMPayFailed);
-      
     } catch (error) {
+      console.log("Error in makeBlockchainTransaction", error);
       setLoading(false);
     }
   };
@@ -226,14 +226,9 @@ export function TransactionReviewModal() {
   };
 
   const handleEVMPayFailed = (error: Error) => {
-    
     // toast.error("Transaction failed");
     return error;
   };
-
-
-
-
 
   const handleSubmitTransferIn = async () => {
     if (!quote) return;
@@ -444,6 +439,10 @@ export function TransactionReviewModal() {
     totalAmount = Number(quote.fiatAmount) + Number(quote.feeInFiat);
   }
 
+  console.log("====================================");
+  console.log("quote", quote);
+  console.log("====================================");
+
   return (
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#181818] md:bg-black">
@@ -461,10 +460,7 @@ export function TransactionReviewModal() {
               {/* Amount */}
               <div className="flex justify-between items-center">
                 <h2 className="text-neutral-400 text-base">Amount</h2>
-                <AssetAvator
-                  cryptoType={quote.cryptoType}
-                  cryptoAmount={quote.amountPaid}
-                />
+                <AssetAvator quote={quote} />
               </div>
 
               {/* Total value */}
@@ -490,7 +486,7 @@ export function TransactionReviewModal() {
               {accountNumber && institution && (
                 <div className="flex justify-between items-center">
                   <h2 className="text-neutral-400 text-base">Account</h2>
-                  <div className="text-white text-base font-medium flex items-center">
+                  <div className="text-white gap-2 text-base font-medium flex items-center">
                     <h2>
                       {accountNumber?.slice(0, 4)}...{accountNumber?.slice(-4)}
                     </h2>
