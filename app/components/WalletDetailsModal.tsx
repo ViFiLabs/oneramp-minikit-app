@@ -3,7 +3,6 @@ import { useRef, useEffect } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
-
 interface WalletDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -23,13 +22,10 @@ export function WalletDetailsModal({
 }: WalletDetailsModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
 
-  
   // Format the displayed addresses
   const displayEvmAddress = evmAddress
     ? `${evmAddress.slice(0, 6)}...${evmAddress.slice(-4)}`
     : "";
-
-
 
   useEffect(() => {
     // Close modal when clicking outside
@@ -50,7 +46,6 @@ export function WalletDetailsModal({
     };
   }, [isOpen, onClose]);
 
-
   async function connectEVMWallet() {
     try {
       // Open AppKit modal for EVM wallet connection
@@ -59,13 +54,14 @@ export function WalletDetailsModal({
         // appKit.
       }
       onClose();
-          } catch (error) {
-        // Error connecting to EVM wallet
-      }
+    } catch (error) {
+      console.error(error);
+      // Error connecting to EVM wallet
+    }
   }
 
   const handleConnectWallet = (walletId: string) => {
-   if (walletId === "evm") {
+    if (walletId === "evm") {
       connectEVMWallet();
     }
   };
@@ -189,7 +185,7 @@ export function WalletDetailsModal({
             </div>
           )}
           {/* Disconnect all button (only show if at least one wallet is connected) */}
-          {evmConnected  && (
+          {evmConnected && (
             <div className="mt-4">
               <Button
                 onClick={() => onDisconnect("all")}
