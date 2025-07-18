@@ -287,7 +287,11 @@ const TransactionsModal = () => {
       {/* Amount and Conversion Row */}
       <div className="flex items-center gap-2 mt-4 text-lg font-bold text-white">
         <p>
-          {Number(tx.amount).toFixed(2)} {tx.currency}
+          {Number(tx.amount).toLocaleString(undefined, {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+          })}{" "}
+          {tx.currency}
         </p>
         <p className="text-gray-400 font-normal text-xl">→</p>
         <p>
@@ -320,7 +324,11 @@ const TransactionsModal = () => {
           <div className="flex items-center justify-between">
             <p className="text-gray-400 text-sm">Amount</p>
             <p className="font-medium text-sm">
-              {Number(tx.amount).toFixed(2)} {tx.currency}
+              {Number(tx.amount).toLocaleString(undefined, {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+              })}{" "}
+              {tx.currency}
             </p>
           </div>
           <div className="flex items-center justify-between">
