@@ -530,7 +530,7 @@ export function PaymentInterface() {
 
             <div className="space-y-3">
               <div className="text-gray-400 text-sm sm:text-base">
-                <h3>Account Number</h3>
+                <h3>Business Number</h3>
               </div>
               <div className="relative">
                 <Input
@@ -550,7 +550,7 @@ export function PaymentInterface() {
         return (
           <div className="space-y-3">
             <div className="text-gray-400 text-sm sm:text-base">
-              <h3>Telephone Number</h3>
+              <h3>Enter Telephone Number</h3>
             </div>
             <div className="relative">
               <Input
@@ -679,7 +679,7 @@ export function PaymentInterface() {
           {/* Amount Section */}
           <div className="space-y-3">
             <div className="text-gray-400 text-sm sm:text-base">
-              <h3>Amount in {country?.currency || "KES"}</h3>
+              <h3>Enter Amount in {country?.currency || "KES"}</h3>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-gray-300 text-xl sm:text-2xl font-medium">
@@ -689,7 +689,7 @@ export function PaymentInterface() {
                 type="number"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="text-right bg-transparent border-none text-xl sm:text-2xl text-white p-0 h-auto"
+                className="text-right bg-transparent font-extrabold border-none text-2xl sm:text-3xl text-white p-0 h-auto"
                 placeholder="0"
               />
             </div>

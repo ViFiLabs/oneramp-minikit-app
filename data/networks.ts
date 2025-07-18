@@ -1,7 +1,6 @@
 import { ChainTypes, Network } from "@/types";
 import { mainnet, polygon, celo, base } from "@reown/appkit/networks";
 
-
 export const SUPPORTED_NETWORKS = [mainnet, polygon, celo, base];
 export const SUPPORTED_NETWORK_NAMES = SUPPORTED_NETWORKS.map(
   (network) => network.name

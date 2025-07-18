@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { assets } from "@/data/currencies";
 import { SUPPORTED_NETWORKS_WITH_RPC_URLS } from "@/data/networks";
@@ -32,7 +34,7 @@ export function TokenSelectModal({ open, onClose }: TokenSelectModalProps) {
     // Filter by network if a specific network is selected
     const matchesNetwork =
       selectedNetwork === "All Networks" ||
-      Object.keys(token.networks).includes(selectedNetwork);
+      (selectedNetwork !== "All Networks" && token.networks[selectedNetwork]);
 
     return matchesSearch && matchesNetwork;
   });
@@ -50,28 +52,31 @@ export function TokenSelectModal({ open, onClose }: TokenSelectModalProps) {
   };
 
   return (
-    <div 
-      className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+    <div
+      className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm animate-in fade-in duration-300"
       onClick={onClose}
     >
-      <div 
-        className="fixed bottom-0 left-0 right-0 bg-[#181818] w-full max-w-none rounded-t-3xl shadow-2xl max-h-[75vh] flex flex-col animate-slide-up-from-bottom"
+      <div
+        className="fixed bottom-0 left-0 right-0 bg-[#181818] w-full max-w-none rounded-t-3xl shadow-2xl h-[80vh] flex flex-col animate-in slide-in-from-bottom duration-300 ease-out"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-[#232323]">
-          <h2 className="text-xl font-bold text-white">Select A Token</h2>
+        <div className="flex items-center justify-between p-4 md:p-6 border-b border-[#232323] flex-shrink-0">
+          <h2 className="text-lg md:text-xl font-bold text-white">
+            Select A Token
+          </h2>
           <Button
             variant="ghost"
             className="text-neutral-400 hover:text-white p-2"
             onClick={onClose}
           >
-            <X className="text-white w-6 h-6" />
+            <X className="text-white w-5 h-5 md:w-6 md:h-6" />
           </Button>
         </div>
 
         {/* Search and Filter Area */}
         <div className="p-4 flex gap-3 flex-col sm:flex-row">
+          {/* Search Input */}
           {/* <div className="relative flex-1">
             <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
               <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
@@ -154,39 +159,34 @@ export function TokenSelectModal({ open, onClose }: TokenSelectModalProps) {
         </div>
 
         {/* Token List */}
-        <div className="overflow-y-auto flex-1 pb-8">
+        <div className="overflow-y-auto flex-1 pb-4 px-4 md:px-6">
           {filteredTokens.length > 0 ? (
             selectedNetwork === "All Networks" ? (
               // Show all tokens grouped by networks
               SUPPORTED_NETWORKS_WITH_RPC_URLS.map((network) =>
-                filteredTokens.map((token) => {
-                  // Only show if token exists on this network
-                  if (!token.networks[network.name]) return null;
-
-                  return (
+                filteredTokens
+                  .filter((token) => token.networks[network.name])
+                  .map((token) => (
                     <AssetCard
                       key={`${token.symbol}-${network.name}`}
                       token={token}
                       network={network}
                       handleTokenSelect={handleTokenSelect}
                     />
-                  );
-                })
+                  ))
               )
             ) : (
               // Show tokens for selected network
-              filteredTokens.map((token) => {
-                if (!token.networks[selectedNetwork]) return null;
-
-                return (
+              filteredTokens
+                .filter((token) => token.networks[selectedNetwork])
+                .map((token) => (
                   <AssetCard
                     key={`${token.symbol}-${selectedNetwork}`}
                     token={token}
                     network={token.networks[selectedNetwork] as Network}
                     handleTokenSelect={handleTokenSelect}
                   />
-                );
-              })
+                ))
             )
           ) : (
             <div className="p-4 text-center text-neutral-400">

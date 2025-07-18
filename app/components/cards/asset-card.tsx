@@ -17,10 +17,10 @@ const AssetCard = ({
     <Button
       key={`${token.symbol}-${network.name}`}
       variant="ghost"
-      className="flex items-center my-4 rounded-none justify-between w-full py-8 hover:bg-[#3a4155] transition-colors border-b border-[#3a4155] last:border-0"
+      className="flex items-center my-4 h-20 rounded-none justify-between w-full py-8 hover:bg-[#3a4155] transition-colors border-b border-[#3a4155] last:border-0"
       onClick={() => handleTokenSelect(token, network)}
     >
-      <div className="flex items-center gap-3 px-2 w-full flex-1">
+      <div className="flex items-center gap-3 w-full flex-1">
         <div className="flex items-center gap-4">
           <div className="relative">
             <div className="size-10 rounded-full relative overflow-hidden">

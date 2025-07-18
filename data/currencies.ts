@@ -85,15 +85,6 @@ export const assets: Asset[] = [
         caipNetworkId: "eip155:42220",
         tokenAddress: "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e",
       },
-      Base: {
-        ...base,
-        logo: "/logos/base.png",
-        type: ChainTypes.EVM,
-        chainId: 8453,
-        chainNamespace: "eip155",
-        caipNetworkId: "eip155:8453",
-        tokenAddress: "0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb",
-      },
     },
   },
 ];
