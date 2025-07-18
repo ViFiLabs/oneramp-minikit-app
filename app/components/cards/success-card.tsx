@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { FiCheck, FiLink } from "react-icons/fi";
 import { TransferType, Quote } from "@/types";

@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { FiLink } from "react-icons/fi";
 import { Loader } from "lucide-react";

@@ -1,10 +1,12 @@
+"use client";
+
 import React from "react";
 import { FiLink, FiArrowRight, FiFileText } from "react-icons/fi";
 import { Loader } from "lucide-react";
 import { TransferType, TransferStatus } from "@/types";
 
 import CountryAvator from "@/app/components/cards/country-avator";
-import AssetAvator from "@/app/components/cards/asset-avator";
+// import AssetAvator from "@/app/components/cards/asset-avator";
 
 interface TransactionCardProps {
   transferStatus: TransferStatus;
@@ -60,11 +62,11 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
                   {transferStatus.transferType === TransferType.TransferIn ? (
                     <CountryAvator country="UG" iconOnly />
                   ) : (
-                    <AssetAvator
-                      cryptoType={transferStatus.cryptoType}
-                      cryptoAmount={transferStatus.amountReceived}
-                      iconOnly
-                    />
+                    // <AssetAvator
+                    //   quote={null}
+                    //   iconOnly
+                    // />
+                    <></>
                   )}
                 </div>
                 <div className="flex flex-col items-center text-center">
@@ -89,11 +91,12 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
               <div className="flex-1 bg-[#232323] rounded-xl p-6 h-44 flex flex-col items-center justify-center">
                 <div className="mb-4 flex items-center justify-center relative size-24">
                   {transferStatus.transferType === TransferType.TransferIn ? (
-                    <AssetAvator
-                      cryptoType={transferStatus.cryptoType}
-                      cryptoAmount={transferStatus.amountReceived}
-                      iconOnly
-                    />
+                    // <AssetAvator
+                    //   cryptoType={transferStatus.cryptoType}
+                    //   cryptoAmount={transferStatus.amountReceived}
+                    //   iconOnly
+                    // />
+                    <></>
                   ) : (
                     <CountryAvator country="UG" iconOnly />
                   )}
