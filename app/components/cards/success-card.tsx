@@ -58,18 +58,7 @@ const SuccessCard: React.FC<SuccessCardProps> = ({
                   {quote.transferType === TransferType.TransferIn ? (
                     <CountryAvator country={quote.country} iconOnly />
                   ) : (
-                    <AssetAvator
-                      cryptoType={quote.cryptoType}
-                      cryptoAmount={
-                        quote.requestType === "fiat"
-                          ? quote.cryptoAmount
-                          : quote.amountPaid
-                      }
-                      // cryptoAmount={
-                      //   isPayout ? quote.cryptoAmount : quote.amountPaid
-                      // }
-                      iconOnly
-                    />
+                    <AssetAvator quote={quote} iconOnly />
                   )}
                 </div>
 
@@ -85,7 +74,7 @@ const SuccessCard: React.FC<SuccessCardProps> = ({
                       <>
                         {quote.transferType === TransferType.TransferIn
                           ? `${totalAmount.toFixed(2)} ${quote.fiatType}`
-                          : `${Number(quote.cryptoAmount).toFixed(3)} ${
+                          : `${Number(quote.cryptoAmount).toFixed(2)} ${
                               quote.cryptoType
                             }`}
                       </>
@@ -106,11 +95,7 @@ const SuccessCard: React.FC<SuccessCardProps> = ({
               <div className="flex-1 bg-[#232323] rounded-xl p-6 w-full h-44 flex flex-col items-center justify-center">
                 <div className="mb-4 flex items-center justify-center relative size-24">
                   {quote.transferType === TransferType.TransferIn ? (
-                    <AssetAvator
-                      cryptoType={quote.cryptoType}
-                      cryptoAmount={quote.amountPaid}
-                      iconOnly
-                    />
+                    <AssetAvator quote={quote} iconOnly />
                   ) : (
                     <CountryAvator country={quote.country} iconOnly />
                   )}

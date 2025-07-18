@@ -20,6 +20,9 @@ export function MainTabsSwitch() {
   }, []);
 
   const washTheseFields = (goingToBuy: boolean, onPayPanel: boolean) => {
+    console.log("====================================");
+    console.log("SWITCHED");
+    console.log("====================================");
     updateSelection({
       country: onPayPanel
         ? countries.find((c) => c.name === "Kenya")
@@ -30,6 +33,7 @@ export function MainTabsSwitch() {
       institution: undefined,
       pastedAddress: undefined,
       isPayout: onPayPanel ? true : false,
+      countryPanelOnTop: onPayPanel ? true : false,
     });
 
     if (goingToBuy) {

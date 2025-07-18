@@ -384,6 +384,10 @@ const SelectInstitution = ({ buy }: { buy?: boolean }) => {
     trigger("accountNumber");
   };
 
+  console.log("====================================");
+  console.log("countryPanelOnTop", countryPanelOnTop);
+  console.log("====================================");
+
   const onSubmit = handleSubmit((data) => {
     if (!userPayLoad) return;
 
@@ -430,9 +434,17 @@ const SelectInstitution = ({ buy }: { buy?: boolean }) => {
       network: currentNetwork?.name.toLowerCase(),
     };
 
+    console.log("====================================");
+    console.log("PAYLOAD", payload);
+    console.log("====================================");
+
     if (countryPanelOnTop) {
       payload.cryptoAmount = cryptoAmount;
     }
+
+    console.log("====================================");
+    console.log("PAYLOAD", payload);
+    console.log("====================================");
 
     createMutation.mutate(payload);
 

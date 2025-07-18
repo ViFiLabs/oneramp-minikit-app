@@ -188,7 +188,7 @@ export function TransactionReviewModal() {
 
       const transactionPayload = {
         recipient,
-        amount: quote.amountPaid.toString(),
+        amount: quote.cryptoAmount.toString(),
         tokenAddress: contractAddress,
       };
 
@@ -439,6 +439,10 @@ export function TransactionReviewModal() {
     totalAmount = Number(quote.fiatAmount) + Number(quote.feeInFiat);
   }
 
+  console.log("====================================");
+  console.log("quote", quote);
+  console.log("====================================");
+
   return (
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#181818] md:bg-black">
@@ -456,10 +460,7 @@ export function TransactionReviewModal() {
               {/* Amount */}
               <div className="flex justify-between items-center">
                 <h2 className="text-neutral-400 text-base">Amount</h2>
-                <AssetAvator
-                  cryptoType={quote.cryptoType}
-                  cryptoAmount={quote.amountPaid}
-                />
+                <AssetAvator quote={quote} />
               </div>
 
               {/* Total value */}
@@ -485,7 +486,7 @@ export function TransactionReviewModal() {
               {accountNumber && institution && (
                 <div className="flex justify-between items-center">
                   <h2 className="text-neutral-400 text-base">Account</h2>
-                  <div className="text-white text-base font-medium flex items-center">
+                  <div className="text-white gap-2 text-base font-medium flex items-center">
                     <h2>
                       {accountNumber?.slice(0, 4)}...{accountNumber?.slice(-4)}
                     </h2>

@@ -66,6 +66,7 @@ export default async function RootLayout({
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black`}
+        suppressHydrationWarning={true}
       >
         <MiniKitContextProvider>
           <EVMProvider cookies={cookies}>{children}</EVMProvider>

@@ -27,13 +27,17 @@ import { useAmountStore } from "@/store/amount-store";
 import { useNetworkStore } from "@/store/network";
 import { useQuoteStore } from "@/store/quote-store";
 import { useTransferStore } from "@/store/transfer-store";
-import { useExchangeRate } from "@/hooks/useExchangeRate";
+import { useAllCountryExchangeRates } from "@/hooks/useExchangeRate";
 import { useAssetBalance } from "@/hooks/useAssetBalance";
 import useWalletGetInfo from "@/hooks/useWalletGetInfo";
 import { useBillPayment, PaymentStep } from "@/hooks/useBillPayment";
 import { OrderStep, AppState, ChainTypes, Transfer, Quote } from "@/types";
 import useEVMPay from "@/onchain/useEVMPay";
 import Image from "next/image";
+import {
+  ExchangeRateSkeleton,
+  CryptoAmountSkeleton,
+} from "@/components/ui/skeleton";
 
 export function PaymentInterface() {
   const { country, asset, updateSelection, paymentMethod, billTillPayout } =
@@ -61,13 +65,18 @@ export function PaymentInterface() {
     asset || null
   );
 
-  // Get exchange rate using React Query
-  const { data: exchangeRate, isLoading: isExchangeRateLoading } =
-    useExchangeRate({
-      countryCode: country?.countryCode,
+  // Get all country exchange rates using optimized hook
+  const { data: allExchangeRates, isLoading: isExchangeRateLoading } =
+    useAllCountryExchangeRates({
       orderType: "selling",
-      providerType: paymentMethod,
+      providerType: paymentMethod || "momo", // Default to momo for Pay interface
     });
+
+  // Get current country's exchange rate from cached data
+  const exchangeRate =
+    country?.countryCode && allExchangeRates
+      ? allExchangeRates[country.countryCode]
+      : undefined;
 
   // Bill payment mutation
   const billPaymentMutation = useBillPayment();
@@ -110,17 +119,25 @@ export function PaymentInterface() {
     }
   }, [country?.name, selectedPaymentType]);
 
-  // Set default country to Kenya
+  // Set default country to Kenya and pre-fetch exchange rates
   useEffect(() => {
     if (!country) {
       const defaultCountry = payEnabledCountries.find(
         (c) => c.name === "Kenya"
       );
       if (defaultCountry) {
+        // Set the minimum amount for the default country
+        setAmountForCountry(defaultCountry);
         updateSelection({ country: defaultCountry });
       }
     }
   }, [country, updateSelection]);
+
+  // Pre-fetch exchange rates for all supported countries when component mounts
+  useEffect(() => {
+    // This will trigger the useAllCountryExchangeRates hook to fetch rates
+    // even before a country is selected, improving the user experience
+  }, []);
 
   // Set default asset to USDC
   useEffect(() => {
@@ -166,6 +183,16 @@ export function PaymentInterface() {
         ...updates,
       },
     });
+  };
+
+  // Helper function to set amount for a specific country
+  const setAmountForCountry = (selectedCountry: {
+    fiatMinMax: { min: number };
+  }) => {
+    if (selectedCountry?.fiatMinMax?.min) {
+      const newAmount = selectedCountry.fiatMinMax.min.toString();
+      setAmount(newAmount);
+    }
   };
 
   // Helper function to map payment type to request type and get account details
@@ -215,10 +242,6 @@ export function PaymentInterface() {
     }
 
     // Debug the quote object to see its structure
-    console.log("Quote object:", quote);
-    console.log("Quote cryptoAmount:", quote.cryptoAmount);
-    console.log("Quote amountPaid:", quote.amountPaid);
-
     // Check if we're on the correct network
     if (chainId !== currentNetwork.chainId) {
       console.log("Wrong chain, cannot proceed with transaction");
@@ -242,20 +265,18 @@ export function PaymentInterface() {
 
       // Use cryptoAmount for fiat-to-crypto transactions (Pay interface)
       if (!quote.cryptoAmount) {
-        console.error("No cryptoAmount found in quote object");
         updateSelection({ appState: AppState.Idle });
         return;
       }
 
-      const fullAmount = Number(quote.cryptoAmount) + Number(quote.fee);
+      // const fullAmount = Number(quote.cryptoAmount) + Number(quote.fee);
 
       const transactionPayload = {
         recipient,
-        amount: fullAmount.toString(),
+        amount: quote.cryptoAmount,
         tokenAddress: contractAddress,
       };
 
-      console.log("Transaction payload:", transactionPayload);
       payWithEVM(transactionPayload, handleEVMPaySuccess, handleEVMPayFailed);
     } catch (error) {
       console.error("Error in makeBlockchainTransaction:", error);
@@ -264,13 +285,10 @@ export function PaymentInterface() {
   };
 
   const handleEVMPaySuccess = async (txHash: string) => {
-    console.log("EVM payment successful, txHash:", txHash);
-
     // Get transfer from store
     const currentTransfer = useTransferStore.getState().transfer;
 
     if (!currentTransfer?.transferId || !txHash) {
-      console.log("Missing transferId or txHash");
       setBlockchainLoading(false);
       updateSelection({ appState: AppState.Idle });
       return;
@@ -288,7 +306,6 @@ export function PaymentInterface() {
   };
 
   const handleEVMPayFailed = (error: Error) => {
-    console.error("EVM payment failed:", error);
     setBlockchainLoading(false);
     updateSelection({ appState: AppState.Idle });
     return error;
@@ -296,45 +313,35 @@ export function PaymentInterface() {
 
   // Function to create bill quote and transfer using React Query
   const handleCreateBillQuote = () => {
-    // Detailed validation logging
     if (!country) {
-      console.log("Missing country selection");
       return;
     }
     if (!asset) {
-      console.log("Missing asset selection");
       return;
     }
     if (!currentNetwork) {
-      console.log("Missing network selection");
       return;
     }
     if (!amount) {
-      console.log("Missing amount");
       return;
     }
     if (!isAmountValidForCountry) {
-      console.log("Invalid amount for country limits");
       return;
     }
     if (!isConnected) {
-      console.log("Wallet not connected");
       return;
     }
     if (!address) {
-      console.log("No wallet address available");
       return;
     }
 
     // Validate payment-specific details
     const transferDetails = getTransferDetails();
     if (!transferDetails) {
-      console.log("Invalid payment type");
       return;
     }
 
     if (!transferDetails.accountNumber) {
-      console.log(`Missing ${selectedPaymentType} details`);
       return;
     }
 
@@ -370,8 +377,6 @@ export function PaymentInterface() {
       },
       {
         onSuccess: (data) => {
-          console.log("Payment mutation success:", data);
-
           // Update global state with quote (but don't change order step yet)
           if (data.quote) {
             setQuote(data.quote.quote);
@@ -462,6 +467,9 @@ export function PaymentInterface() {
       (c) => c.name === selectedCountry
     );
     if (countryData) {
+      // Reset amount to the minimum for the new country
+      setAmountForCountry(countryData);
+
       updateSelection({
         country: countryData,
         institution: undefined,
@@ -572,11 +580,6 @@ export function PaymentInterface() {
         return null;
     }
   };
-
-  // console.log("====================================");
-  // console.log("QUOTE", Number(quote?.cryptoAmount) + Number(quote?.fee));
-  // console.log("QUOTE", quote?.requestType);
-  // console.log("====================================");
 
   return (
     <div className=" mx-auto w-full bg-[#181818] text-white rounded-2xl overflow-hidden p-4 sm:p-6 space-y-4 sm:space-y-6 min-h-[500px]">
@@ -697,6 +700,7 @@ export function PaymentInterface() {
           />
         </div>
         <div className="h-px bg-gray-700"></div>
+
         {!isAmountValidForCountry && country && (
           <div className="text-red-400 text-xs">
             <p>
@@ -753,27 +757,33 @@ export function PaymentInterface() {
             </Select>
           </div>
           <div className="text-right">
-            <div className="text-xl sm:text-2xl">
-              <p>{calculatedCryptoAmount}</p>
-            </div>
-            <div className="text-xs md:text-sm text-gray-400">
-              <p>Balance: {isBalanceLoading ? "..." : currentBalance}</p>
-            </div>
+            {isExchangeRateLoading ? (
+              <CryptoAmountSkeleton />
+            ) : (
+              <>
+                <div className="text-xl sm:text-2xl">
+                  <p>{Number(calculatedCryptoAmount).toFixed(2)}</p>
+                </div>
+                <div className="text-xs md:text-sm text-gray-400">
+                  <p>Balance: {isBalanceLoading ? "..." : currentBalance}</p>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
-        <div className="flex items-center justify-between text-xs md:text-sm text-gray-400">
-          <p>
-            1 {asset?.symbol || "USD"} ={" "}
-            {isExchangeRateLoading
-              ? "..."
-              : exchangeRate
-              ? exchangeRate.exchange.toLocaleString()
-              : "--"}{" "}
-            {country?.currency || ""}
-          </p>
-          <p>Swap usually completes in 30s</p>
-        </div>
+        {isExchangeRateLoading ? (
+          <ExchangeRateSkeleton />
+        ) : (
+          <div className="flex items-center justify-between text-xs md:text-sm text-gray-400">
+            <p>
+              1 {asset?.symbol || "USD"} ={" "}
+              {exchangeRate ? exchangeRate.exchange.toLocaleString() : "--"}{" "}
+              {country?.currency || ""}
+            </p>
+            <p>Swap usually completes in 30s</p>
+          </div>
+        )}
       </div>
 
       {/* Error Display */}
@@ -828,7 +838,8 @@ export function PaymentInterface() {
           !amount ||
           !isAmountValidForCountry ||
           !isConnected ||
-          !address
+          !address ||
+          isExchangeRateLoading
         }
       />
     </div>

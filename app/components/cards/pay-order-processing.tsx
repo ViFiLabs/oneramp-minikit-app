@@ -18,10 +18,8 @@ const PayOrderProcessing = () => {
 
   // Debug the quote structure
   useEffect(() => {
-    console.log("PayOrderProcessing - Full quote object:", quote);
     if (quote) {
       console.log("Quote network:", quote.network);
-      console.log("Quote structure keys:", Object.keys(quote));
     }
   }, [quote]);
 
@@ -29,8 +27,8 @@ const PayOrderProcessing = () => {
   const submitTxHashMutation = useMutation({
     mutationKey: ["submit-tx-hash-pay"],
     mutationFn: submitTransactionHash,
-    onSuccess: (response) => {
-      console.log("Transaction hash submitted successfully:", response);
+    onSuccess: () => {
+      console.log("Transaction hash submitted successfully:");
       // Transition to regular transfer status polling
       updateSelection({ orderStep: OrderStep.GotTransfer });
     },
