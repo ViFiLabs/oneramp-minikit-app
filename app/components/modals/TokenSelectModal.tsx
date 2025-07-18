@@ -59,8 +59,9 @@ export function TokenSelectModal({ open, onClose }: TokenSelectModalProps) {
       onClick={onClose}
     >
       <div
-        className="fixed bottom-0 left-0 right-0 bg-[#181818] w-full max-w-none rounded-t-3xl shadow-2xl h-[80vh] flex flex-col animate-in slide-in-from-bottom duration-300 ease-out"
+        className="fixed bottom-0 left-0 right-0 bg-[#181818] w-full max-w-none rounded-t-3xl shadow-2xl h-[50vh] flex flex-col animate-in slide-in-from-bottom duration-300 ease-out z-[9999]"
         onClick={(e) => e.stopPropagation()}
+        style={{ position: "fixed", bottom: 0, left: 0, right: 0 }}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 md:p-6 border-b border-[#232323] flex-shrink-0">
@@ -77,7 +78,7 @@ export function TokenSelectModal({ open, onClose }: TokenSelectModalProps) {
         </div>
 
         {/* Search and Filter Area */}
-        <div className="p-4 flex gap-3 flex-col sm:flex-row">
+        <div className="p-4  gap-3 flex-col hidden">
           {/* Search Input */}
           {/* <div className="relative flex-1">
             <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
