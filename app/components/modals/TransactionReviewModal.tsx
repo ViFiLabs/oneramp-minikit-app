@@ -186,9 +186,17 @@ export function TransactionReviewModal() {
     try {
       const recipient = transfer.transferAddress;
 
+      let finalAmount;
+
+      if (quote.transferType === TransferType.TransferOut) {
+        finalAmount = quote.amountPaid;
+      } else {
+        finalAmount = quote.fiatAmount;
+      }
+
       const transactionPayload = {
         recipient,
-        amount: quote.cryptoAmount.toString(),
+        amount: finalAmount.toString(),
         tokenAddress: contractAddress,
       };
 
