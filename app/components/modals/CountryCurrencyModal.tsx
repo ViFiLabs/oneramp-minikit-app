@@ -4,6 +4,8 @@ import { countries } from "@/data/countries";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useUserSelectionStore } from "@/store/user-selection";
 import { Button } from "@/components/ui/button";
+import { useUserLocation } from "@/hooks/useUserLocation";
+import { useMemo } from "react";
 
 interface CountryCurrencyModalProps {
   open: boolean;
@@ -19,9 +21,33 @@ export function CountryCurrencyModal({
   filteredCountries,
 }: CountryCurrencyModalProps) {
   const { country } = useUserSelectionStore();
+  const { countryCode: userCountryCode, isLoading: isLocationLoading } = useUserLocation();
 
   const selectedCurrency = country;
-  const countriesToShow = filteredCountries || countries;
+  const baseCountries = filteredCountries || countries;
+
+  // Sort countries to show user's country first (if it's in the list)
+  const sortedCountries = useMemo(() => {
+    if (isLocationLoading || !userCountryCode) {
+      return baseCountries;
+    }
+
+    // Find if user's country is in the available countries
+    const userCountryIndex = baseCountries.findIndex(
+      (c) => c.countryCode === userCountryCode
+    );
+
+    if (userCountryIndex === -1) {
+      // User's country not in the list, return original order
+      return baseCountries;
+    }
+
+    // Move user's country to the front
+    const userCountry = baseCountries[userCountryIndex];
+    const otherCountries = baseCountries.filter((_, index) => index !== userCountryIndex);
+    
+    return [userCountry, ...otherCountries];
+  }, [baseCountries, userCountryCode, isLocationLoading]);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -34,43 +60,55 @@ export function CountryCurrencyModal({
             <h2 className="text-xl font-bold">Select Country</h2>
           </div>
           <div className="flex-1 overflow-y-auto px-4 py-6 flex flex-col gap-4">
-            {countriesToShow.map((country) => (
-              <Button
-                key={country.name}
-                variant="ghost"
-                className={`flex text-sm items-center justify-between w-full px-4 py-5 rounded-xl transition-colors text-left ${
-                  selectedCurrency?.name === country.name
-                    ? "bg-[#353545] border border-[#4a4a5a]"
-                    : "hover:bg-[#23232f] border border-transparent"
-                }`}
-                onClick={() => onSelect(country)}
-                style={{ minHeight: 50 }}
-              >
-                <span className="flex items-center gap-4">
-                  <Image
-                    src={country.logo}
-                    alt={country.name}
-                    width={35}
-                    height={35}
-                    className="rounded-full"
-                  />
-                  <span className="text-white font-medium text-base">
-                    {country.name}
-                  </span>
-                </span>
-                {selectedCurrency?.name === country.name && (
-                  <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
-                    <path
-                      d="M5 13l4 4L19 7"
-                      stroke="#bcbcff"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
+            {sortedCountries.map((country, index) => {
+              const isUserCountry = !isLocationLoading && userCountryCode === country.countryCode;
+              const isSelected = selectedCurrency?.name === country.name;
+              
+              return (
+                <Button
+                  key={country.name}
+                  variant="ghost"
+                  className={`flex text-sm items-center justify-between w-full px-4 py-5 rounded-xl transition-colors text-left ${
+                    isSelected
+                      ? "bg-[#353545] border border-[#4a4a5a]"
+                      : "hover:bg-[#23232f] border border-transparent"
+                  }`}
+                  onClick={() => onSelect(country)}
+                  style={{ minHeight: 50 }}
+                >
+                  <span className="flex items-center gap-4">
+                    <Image
+                      src={country.logo}
+                      alt={country.name}
+                      width={35}
+                      height={35}
+                      className="rounded-full"
                     />
-                  </svg>
-                )}
-              </Button>
-            ))}
+                    <span className="flex flex-col">
+                      <span className="text-white font-medium text-base">
+                        {country.name}
+                      </span>
+                      {/* {isUserCountry && index === 0 && (
+                        <span className="text-xs text-green-400 font-medium">
+                          Recommended for you
+                        </span>
+                      )} */}
+                    </span>
+                  </span>
+                  {isSelected && (
+                    <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
+                      <path
+                        d="M5 13l4 4L19 7"
+                        stroke="#bcbcff"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  )}
+                </Button>
+              );
+            })}
           </div>
         </div>
       </DialogContent>
