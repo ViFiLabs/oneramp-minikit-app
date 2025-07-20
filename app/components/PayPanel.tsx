@@ -12,10 +12,6 @@ import { useState } from "react";
 import SubmitButton from "./buttons/submit-button";
 import ExchangeRateComponent from "./exchange-rate-component";
 import { TransactionReviewModal } from "./modals/TransactionReviewModal";
-import { FromPanel } from "./panels/FromPanel";
-import { SwapArrow } from "./panels/SwapArrow";
-import { SwapHeader } from "./panels/SwapHeader";
-import { ToPanel } from "./panels/ToPanel";
 import SelectInstitution from "./select-institution";
 import { PaymentInterface } from "./payment/pay-interface";
 

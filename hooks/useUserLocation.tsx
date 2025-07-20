@@ -20,57 +20,54 @@ export function useUserLocation() {
       try {
         setLocationData(prev => ({ ...prev, isLoading: true, error: null }));
 
-        // Try primary service: ipapi.co
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 5000);
+        // Use Cloudflare's trace service (CORS-friendly and reliable)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-          const response = await fetch('https://ipapi.co/json/', {
-            signal: controller.signal,
-          });
+        const response = await fetch('https://www.cloudflare.com/cdn-cgi/trace', {
+          signal: controller.signal,
+        });
 
-          clearTimeout(timeoutId);
+        clearTimeout(timeoutId);
 
-          if (response.ok) {
-            const data = await response.json();
-            if (data.country_code) {
-              setLocationData({
-                country: data.country_name || '',
-                countryCode: data.country_code || '',
-                isLoading: false,
-                error: null,
-              });
-              return;
-            }
+        if (response.ok) {
+          const data = await response.text();
+          const lines = data.split('\n');
+          const locationLine = lines.find(line => line.startsWith('loc='));
+          
+          if (locationLine) {
+            const countryCode = locationLine.split('=')[1];
+            
+            // Map common country codes to full names
+            const countryNames: Record<string, string> = {
+              'KE': 'Kenya',
+              'UG': 'Uganda', 
+              'NG': 'Nigeria',
+              'GH': 'Ghana',
+              'ZM': 'Zambia',
+              'TZ': 'Tanzania',
+              'ZA': 'South Africa',
+              'US': 'United States',
+              'GB': 'United Kingdom',
+              'CA': 'Canada',
+              // Add more as needed
+            };
+
+            setLocationData({
+              country: countryNames[countryCode] || countryCode,
+              countryCode: countryCode || '',
+              isLoading: false,
+              error: null,
+            });
+            return;
           }
-        } catch (primaryError) {
-          console.log('Primary geolocation service failed, trying fallback...');
         }
 
-        // Fallback service: ipinfo.io (free tier)
-        const fallbackController = new AbortController();
-        const fallbackTimeoutId = setTimeout(() => fallbackController.abort(), 5000);
-
-        const fallbackResponse = await fetch('https://ipinfo.io/json', {
-          signal: fallbackController.signal,
-        });
-
-        clearTimeout(fallbackTimeoutId);
-
-        if (!fallbackResponse.ok) {
-          throw new Error('Both geolocation services failed');
-        }
-
-        const fallbackData = await fallbackResponse.json();
-
-        setLocationData({
-          country: fallbackData.country || '',
-          countryCode: fallbackData.country || '', // ipinfo.io uses 2-letter country code
-          isLoading: false,
-          error: null,
-        });
+        // If Cloudflare fails, try a simple approach
+        throw new Error('Geolocation service unavailable');
+        
       } catch (error) {
-        console.log('All location detection failed:', error);
+        console.log('Location detection failed, using default ordering:', error);
         setLocationData({
           country: '',
           countryCode: '',

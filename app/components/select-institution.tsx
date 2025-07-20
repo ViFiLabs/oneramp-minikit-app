@@ -384,10 +384,6 @@ const SelectInstitution = ({ buy }: { buy?: boolean }) => {
     trigger("accountNumber");
   };
 
-  console.log("====================================");
-  console.log("countryPanelOnTop", countryPanelOnTop);
-  console.log("====================================");
-
   const onSubmit = handleSubmit((data) => {
     if (!userPayLoad) return;
 

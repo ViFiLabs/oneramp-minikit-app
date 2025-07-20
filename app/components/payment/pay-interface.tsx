@@ -69,17 +69,18 @@ export function PaymentInterface() {
   );
 
   // Get all country exchange rates using optimized hook
-  const { data: allExchangeRates, isLoading: isExchangeRateLoading } =
+  // This pre-fetches rates for all supported countries to avoid individual API calls
+  const { data: allExchangeRates, isLoading: isExchangeRateLoading, error: exchangeRateError } =
     useAllCountryExchangeRates({
       orderType: "selling",
       providerType: paymentMethod || "momo", // Default to momo for Pay interface
     });
 
   // Get current country's exchange rate from cached data
-  const exchangeRate =
-    country?.countryCode && allExchangeRates
-      ? allExchangeRates[country.countryCode]
-      : undefined;
+  const exchangeRate = useMemo(() => {
+    if (!country?.countryCode || !allExchangeRates) return undefined;
+    return allExchangeRates[country.countryCode];
+  }, [country?.countryCode, allExchangeRates]);
 
   // Bill payment mutation
   const billPaymentMutation = useBillPayment();
@@ -412,12 +413,12 @@ export function PaymentInterface() {
 
   // Calculate crypto amount based on fiat amount and exchange rate
   const calculatedCryptoAmount = useMemo(() => {
-    if (!country || !amount || !exchangeRate) return "0.00";
+    if (!country || !amount) return "0.00";
     const numericAmount = parseFloat(amount);
     if (isNaN(numericAmount)) return "0.00";
 
-    // Use the exchange rate from the API response
-    const rate = exchangeRate.exchange;
+    // Use the exchange rate from API if available, otherwise use fallback from country data
+    const rate = exchangeRate?.exchange || country.exchangeRate;
     const convertedAmount = numericAmount / rate;
     return convertedAmount.toFixed(4);
   }, [amount, country, exchangeRate]);
@@ -780,15 +781,38 @@ export function PaymentInterface() {
               <div className="flex items-center justify-between text-xs md:text-sm text-gray-400">
                 <p>
                   1 {asset?.symbol || "USD"} ={" "}
-                  {exchangeRate ? exchangeRate.exchange.toLocaleString() : "--"}{" "}
+                  {exchangeRate 
+                    ? exchangeRate.exchange.toLocaleString() 
+                    : country?.exchangeRate 
+                    ? country.exchangeRate.toLocaleString() + " (est.)"
+                    : "--"}{" "}
                   {country?.currency || ""}
                 </p>
-                <p>Swap usually completes in 30s</p>
+                <p>Payment usually completes in 30s</p>
               </div>
             )}
           </div>
 
-          {/* Error Display */}
+          {/* Exchange Rate Error Display */}
+          {exchangeRateError && (
+            <div className="bg-yellow-900/20 border border-yellow-600/50 rounded-lg p-3">
+              <div className="flex items-center justify-between">
+                <p className="text-yellow-400 text-sm">
+                  ⚠️ Unable to fetch current rates. Using fallback rates.
+                </p>
+                <Button
+                  onClick={() => window.location.reload()}
+                  variant="ghost"
+                  size="sm"
+                  className="text-yellow-400 hover:text-yellow-300 p-1 h-auto"
+                >
+                  Retry
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Payment Error Display */}
           {billPaymentMutation.isError && (
             <div className="bg-red-900/20 border border-red-600/50 rounded-lg p-3">
               <div className="flex items-center justify-between">
@@ -840,8 +864,8 @@ export function PaymentInterface() {
               !amount ||
               !isAmountValidForCountry ||
               !isConnected ||
-              !address ||
-              isExchangeRateLoading
+              !address
+              // Removed isExchangeRateLoading to allow fallback rates
             }
           />
         </>

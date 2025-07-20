@@ -16,8 +16,8 @@ export function useAllCountryExchangeRates({
   return useQuery({
     queryKey: ["allCountryExchangeRates", orderType, providerType],
     queryFn: async () => {
-      if (!providerType) {
-        throw new Error("Provider type is required");
+      if (!providerType || !orderType) {
+        throw new Error("Provider type and order type are required");
       }
 
       // Fetch rates for Kenya and Uganda (the only countries supported in Pay interface)
@@ -48,11 +48,11 @@ export function useAllCountryExchangeRates({
 
       return ratesMap;
     },
-    enabled: !!providerType,
-    staleTime: 30 * 1000, // 30 seconds
-    refetchInterval: 60 * 1000, // Refetch every minute for fresh rates
-    retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    enabled: !!(providerType && orderType),
+    staleTime: 60 * 1000, // 60 seconds - longer to reduce API calls
+    refetchInterval: 5 * 60 * 1000, // 5 minutes - less frequent refetching
+    retry: 2, // Fewer retries to avoid overwhelming the API
+    retryDelay: (attemptIndex) => Math.min(2000 * 2 ** attemptIndex, 10000),
   });
 }
 
