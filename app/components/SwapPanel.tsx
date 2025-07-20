@@ -60,7 +60,7 @@ export function SwapPanel() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto min-h-[450px] bg-[#181818] rounded-3xl p-0 flex flex-col gap-0 md:shadow-lg md:border border-[#232323] relative">
+    <div className="w-full max-w-md mx-auto min-h-[400px] bg-[#181818] rounded-3xl p-0 flex flex-col gap-0 md:shadow-lg md:border border-[#232323] relative">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}

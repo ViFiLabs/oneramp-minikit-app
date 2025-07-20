@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SwipeToPayButton } from "./swipe-to-pay";
+import { CountryCurrencyModal } from "../modals/CountryCurrencyModal";
 
 // Import app data and stores
 import { assets } from "@/data/currencies";
@@ -33,7 +34,7 @@ import { useAllCountryExchangeRates } from "@/hooks/useExchangeRate";
 import { useAssetBalance } from "@/hooks/useAssetBalance";
 import useWalletGetInfo from "@/hooks/useWalletGetInfo";
 import { useBillPayment, PaymentStep } from "@/hooks/useBillPayment";
-import { OrderStep, AppState, ChainTypes, Transfer, Quote } from "@/types";
+import { OrderStep, AppState, ChainTypes, Transfer, Quote, Country } from "@/types";
 import useEVMPay from "@/onchain/useEVMPay";
 import Image from "next/image";
 import {
@@ -105,6 +106,7 @@ export function PaymentInterface() {
   };
 
   const [selectedPaymentType, setSelectedPaymentType] = useState("Buy Goods");
+  const [showCountryModal, setShowCountryModal] = useState(false);
 
   // Check if payment type is supported for the current country
   const isPaymentTypeSupported = (paymentType: string) => {
@@ -451,21 +453,18 @@ export function PaymentInterface() {
     handleCreateBillQuote();
   };
 
-  const handleCountrySelect = (selectedCountry: string) => {
-    const countryData = payEnabledCountries.find(
-      (c) => c.name === selectedCountry
-    );
-    if (countryData) {
-      // Reset amount to the minimum for the new country
-      setAmountForCountry(countryData);
+  const handleCountrySelect = (selectedCountry: Country) => {
+    // Reset amount to the minimum for the new country
+    setAmountForCountry(selectedCountry);
 
-      updateSelection({
-        country: countryData,
-        institution: undefined,
-        accountNumber: undefined,
-        address: undefined,
-      });
-    }
+    updateSelection({
+      country: selectedCountry,
+      institution: undefined,
+      accountNumber: undefined,
+      address: undefined,
+    });
+    
+    setShowCountryModal(false);
   };
 
   const handleAssetSelect = (selectedAsset: string) => {
@@ -575,7 +574,7 @@ export function PaymentInterface() {
   };
 
   return (
-    <div className="mx-auto w-full bg-[#181818] text-white rounded-2xl overflow-hidden p-4 sm:p-6 space-y-4 sm:space-y-6 min-h-[500px]">
+    <div className="mx-auto w-full bg-[#181818] text-white rounded-2xl overflow-hidden p-4 sm:p-5 space-y-3 sm:space-y-4 min-h-[400px]">
       {/* Pay Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-lg sm:text-xl">Pay</h2>
@@ -617,35 +616,37 @@ export function PaymentInterface() {
 
       {/* Country Selection */}
       <div className="space-y-3">
-        <Select value={country?.name || ""} onValueChange={handleCountrySelect}>
-          <SelectTrigger className="!bg-neutral-800 !border-neutral-600 text-sm sm:text-base text-white h-12 rounded-lg px-4 w-full">
-            <div className="flex items-center gap-3">
-              <SelectValue placeholder="Select Country" />
-            </div>
-          </SelectTrigger>
-          <SelectContent className="bg-neutral-900 !border-neutral-700 border">
-            {payEnabledCountries.map((countryItem) => (
-              <SelectItem
-                key={countryItem.name}
-                value={countryItem.name}
-                className="focus:bg-neutral-800 focus:text-white data-[highlighted]:bg-neutral-800 data-[highlighted]:text-white"
-              >
-                <div className="flex items-center gap-3 p-1 ">
-                  <Image
-                    src={countryItem.logo}
-                    alt={countryItem.name}
-                    className="w-6 h-4 rounded-sm object-cover"
-                    width={24}
-                    height={16}
-                  />
-                  <h1 className="text-sm sm:text-base text-white">
-                    {countryItem.name}
-                  </h1>
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <Button
+          variant="ghost"
+          className="!bg-neutral-800 !border-neutral-600 text-sm sm:text-base text-white h-12 rounded-lg px-4 w-full flex items-center justify-between border hover:!bg-neutral-700"
+          onClick={() => setShowCountryModal(true)}
+        >
+          <div className="flex items-center gap-3">
+            {country ? (
+              <>
+                <Image
+                  src={country.logo}
+                  alt={country.name}
+                  className="w-6 h-4 rounded-sm object-cover"
+                  width={24}
+                  height={16}
+                />
+                <span className="text-white">{country.name}</span>
+              </>
+            ) : (
+              <span className="text-neutral-400">Select Country</span>
+            )}
+          </div>
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
+            <path
+              d="M7 10l5 5 5-5"
+              stroke="#fff"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </Button>
       </div>
 
       {/* Progressive UI - Only show when country is selected */}
@@ -845,6 +846,14 @@ export function PaymentInterface() {
           />
         </>
       )}
+
+      {/* Country Selection Modal */}
+      <CountryCurrencyModal
+        open={showCountryModal}
+        onClose={() => setShowCountryModal(false)}
+        onSelect={handleCountrySelect}
+        filteredCountries={payEnabledCountries}
+      />
     </div>
   );
 }

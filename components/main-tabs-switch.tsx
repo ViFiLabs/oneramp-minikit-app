@@ -25,9 +25,10 @@ export function MainTabsSwitch() {
     console.log("SWITCHED");
     console.log("====================================");
     updateSelection({
-      country: onPayPanel
-        ? countries.find((c) => c.name === "Kenya")
-        : undefined,
+      // country: onPayPanel
+      //   ? countries.find((c) => c.name === "Kenya")
+      //   : undefined,
+      country: undefined,
       asset: undefined,
       accountNumber: undefined,
       accountName: undefined,

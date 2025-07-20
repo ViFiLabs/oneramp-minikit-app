@@ -9,16 +9,19 @@ interface CountryCurrencyModalProps {
   open: boolean;
   onClose: () => void;
   onSelect: (country: Country) => void;
+  filteredCountries?: Country[];
 }
 
 export function CountryCurrencyModal({
   open,
   onClose,
   onSelect,
+  filteredCountries,
 }: CountryCurrencyModalProps) {
   const { country } = useUserSelectionStore();
 
   const selectedCurrency = country;
+  const countriesToShow = filteredCountries || countries;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -31,7 +34,7 @@ export function CountryCurrencyModal({
             <h2 className="text-xl font-bold">Select Country</h2>
           </div>
           <div className="flex-1 overflow-y-auto px-4 py-6 flex flex-col gap-4">
-            {countries.map((country) => (
+            {countriesToShow.map((country) => (
               <Button
                 key={country.name}
                 variant="ghost"

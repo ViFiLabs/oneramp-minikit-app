@@ -61,7 +61,7 @@ export function PayPanel() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto mt-0 min-h-[450px] bg-[#181818] rounded-3xl p-0 flex flex-col gap-0 md:shadow-lg md:border border-[#232323] relative">
+    <div className="w-full max-w-md mx-auto mt-0 min-h-[380px] bg-[#181818] rounded-3xl p-0 flex flex-col gap-0 md:shadow-lg md:border border-[#232323] relative">
       <PaymentInterface />
 
       {/* Transaction Review Modal */}
