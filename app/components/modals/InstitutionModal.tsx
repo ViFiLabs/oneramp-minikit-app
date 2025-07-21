@@ -45,7 +45,7 @@ export function InstitutionModal({
       onClick={onClose}
     >
       <div 
-        className="fixed bottom-0 left-0 right-0 bg-[#181818] w-full max-w-none rounded-t-3xl shadow-2xl max-h-[75vh] flex flex-col animate-slide-up-from-bottom text-white"
+        className="fixed bottom-0 left-0 right-0 bg-[#181818] w-full max-w-none rounded-t-3xl shadow-2xl max-h-[75vh] flex flex-col animate-slide-up-smooth text-white"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

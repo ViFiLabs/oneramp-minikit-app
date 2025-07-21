@@ -59,7 +59,7 @@ export function TokenSelectModal({ open, onClose }: TokenSelectModalProps) {
       onClick={onClose}
     >
       <div
-        className="fixed bottom-0 left-0 right-0 bg-[#181818] w-full max-w-none rounded-t-3xl shadow-2xl h-[50vh] flex flex-col animate-in slide-in-from-bottom duration-300 ease-out z-[9999]"
+        className="fixed bottom-0 left-0 right-0 bg-[#181818] w-full max-w-none rounded-t-3xl shadow-2xl h-[50vh] flex flex-col animate-slide-up-smooth z-[9999]"
         onClick={(e) => e.stopPropagation()}
         style={{ position: "fixed", bottom: 0, left: 0, right: 0 }}
       >
