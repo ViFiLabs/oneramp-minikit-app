@@ -473,7 +473,7 @@ const SelectInstitution = ({ buy }: { buy?: boolean }) => {
     <form onSubmit={onSubmit}>
       {(!buy || (buy && !isNigeriaOrSouthAfrican)) && (
         <div
-          className={`mb-2 bg-[#232323] rounded-2xl p-5 flex flex-col gap-4 `}
+          className={`mb-2 bg-[#232323] rounded-t-[2rem] p-5 flex flex-col gap-4 `}
         >
           <div className="flex items-center justify-between">
             <span className="text-white text-lg font-medium">Recipient</span>
@@ -489,7 +489,7 @@ const SelectInstitution = ({ buy }: { buy?: boolean }) => {
                 setValue("accountNumber", "");
                 updateSelection({ paymentMethod: undefined });
               }}
-              className="bg-transparent border w-full h-full !border-neutral-600 text-neutral-400 rounded-full p-3 cursor-pointer flex items-center justify-center"
+              className="bg-transparent border w-full h-full !border-neutral-600 text-neutral-400 rounded-t-2xl rounded-b-lg p-3 cursor-pointer flex items-center justify-center"
             >
               <span className="line-clamp-1 text-white">
                 {institution?.name || "Select institution"}

@@ -619,7 +619,7 @@ export function PaymentInterface() {
       <div className="space-y-3">
         <Button
           variant="ghost"
-          className="!bg-neutral-800 !border-neutral-600 text-sm sm:text-base text-white h-12 rounded-lg px-4 w-full flex items-center justify-between border hover:!bg-neutral-700"
+          className="!bg-neutral-800 !border-neutral-600 text-sm sm:text-base text-white h-12 rounded-t-2xl rounded-b-lg px-4 w-full flex items-center justify-between border hover:!bg-neutral-700"
           onClick={() => setShowCountryModal(true)}
         >
           <div className="flex items-center gap-3">

@@ -6,6 +6,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Loader } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
+import { Dialog, DialogPortal, DialogOverlay, VisuallyHidden } from "@/components/ui/dialog";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 
 interface InstitutionModalProps {
   open: boolean;
@@ -40,16 +42,18 @@ export function InstitutionModal({
   if (!data) return null;
 
   return (
-    <div 
-      className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div 
-        className="fixed bottom-0 left-0 right-0 bg-[#181818] w-full max-w-none rounded-t-3xl shadow-2xl max-h-[75vh] flex flex-col animate-slide-up-smooth text-white"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogPortal>
+        <DialogOverlay className="bg-black/60 backdrop-blur-lg" />
+        <DialogPrimitive.Content
+          className="fixed bottom-0 left-0 right-0 z-50 bg-[#181818] border-none text-white p-0 m-0 w-full max-w-none rounded-t-[2.5rem] shadow-2xl animate-slide-up-smooth overflow-hidden"
+          style={{ padding: 0, maxHeight: '60vh', display: 'flex', flexDirection: 'column' }}
+        >
+          <VisuallyHidden>
+            <DialogPrimitive.Title>Select Institution</DialogPrimitive.Title>
+          </VisuallyHidden>
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-[#232323]">
+        <div className="flex items-center justify-between px-6 py-3 border-b border-[#232323] rounded-t-[2.5rem]">
         <div className="text-xl font-bold">Select institution</div>
         <button
           className="p-3 hover:bg-[#23232f] rounded-full transition-colors"
@@ -68,7 +72,7 @@ export function InstitutionModal({
       </div>
 
         {/* Search Bar */}
-        <div className="relative px-6 py-2 h-16 items-center flex">
+        <div className="relative px-6 py-1 h-14 items-center flex">
           <div className="absolute inset-y-0 left-9 flex items-center pointer-events-none">
             <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
               <path
@@ -90,7 +94,7 @@ export function InstitutionModal({
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto px-2 pb-6">
+        <div className="overflow-y-auto px-2" style={{ maxHeight: 'calc(60vh - 100px)' }}>
           {isLoading && (
             <div className="text-white flex items-center justify-center py-8">
               <Loader className="animate-spin size-6" />
@@ -103,11 +107,11 @@ export function InstitutionModal({
             </div>
           )}
 
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col">
             {filteredInstitutions?.map((institution) => (
               <button
                 key={institution.name}
-                className="flex items-center gap-4 w-full px-4 py-5 hover:bg-[#23232f] transition-colors text-left border-b border-[#333] last:border-0 rounded-xl"
+                className="flex items-center gap-4 w-full px-4 py-5 hover:bg-[#23232f] transition-colors text-left border-b border-[#333] last:border-0 rounded-2xl"
                 onClick={() => onSelect(institution)}
                 style={{ minHeight: 64 }}
               >
@@ -137,7 +141,8 @@ export function InstitutionModal({
             )}
           </div>
         </div>
-      </div>
-    </div>
+        </DialogPrimitive.Content>
+      </DialogPortal>
+    </Dialog>
   );
 }

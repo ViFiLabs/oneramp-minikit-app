@@ -55,16 +55,16 @@ export function TokenSelectModal({ open, onClose }: TokenSelectModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-lg"
       onClick={onClose}
     >
       <div
-        className="fixed bottom-0 left-0 right-0 bg-[#181818] w-full max-w-none rounded-t-3xl shadow-2xl h-[50vh] flex flex-col animate-slide-up-smooth z-[9999]"
+        className="fixed bottom-0 left-0 right-0 bg-[#181818] w-full max-w-none rounded-t-[2.5rem] shadow-2xl animate-slide-up-smooth z-[9999] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
-        style={{ position: "fixed", bottom: 0, left: 0, right: 0 }}
+        style={{ position: "fixed", bottom: 0, left: 0, right: 0, maxHeight: '70vh', display: 'flex', flexDirection: 'column' }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 md:p-6 border-b border-[#232323] flex-shrink-0">
+        <div className="flex items-center justify-between p-3 md:p-4 border-b border-[#232323] flex-shrink-0 rounded-t-[2.5rem]">
           <h2 className="text-lg md:text-xl font-bold text-white">
             Select A Token
           </h2>
@@ -162,7 +162,7 @@ export function TokenSelectModal({ open, onClose }: TokenSelectModalProps) {
         </div>
 
         {/* Token List */}
-        <div className="overflow-y-auto flex-1 pb-4 px-4 md:px-6">
+        <div className="overflow-y-auto pb-2 px-4 md:px-6" style={{ maxHeight: '55vh' }}>
           {filteredTokens.length > 0 ? (
             selectedNetwork === "All Networks" ? (
               // Show all tokens grouped by networks

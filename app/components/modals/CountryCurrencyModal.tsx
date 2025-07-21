@@ -1,7 +1,8 @@
 import { Country } from "@/types";
 import Image from "next/image";
 import { countries } from "@/data/countries";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogPortal, DialogOverlay, VisuallyHidden } from "@/components/ui/dialog";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useUserSelectionStore } from "@/store/user-selection";
 import { Button } from "@/components/ui/button";
 import { useUserLocation } from "@/hooks/useUserLocation";
@@ -51,17 +52,22 @@ export function CountryCurrencyModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent
-        className="fixed bottom-0 left-0 right-0 z-50 bg-[#181818] border-none text-white p-0 m-0 w-full max-w-none rounded-t-3xl shadow-2xl flex flex-col animate-slide-up-smooth h-[85vh] max-h-[600px] sm:max-h-[500px]"
-        style={{ padding: 0 }}
-      >
-        <div className="flex flex-col h-full w-full">
+      <DialogPortal>
+        <DialogOverlay className="bg-black/60 backdrop-blur-lg" />
+                <DialogPrimitive.Content
+          className="fixed bottom-0 left-0 right-0 z-50 bg-[#181818] border-none text-white p-0 m-0 w-full max-w-none rounded-t-[2.5rem] shadow-2xl animate-slide-up-smooth overflow-hidden"
+          style={{ padding: 0, maxHeight: '75vh', display: 'flex', flexDirection: 'column' }}
+        >
+          <VisuallyHidden>
+            <DialogPrimitive.Title>Select Country</DialogPrimitive.Title>
+          </VisuallyHidden>
+          <div className="flex flex-col h-full w-full">
           {/* Header with close button */}
-          <div className="flex items-center justify-between px-6 py-5 border-b border-[#232323] bg-[#181818] sticky top-0 z-10">
+          <div className="flex items-center justify-between px-6 py-3 border-b border-[#232323] bg-[#181818] sticky top-0 z-10 rounded-t-[2.5rem]">
             <h2 className="text-xl font-bold">Select Country</h2>
             <button
               onClick={onClose}
-              className="text-neutral-400 hover:text-white transition-colors p-1 rounded-full hover:bg-[#232323]"
+              className="text-neutral-400 hover:text-white transition-colors p-2 rounded-full hover:bg-[#232323]"
             >
               <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
                 <path
@@ -76,20 +82,21 @@ export function CountryCurrencyModal({
           </div>
           
           {/* Drag indicator for mobile */}
-          <div className="flex justify-center pt-2 pb-1">
+          <div className="flex justify-center pt-1 pb-1">
             <div className="w-12 h-1 bg-neutral-600 rounded-full"></div>
           </div>
 
           {/* Scrollable content area */}
           <div 
-            className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-4 scroll-smooth scrollbar-thin scrollbar-thumb-neutral-600 scrollbar-track-transparent"
+            className="overflow-y-auto overflow-x-hidden px-4 py-2 scroll-smooth scrollbar-thin scrollbar-thumb-neutral-600 scrollbar-track-transparent"
             style={{ 
               WebkitOverflowScrolling: 'touch',
               scrollbarWidth: 'thin',
-              scrollbarColor: '#525252 transparent'
+              scrollbarColor: '#525252 transparent',
+              maxHeight: '60vh'
             }}
           >
-            <div className="flex flex-col gap-3 pb-16">
+            <div className="flex flex-col gap-3 pb-4">
             {sortedCountries.map((country, index) => {
               const isUserCountry = !isLocationLoading && userCountryCode === country.countryCode;
               const isSelected = selectedCurrency?.name === country.name;
@@ -98,7 +105,7 @@ export function CountryCurrencyModal({
                 <Button
                   key={country.name}
                   variant="ghost"
-                  className={`flex text-sm items-center justify-between w-full px-4 py-4 rounded-xl transition-all duration-200 text-left shadow-sm ${
+                  className={`flex text-sm items-center justify-between w-full px-4 py-4 rounded-2xl transition-all duration-200 text-left shadow-sm ${
                     isSelected
                       ? "bg-[#353545] border border-[#4a4a5a] scale-[0.98]"
                       : "hover:bg-[#23232f] border border-transparent hover:scale-[0.99]"
@@ -142,7 +149,8 @@ export function CountryCurrencyModal({
             </div>
           </div>
         </div>
-      </DialogContent>
+      </DialogPrimitive.Content>
+    </DialogPortal>
     </Dialog>
   );
 }

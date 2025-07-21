@@ -36,7 +36,7 @@ export function BuyTransactionReviewModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-lg">
       <div className="bg-[#181818] rounded-2xl max-w-md w-[95%] shadow-2xl flex flex-col border border-[#232323] overflow-hidden">
         {/* Header */}
         <div className="bg-[#232323] p-4 flex items-center justify-between">
