@@ -25,7 +25,7 @@ interface FeeSummaryProps {
 
 const FeeSummarySkeleton = () => {
   return (
-    <div className="w-full bg-[#202020] rounded-lg p-4 text-white">
+    <div className="w-full bg-[#202020] shadow-md rounded-lg p-4 text-white">
       <div className="space-y-3">
         {/* Transaction Details */}
         <div className="space-y-2">
@@ -68,10 +68,8 @@ const FeeSummary = ({
       exchangeRateData.conversionResponse.gasFeeInFiat
     : 2.5;
 
-  const totalFiatAmount =
-    exchangeRateData?.conversionResponse?.fiatAmount ||
-    parseFloat(fiatAmount) ||
-    0;
+  // Use the user's input amount as the total (fees are already calculated based on this amount)
+  const userInputAmount = parseFloat(fiatAmount || "0");
   const exchangeRate = exchangeRateData?.exchange || 129.2;
 
   // Format crypto amount to 2 decimal places
@@ -93,7 +91,7 @@ const FeeSummary = ({
           <div className="flex justify-between items-center">
             <span className="text-gray-300 text-sm">Total {fiatCurrency}</span>
             <span className="text-white text-sm font-medium">
-              {formatNumber(totalFiatAmount)} {fiatCurrency}
+              {formatNumber(userInputAmount)} {fiatCurrency}
             </span>
           </div>
           <div className="flex justify-between items-center">
