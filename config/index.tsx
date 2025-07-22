@@ -5,7 +5,7 @@ import type { AppKitNetwork } from "@reown/appkit/networks";
 
 // Get projectId from https://cloud.reown.com
 export const projectId =
-  process.env.REOWN_PROJECT_ID || "72d9f10ab6e67c3e8ed81cb9fc7d6c29";
+  process.env.REOWN_PROJECT_ID || "5175fef48e45eaa35b29009c6a3b8f77";
 
 if (!projectId) {
   throw new Error("Project ID is not defined");

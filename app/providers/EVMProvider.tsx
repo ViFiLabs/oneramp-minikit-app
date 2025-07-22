@@ -16,11 +16,21 @@ if (!projectId) {
 
 // Set up metadata
 const metadata = {
-  name: "oneramp",
-  description: "sell and buy crypto",
+  name: "OneRamp",
+  description: "Spend Crypto in Africa - Anytime, Anywhere",
   url: "https://oneramp.io", // origin must match your domain & subdomain
   icons: ["https://avatars.githubusercontent.com/u/37784886"],
 };
+
+// Base-compatible featured wallets
+const baseWalletIds = [
+  "fd20dc426fb37566d803205b19bbc1d4096b248ac04548e3cfb6b3a38bd033aa", // Coinbase Wallet
+  "c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96", // MetaMask
+  "1ae92b26df02f0abca6304df07debccd18262fdf5fe82daa81593582dac9a369", // Rainbow
+  "4622a2b2d6af1c9844944291e5e7351a6aa24cd7b23099efac1b2fd875da31a0", // Trust Wallet
+  "c03dfee351b6fcc421b4494ea33b9d4b92a984f87aa76d1663bb28705e95034a", // Uniswap Wallet
+  "38f5d18bd8522c244bdd70cb4a68e0e718865155811c043f052fb9f1c51de662", // Bitget Wallet
+];
 
 // Create the modal
 createAppKit({
@@ -30,13 +40,20 @@ createAppKit({
   defaultNetwork: base,
   metadata: metadata,
   features: {
-    analytics: true, // Optional - defaults to your Cloud configuration
+    analytics: true,
     email: false,
     socials: false,
+    swaps: false,
+    onramp: false,
   },
-  featuredWalletIds: [
-    "fd20dc426fb37566d803205b19bbc1d4096b248ac04548e3cfb6b3a38bd033aa", /// Coinbase
-  ],
+  featuredWalletIds: baseWalletIds,
+  includeWalletIds: baseWalletIds, // Only show these wallets
+  themeMode: "dark",
+  // themeVariables: {
+  //   "--w3m-color-mix": "#00d4aa",
+  //   "--w3m-accent": "#2563eb",
+  //   "--w3m-color-mix-strength": 20,
+  // },
 });
 
 function EVMProvider({

@@ -28,7 +28,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title:
       process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME ||
-      "OneRamp | Swap your stablecoins for fiat money",
+      "OneRamp | Spend Your stablecoins in Africa, Anywhere, anytime",
     description:
       "Swap your stablecoins for fiat money using mobile money or bank transfer.",
     other: {
