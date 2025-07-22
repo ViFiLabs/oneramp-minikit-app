@@ -123,12 +123,13 @@ export const ModalConnectButton = ({ large }: { large?: boolean }) => {
       )}
 
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="fixed border-none inset-0 z-50 w-screen h-screen max-w-none max-h-none p-0 bg-[#181818] text-white flex flex-col translate-x-0 translate-y-0 top-0 left-0">
+        <DialogContent className="!fixed !border-none !bottom-0 !left-0 !right-0 !top-auto !z-50 !max-w-none !w-full !h-fit !min-h-0 !max-h-none !p-0 !m-0 bg-[#181818] text-white flex flex-col rounded-t-3xl animate-slide-up-smooth overflow-hidden">
+          <div className="w-12 h-1 bg-gray-500 rounded-full mx-auto mt-3 mb-4"></div>
           <div className="h-14 mb-4 px-5 flex items-center justify-between">
             <h1 className="text-white text-xl font-semibold">My Wallets</h1>
           </div>
 
-          <div className="flex flex-col gap-4 px-4">
+          <div className="flex flex-col gap-4 px-4 pb-8">
             <>
               {isConnected && hasAnyEvmNetwork ? (
                 <ConnectedWalletCard />
