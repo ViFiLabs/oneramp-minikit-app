@@ -34,13 +34,21 @@ import { useAllCountryExchangeRates } from "@/hooks/useExchangeRate";
 import { useAssetBalance } from "@/hooks/useAssetBalance";
 import useWalletGetInfo from "@/hooks/useWalletGetInfo";
 import { useBillPayment, PaymentStep } from "@/hooks/useBillPayment";
-import { OrderStep, AppState, ChainTypes, Transfer, Quote, Country } from "@/types";
+import {
+  OrderStep,
+  AppState,
+  ChainTypes,
+  Transfer,
+  Quote,
+  Country,
+} from "@/types";
 import useEVMPay from "@/onchain/useEVMPay";
 import Image from "next/image";
 import {
   ExchangeRateSkeleton,
   CryptoAmountSkeleton,
 } from "@/components/ui/skeleton";
+import FeeSummary, { FeeSummarySkeleton } from "./fee-summary";
 
 export function PaymentInterface() {
   const { country, asset, updateSelection, paymentMethod, billTillPayout } =
@@ -70,11 +78,14 @@ export function PaymentInterface() {
 
   // Get all country exchange rates using optimized hook
   // This pre-fetches rates for all supported countries to avoid individual API calls
-  const { data: allExchangeRates, isLoading: isExchangeRateLoading, error: exchangeRateError } =
-    useAllCountryExchangeRates({
-      orderType: "selling",
-      providerType: paymentMethod || "momo", // Default to momo for Pay interface
-    });
+  const {
+    data: allExchangeRates,
+    isLoading: isExchangeRateLoading,
+    error: exchangeRateError,
+  } = useAllCountryExchangeRates({
+    orderType: "selling",
+    providerType: paymentMethod || "momo", // Default to momo for Pay interface
+  });
 
   // Get current country's exchange rate from cached data
   const exchangeRate = useMemo(() => {
@@ -464,7 +475,7 @@ export function PaymentInterface() {
       accountNumber: undefined,
       address: undefined,
     });
-    
+
     setShowCountryModal(false);
   };
 
@@ -781,9 +792,9 @@ export function PaymentInterface() {
               <div className="flex items-center justify-between text-xs md:text-sm text-gray-400">
                 <p>
                   1 {asset?.symbol || "USD"} ={" "}
-                  {exchangeRate 
-                    ? exchangeRate.exchange.toLocaleString() 
-                    : country?.exchangeRate 
+                  {exchangeRate
+                    ? exchangeRate.exchange.toLocaleString()
+                    : country?.exchangeRate
                     ? country.exchangeRate.toLocaleString() + " (est.)"
                     : "--"}{" "}
                   {country?.currency || ""}
@@ -848,6 +859,18 @@ export function PaymentInterface() {
                 </Button>
               </div>
             </div>
+          )}
+
+          {isExchangeRateLoading ? (
+            <FeeSummarySkeleton />
+          ) : (
+            <FeeSummary
+              fiatAmount={amount}
+              fiatCurrency={country?.currency || "KES"}
+              cryptoAmount={calculatedCryptoAmount}
+              cryptoCurrency={asset?.symbol || "USDC"}
+              exchangeRateData={exchangeRate}
+            />
           )}
 
           {/* Swipe to Pay Button */}
