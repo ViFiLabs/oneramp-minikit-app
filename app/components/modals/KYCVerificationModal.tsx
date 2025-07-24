@@ -40,6 +40,7 @@ export function KYCVerificationModal({
   };
 
   const fullKycUrl = `${kycLink}&metadata={"address":"${address}"}&redirect=${KYC_REDIRECT_URL}`;
+  // https://signup.getmati.com/?merchantToken=your_client_id&flowId=your_flow_id&redirect=redirection_url&target=_blank
 
   if (showQR) {
     return (
