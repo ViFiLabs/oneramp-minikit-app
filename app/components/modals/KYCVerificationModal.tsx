@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import useWalletGetInfo from "@/hooks/useWalletGetInfo";
 import { useKYCStore } from "@/store/kyc-store";
-import { KYC_REDIRECT_URL } from "@/constants";
+// import { KYC_REDIRECT_URL } from "@/constants";
 import { X } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -39,7 +39,7 @@ export function KYCVerificationModal({
     setIsCheckingKyc(true);
   };
 
-  const fullKycUrl = `${kycLink}&metadata={"address":"${address}"}&redirect=${KYC_REDIRECT_URL}`;
+  const fullKycUrl = `${kycLink}&metadata={"address":"${address}"}&redirect=https://mini.oneramp.io`;
   // https://signup.getmati.com/?merchantToken=your_client_id&flowId=your_flow_id&redirect=redirection_url&target=_blank
 
   if (showQR) {
