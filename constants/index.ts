@@ -8,7 +8,9 @@ export const MOCK_NIGERIAN_ACCOUNT_NUMBER_FAILED = "0000000000";
 
 // BETA URLS
 export const ONERAMP_API_URL = process.env.ONERAMP_API_URL;
-export const KYC_REDIRECT_URL = "https://mini.onramp.io";
+// export const KYC_REDIRECT_URL = "https://mini.onramp.io";
+export const KYC_REDIRECT_URL =
+  "https://farcaster.xyz/miniapps/IFyB1NW3qMPb/oneramp";
 
 export const oneRampApi = axios.create({
   baseURL: ONERAMP_API_URL,
