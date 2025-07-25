@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getCountryExchangeRate } from "@/actions/rates";
-import { ExchangeRateResponse } from "@/types";
+import { getInstitutions } from "@/actions/institutions";
+import { ExchangeRateResponse, Institution } from "@/types";
 
 interface UseExchangeRateParams {
   countryCode?: string;
@@ -20,8 +21,8 @@ export function useAllCountryExchangeRates({
         throw new Error("Provider type and order type are required");
       }
 
-      // Fetch rates for Kenya and Uganda (the only countries supported in Pay interface)
-      const countries = ["KE", "UG"];
+      // Fetch rates for all supported countries
+      const countries = ["NG", "KE", "GHA", "ZM", "UG", "TZ", "ZA"];
       const ratePromises = countries.map(async (countryCode) => {
         try {
           const rate = await getCountryExchangeRate({
@@ -52,6 +53,47 @@ export function useAllCountryExchangeRates({
     staleTime: 60 * 1000, // 60 seconds - longer to reduce API calls
     refetchInterval: 5 * 60 * 1000, // 5 minutes - less frequent refetching
     retry: 2, // Fewer retries to avoid overwhelming the API
+    retryDelay: (attemptIndex) => Math.min(2000 * 2 ** attemptIndex, 10000),
+  });
+}
+
+// Optimized hook for pre-fetching institutions for all countries
+export function useAllCountryInstitutions(method: "buy" | "sell" = "buy") {
+  return useQuery({
+    queryKey: ["allCountryInstitutions", method],
+    queryFn: async () => {
+      // Fetch institutions for all supported countries
+      const countries = ["NG", "KE", "GHA", "ZM", "UG", "TZ", "ZA"];
+      const institutionPromises = countries.map(async (countryCode) => {
+        try {
+          const institutions = await getInstitutions(countryCode, method);
+          return { countryCode, institutions };
+        } catch (error) {
+          console.error(
+            `Failed to fetch institutions for ${countryCode}:`,
+            error
+          );
+          return { countryCode, institutions: [] };
+        }
+      });
+
+      const results = await Promise.all(institutionPromises);
+
+      // Convert to a map for easy lookup
+      const institutionsMap = results.reduce(
+        (acc, { countryCode, institutions }) => {
+          acc[countryCode] = institutions;
+          return acc;
+        },
+        {} as Record<string, Institution[]>
+      );
+
+      return institutionsMap;
+    },
+    enabled: true, // Always enabled to pre-fetch
+    staleTime: 5 * 60 * 1000, // 5 minutes - institutions don't change often
+    refetchInterval: 10 * 60 * 1000, // 10 minutes - very infrequent refetching
+    retry: 2,
     retryDelay: (attemptIndex) => Math.min(2000 * 2 ** attemptIndex, 10000),
   });
 }

@@ -9,6 +9,7 @@ import { useMiniKit } from "@coinbase/onchainkit/minikit";
 import { useEffect, useState } from "react";
 import sdk from "@farcaster/frame-sdk";
 import { HeroText } from "./components/HeroText";
+import { Badge } from "@/components/ui/badge";
 
 export default function Home() {
   const [isSDKLoaded, setIsSDKLoaded] = useState(false);
@@ -43,14 +44,22 @@ export default function Home() {
 
           {/* Mobile header - Only shown on mobile */}
           <div className="w-full flex justify-between items-center px-4 py-2 h-14 md:hidden">
-            <Image
-              src="/large.png"
-              alt="OneRamp"
-              width={80}
-              height={32}
-              priority
-              className="rounded-full"
-            />
+            <div className="relative">
+              <Image
+                src="/large.png"
+                alt="OneRamp"
+                width={80}
+                height={32}
+                priority
+                className="rounded-full"
+              />
+              <Badge
+                variant="secondary"
+                className="absolute -bottom-1 -right-1 text-[9px] px-1 py-0 bg-blue-500 text-white border-0"
+              >
+                BETA
+              </Badge>
+            </div>
             <div className="flex flex-1" />
 
             <ModalConnectButton />
@@ -70,8 +79,6 @@ export default function Home() {
               <div className="flex flex-1">
                 <Header />
               </div>
-
-
             </div>
           </div>
         </div>

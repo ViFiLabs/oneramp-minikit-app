@@ -1,11 +1,10 @@
 "use client";
-import { getInstitutions } from "@/actions/institutions";
 import { Input } from "@/components/ui/input";
 import { Institution } from "@/types";
-import { useQuery } from "@tanstack/react-query";
 import { Loader } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useAllCountryInstitutions } from "@/hooks/useExchangeRate";
 import {
   Dialog,
   DialogPortal,
@@ -32,19 +31,27 @@ export function InstitutionModal({
 }: InstitutionModalProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["institutions", country],
-    queryFn: () => getInstitutions(country, buy ? "buy" : "sell"),
-  });
+  // Get all country institutions using optimized hook
+  const {
+    data: allInstitutions,
+    isLoading,
+    error,
+  } = useAllCountryInstitutions(buy ? "buy" : "sell");
+
+  // Get current country's institutions from cached data
+  const institutions = useMemo(() => {
+    if (!country || !allInstitutions) return [];
+    return allInstitutions[country] || [];
+  }, [country, allInstitutions]);
 
   if (!open) return null;
 
   // Filter institutions based on search query
-  const filteredInstitutions = data?.filter((institution) =>
+  const filteredInstitutions = institutions?.filter((institution) =>
     institution.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (!data) return null;
+  if (!institutions) return null;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -124,7 +131,7 @@ export function InstitutionModal({
               {filteredInstitutions?.map((institution) => (
                 <button
                   key={institution.name}
-                  className="flex items-center gap-4 w-full px-4 py-5 hover:bg-[#23232f] transition-colors text-left border-b border-[#333] last:border-0 rounded-2xl"
+                  className="flex items-center gap-4 w-full px-4 py-5 hover:bg-[#23232f] transition-colors text-left border-b border-[#333] last:border-0 rounded-full"
                   onClick={() => onSelect(institution)}
                   style={{ minHeight: 64 }}
                 >

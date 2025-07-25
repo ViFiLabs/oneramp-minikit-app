@@ -7,6 +7,10 @@ import { useAmountStore } from "@/store/amount-store";
 import { useNetworkStore } from "@/store/network";
 import { useUserSelectionStore } from "@/store/user-selection";
 import { Asset, Network } from "@/types";
+import {
+  useAllCountryExchangeRates,
+  useAllCountryInstitutions,
+} from "@/hooks/useExchangeRate";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import SubmitButton from "./buttons/submit-button";
@@ -34,6 +38,22 @@ export function SwapPanel() {
 
   const { country } = useUserSelectionStore();
   const { isValid: isAmountValid, setAmount } = useAmountStore();
+
+  // Pre-fetch exchange rates for all supported countries when component mounts
+  // This improves the user experience by having rates ready when countries are selected
+  // Note: The data is used in ExchangeRateComponent, this just triggers the pre-fetching
+  // Using "selling" endpoint for better performance (same as PaymentInterface)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { data: allExchangeRates } = useAllCountryExchangeRates({
+    orderType: "selling", // Using selling endpoint for better performance
+    providerType: "momo", // Default provider type
+  });
+
+  // Pre-fetch institutions for all supported countries when component mounts
+  // This ensures institutions are ready when users select a country
+  // Note: The data is used in InstitutionModal, this just triggers the pre-fetching
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { data: allInstitutions } = useAllCountryInstitutions("buy");
 
   // Used to show wallet requirement in the network modal
   const canSwitchNetwork = (network: Network) => {
