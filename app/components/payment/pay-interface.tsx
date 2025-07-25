@@ -17,12 +17,16 @@ import { InstitutionModal } from "../modals/InstitutionModal";
 
 // Import app data and stores
 import { assets } from "@/data/currencies";
-import { countries } from "@/data/countries";
+import {
+  getPaySupportedCountries,
+  isPaymentTypeSupported,
+  requiresInstitutionSelection,
+} from "@/data/countries";
 
 // Note: Actions are now handled by the useBillPayment hook
 
 // Countries that support Pay functionality
-const payEnabledCountries = countries;
+const payEnabledCountries = getPaySupportedCountries();
 
 import { useUserSelectionStore } from "@/store/user-selection";
 import { useAmountStore } from "@/store/amount-store";
@@ -137,20 +141,18 @@ export function PaymentInterface() {
   const [showInstitutionModal, setShowInstitutionModal] = useState(false);
 
   // Check if payment type is supported for the current country
-  const isPaymentTypeSupported = (paymentType: string) => {
-    if (country?.name === "Kenya") {
-      return true; // Kenya supports all payment types
-    }
-    if (country?.name === "Uganda") {
-      return paymentType === "Send Money";
-    }
-    // Other countries support Send Money only
-    return paymentType === "Send Money";
+  const isPaymentTypeSupportedForCountry = (paymentType: string) => {
+    if (!country?.name) return false;
+    return isPaymentTypeSupported(country.name, paymentType);
   };
 
-  // Reset payment type when country changes to non-Kenya countries
+  // Reset payment type when country changes to countries that only support "Send Money"
   useEffect(() => {
-    if (country?.name !== "Kenya" && selectedPaymentType !== "Send Money") {
+    if (
+      country?.name &&
+      !isPaymentTypeSupported(country.name, "Buy Goods") &&
+      selectedPaymentType !== "Send Money"
+    ) {
       setSelectedPaymentType("Send Money");
     }
   }, [country?.name, selectedPaymentType]);
@@ -591,8 +593,8 @@ export function PaymentInterface() {
       case "Send Money":
         return (
           <div className="space-y-4">
-            {/* Institution Selection for non-Kenya countries */}
-            {country?.name !== "Kenya" && (
+            {/* Institution Selection for countries that require it */}
+            {country?.name && requiresInstitutionSelection(country.name) && (
               <div className="space-y-3">
                 <div className="text-gray-400 text-sm sm:text-base">
                   <h3>Select Mobile Money Provider</h3>
@@ -725,12 +727,15 @@ export function PaymentInterface() {
         <>
           {/* Payment Type Buttons */}
           {(() => {
-            // For Kenya, show all three buttons in grid
-            if (country?.name === "Kenya") {
+            // For countries with multiple payment types, show grid
+            if (
+              country?.name &&
+              isPaymentTypeSupported(country.name, "Buy Goods")
+            ) {
               return (
                 <div className="grid grid-cols-3 gap-3">
                   {["Buy Goods", "Paybill", "Send Money"].map((type) => {
-                    const isSupported = isPaymentTypeSupported(type);
+                    const isSupported = isPaymentTypeSupportedForCountry(type);
                     const isSelected = selectedPaymentType === type;
 
                     return (
@@ -753,6 +758,23 @@ export function PaymentInterface() {
                       </Button>
                     );
                   })}
+                </div>
+              );
+            }
+
+            // For countries with only "Send Money", show full width button
+            if (
+              country?.name &&
+              !isPaymentTypeSupported(country.name, "Buy Goods")
+            ) {
+              return (
+                <div className="w-full">
+                  <Button
+                    variant="ghost"
+                    className="h-12 rounded-lg text-sm sm:text-base font-medium transition-all w-full !bg-neutral-600 !border-neutral-500 text-white shadow-sm"
+                  >
+                    <h2 className="text-xs sm:text-sm">Send Money</h2>
+                  </Button>
                 </div>
               );
             }
@@ -968,7 +990,9 @@ export function PaymentInterface() {
               !isAmountValidForCountry ||
               !isConnected ||
               !address ||
-              (country?.name !== "Kenya" && !institution)
+              (!!country?.name &&
+                requiresInstitutionSelection(country.name) &&
+                !institution)
               // Removed isExchangeRateLoading to allow fallback rates
             }
           />

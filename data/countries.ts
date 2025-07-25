@@ -1,5 +1,72 @@
 import { Country, Institution } from "@/types";
 
+// Payment support configuration for countries
+export interface PaymentSupport {
+  name: string;
+  supportedPaymentTypes: ("Buy Goods" | "Paybill" | "Send Money")[];
+  requiresInstitution: boolean;
+}
+
+// Define which countries support Pay functionality and their capabilities
+export const PAY_SUPPORTED_COUNTRIES: PaymentSupport[] = [
+  {
+    name: "Kenya",
+    supportedPaymentTypes: ["Buy Goods", "Paybill", "Send Money"],
+    requiresInstitution: false, // Kenya doesn't need institution selection for Buy Goods/Paybill
+  },
+  {
+    name: "Uganda",
+    supportedPaymentTypes: ["Send Money"],
+    requiresInstitution: true,
+  },
+  {
+    name: "Tanzania",
+    supportedPaymentTypes: ["Send Money"],
+    requiresInstitution: true,
+  },
+  // Future countries can be easily added here:
+  // {
+  //   name: "Ghana",
+  //   supportedPaymentTypes: ["Send Money"],
+  //   requiresInstitution: true,
+  // },
+];
+
+// Helper function to get supported countries for Pay interface
+export const getPaySupportedCountries = () => {
+  return countries.filter((country) =>
+    PAY_SUPPORTED_COUNTRIES.some((supported) => supported.name === country.name)
+  );
+};
+
+// Helper function to get payment support for a specific country
+export const getPaymentSupport = (
+  countryName: string
+): PaymentSupport | undefined => {
+  return PAY_SUPPORTED_COUNTRIES.find(
+    (supported) => supported.name === countryName
+  );
+};
+
+// Helper function to check if a payment type is supported for a country
+export const isPaymentTypeSupported = (
+  countryName: string,
+  paymentType: string
+): boolean => {
+  const support = getPaymentSupport(countryName);
+  return (
+    support?.supportedPaymentTypes.includes(
+      paymentType as "Buy Goods" | "Paybill" | "Send Money"
+    ) || false
+  );
+};
+
+// Helper function to check if a country requires institution selection
+export const requiresInstitutionSelection = (countryName: string): boolean => {
+  const support = getPaymentSupport(countryName);
+  return support?.requiresInstitution || false;
+};
+
 // Country-specific institution lists
 export const countryInstitutions: Record<string, Institution[]> = {
   Nigeria: [
