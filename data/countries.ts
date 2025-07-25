@@ -19,11 +19,6 @@ export const PAY_SUPPORTED_COUNTRIES: PaymentSupport[] = [
     supportedPaymentTypes: ["Send Money"],
     requiresInstitution: true,
   },
-  {
-    name: "Tanzania",
-    supportedPaymentTypes: ["Send Money"],
-    requiresInstitution: true,
-  },
   // Future countries can be easily added here:
   // {
   //   name: "Ghana",
