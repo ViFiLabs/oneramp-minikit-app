@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { SwipeToPayButton } from "./swipe-to-pay";
 import { CountryCurrencyModal } from "../modals/CountryCurrencyModal";
+import { InstitutionModal } from "../modals/InstitutionModal";
 
 // Import app data and stores
 import { assets } from "@/data/currencies";
@@ -21,15 +22,14 @@ import { countries } from "@/data/countries";
 // Note: Actions are now handled by the useBillPayment hook
 
 // Countries that support Pay functionality
-const payEnabledCountries = countries.filter(
-  (country) => country.name === "Kenya" || country.name === "Uganda"
-);
+const payEnabledCountries = countries;
 
 import { useUserSelectionStore } from "@/store/user-selection";
 import { useAmountStore } from "@/store/amount-store";
 import { useNetworkStore } from "@/store/network";
 import { useQuoteStore } from "@/store/quote-store";
 import { useTransferStore } from "@/store/transfer-store";
+import { Institution } from "@/types";
 import { useAllCountryExchangeRates } from "@/hooks/useExchangeRate";
 import { useAssetBalance } from "@/hooks/useAssetBalance";
 import useWalletGetInfo from "@/hooks/useWalletGetInfo";
@@ -51,8 +51,14 @@ import {
 import FeeSummary, { FeeSummarySkeleton } from "./fee-summary";
 
 export function PaymentInterface() {
-  const { country, asset, updateSelection, paymentMethod, billTillPayout } =
-    useUserSelectionStore();
+  const {
+    country,
+    asset,
+    updateSelection,
+    paymentMethod,
+    billTillPayout,
+    institution,
+  } = useUserSelectionStore();
 
   const { amount, setAmount, setIsValid, setFiatAmount } = useAmountStore();
 
@@ -119,18 +125,23 @@ export function PaymentInterface() {
 
   const [selectedPaymentType, setSelectedPaymentType] = useState("Buy Goods");
   const [showCountryModal, setShowCountryModal] = useState(false);
+  const [showInstitutionModal, setShowInstitutionModal] = useState(false);
 
   // Check if payment type is supported for the current country
   const isPaymentTypeSupported = (paymentType: string) => {
+    if (country?.name === "Kenya") {
+      return true; // Kenya supports all payment types
+    }
     if (country?.name === "Uganda") {
       return paymentType === "Send Money";
     }
-    return true; // Kenya supports all payment types
+    // Other countries support Send Money only
+    return paymentType === "Send Money";
   };
 
-  // Reset payment type when country changes to Uganda
+  // Reset payment type when country changes to non-Kenya countries
   useEffect(() => {
-    if (country?.name === "Uganda" && selectedPaymentType !== "Send Money") {
+    if (country?.name !== "Kenya" && selectedPaymentType !== "Send Money") {
       setSelectedPaymentType("Send Money");
     }
   }, [country?.name, selectedPaymentType]);
@@ -225,7 +236,7 @@ export function PaymentInterface() {
 
         return {
           requestType: "payout" as const,
-          accountName: "mtn", // Default name for payout
+          accountName: institution?.name?.toLowerCase() || "mtn", // Use selected institution name
           accountNumber: fullPhoneNumber,
           businessNumber: undefined,
         };
@@ -499,6 +510,14 @@ export function PaymentInterface() {
     }
   };
 
+  const handleInstitutionSelect = (institution: Institution) => {
+    updateSelection({
+      institution: institution,
+      paymentMethod: "momo",
+    });
+    setShowInstitutionModal(false);
+  };
+
   const renderPaymentFields = () => {
     switch (selectedPaymentType) {
       case "Buy Goods":
@@ -562,20 +581,51 @@ export function PaymentInterface() {
 
       case "Send Money":
         return (
-          <div className="space-y-3">
-            <div className="text-gray-400 text-sm sm:text-base">
-              <h3>Enter Telephone Number</h3>
-            </div>
-            <div className="relative">
-              <Input
-                value={billTillPayout?.phoneNumber || ""}
-                type="tel"
-                onChange={(e) =>
-                  updateBillTillPayout({ phoneNumber: e.target.value })
-                }
-                className="!bg-neutral-800 !border-neutral-600 text-sm sm:text-base text-white h-12 rounded-lg px-4 pr-12"
-                placeholder=" 0700 000 000"
-              />
+          <div className="space-y-4">
+            {/* Institution Selection for non-Kenya countries */}
+            {country?.name !== "Kenya" && (
+              <div className="space-y-3">
+                <div className="text-gray-400 text-sm sm:text-base">
+                  <h3>Select Mobile Money Provider</h3>
+                </div>
+                <Button
+                  variant="ghost"
+                  className="!bg-neutral-800 !border-neutral-600 text-sm sm:text-base text-white h-12 rounded-lg px-4 w-full flex items-center justify-between border hover:!bg-neutral-700"
+                  onClick={() => setShowInstitutionModal(true)}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-white">
+                      {institution?.name || "Select provider"}
+                    </span>
+                  </div>
+                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
+                    <path
+                      d="M7 10l5 5 5-5"
+                      stroke="#fff"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </Button>
+              </div>
+            )}
+
+            <div className="space-y-3">
+              <div className="text-gray-400 text-sm sm:text-base">
+                <h3>Enter Telephone Number</h3>
+              </div>
+              <div className="relative">
+                <Input
+                  value={billTillPayout?.phoneNumber || ""}
+                  type="tel"
+                  onChange={(e) =>
+                    updateBillTillPayout({ phoneNumber: e.target.value })
+                  }
+                  className="!bg-neutral-800 !border-neutral-600 text-sm sm:text-base text-white h-12 rounded-lg px-4 pr-12"
+                  placeholder=" 0700 000 000"
+                />
+              </div>
             </div>
           </div>
         );
@@ -665,30 +715,51 @@ export function PaymentInterface() {
       {country && (
         <>
           {/* Payment Type Buttons */}
-          <div className="grid grid-cols-3 gap-3">
-            {["Buy Goods", "Paybill", "Send Money"].map((type) => {
-              const isSupported = isPaymentTypeSupported(type);
-              const isSelected = selectedPaymentType === type;
-
+          {(() => {
+            // For Kenya, show all three buttons in grid
+            if (country?.name === "Kenya") {
               return (
-                <Button
-                  key={type}
-                  variant="ghost"
-                  disabled={!isSupported}
-                  className={`h-12 rounded-lg text-sm sm:text-base font-medium transition-all w-full ${
-                    isSelected && isSupported
-                      ? "!bg-neutral-600 !border-neutral-500 text-white shadow-sm"
-                      : isSupported
-                      ? "!bg-neutral-800 !border-neutral-600 text-gray-300 hover:!bg-neutral-700 hover:text-white border"
-                      : "!bg-neutral-900 !border-neutral-700 text-gray-500 border cursor-not-allowed opacity-50"
-                  }`}
-                  onClick={() => isSupported && setSelectedPaymentType(type)}
-                >
-                  <h2 className="text-xs sm:text-sm">{type}</h2>
-                </Button>
+                <div className="grid grid-cols-3 gap-3">
+                  {["Buy Goods", "Paybill", "Send Money"].map((type) => {
+                    const isSupported = isPaymentTypeSupported(type);
+                    const isSelected = selectedPaymentType === type;
+
+                    return (
+                      <Button
+                        key={type}
+                        variant="ghost"
+                        disabled={!isSupported}
+                        className={`h-12 rounded-lg text-sm sm:text-base font-medium transition-all w-full ${
+                          isSelected && isSupported
+                            ? "!bg-neutral-600 !border-neutral-500 text-white shadow-sm"
+                            : isSupported
+                            ? "!bg-neutral-800 !border-neutral-600 text-gray-300 hover:!bg-neutral-700 hover:text-white border"
+                            : "!bg-neutral-900 !border-neutral-700 text-gray-500 border cursor-not-allowed opacity-50"
+                        }`}
+                        onClick={() =>
+                          isSupported && setSelectedPaymentType(type)
+                        }
+                      >
+                        <h2 className="text-xs sm:text-sm">{type}</h2>
+                      </Button>
+                    );
+                  })}
+                </div>
               );
-            })}
-          </div>
+            }
+
+            // For other countries, only show "Send Money" with full width
+            return (
+              <div className="w-full">
+                <Button
+                  variant="ghost"
+                  className="h-12 rounded-lg text-sm sm:text-base font-medium transition-all w-full !bg-neutral-600 !border-neutral-500 text-white shadow-sm"
+                >
+                  <h2 className="text-xs sm:text-sm">Send Money</h2>
+                </Button>
+              </div>
+            );
+          })()}
 
           {/* Dynamic Payment Fields */}
           <div className="min-h-[80px]">{renderPaymentFields()}</div>
@@ -887,7 +958,8 @@ export function PaymentInterface() {
               !amount ||
               !isAmountValidForCountry ||
               !isConnected ||
-              !address
+              !address ||
+              (country?.name !== "Kenya" && !institution)
               // Removed isExchangeRateLoading to allow fallback rates
             }
           />
@@ -901,6 +973,18 @@ export function PaymentInterface() {
         onSelect={handleCountrySelect}
         filteredCountries={payEnabledCountries}
       />
+
+      {/* Institution Selection Modal */}
+      {country && (
+        <InstitutionModal
+          open={showInstitutionModal}
+          onClose={() => setShowInstitutionModal(false)}
+          selectedInstitution={institution || null}
+          onSelect={handleInstitutionSelect}
+          country={country.countryCode}
+          buy={false}
+        />
+      )}
     </div>
   );
 }
