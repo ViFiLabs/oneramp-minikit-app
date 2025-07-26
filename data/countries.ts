@@ -218,7 +218,7 @@ export const countries: Country[] = [
     exchangeRate: 16.35,
     institutions: countryInstitutions.Ghana,
     fiatMinMax: { min: 16.35, max: 35_000 },
-    cryptoMinMax: { min: 5, max: 2_500 },
+    cryptoMinMax: { min: 1, max: 2_500 },
     accountNumberLength: {
       bankLength: 13,
       mobileLength: 10,
