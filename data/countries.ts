@@ -215,9 +215,9 @@ export const countries: Country[] = [
     currency: "GHS",
     countryCode: "GHA",
     phoneCode: "+233",
-    exchangeRate: 16.35,
+    exchangeRate: 15.43,
     institutions: countryInstitutions.Ghana,
-    fiatMinMax: { min: 16.35, max: 35_000 },
+    fiatMinMax: { min: 15.43, max: 35_000 },
     cryptoMinMax: { min: 1, max: 2_500 },
     accountNumberLength: {
       bankLength: 13,
