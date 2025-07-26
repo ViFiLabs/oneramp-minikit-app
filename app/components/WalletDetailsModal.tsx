@@ -75,7 +75,7 @@ export function WalletDetailsModal({
     >
       <div
         ref={modalRef}
-        className="pointer-events-auto rounded-xl bg-[#1c1c1c] shadow-xl border border-[#333] w-full max-w-[320px] max-h-[90vh] md:max-h-[80vh] overflow-y-auto"
+        className="pointer-events-auto rounded-xl bg-[#1c1c1c] shadow-xl border border-[#333] w-full max-w-[320px] h-[65vh] overflow-y-auto"
       >
         <div className="p-4 border-b border-[#333]">
           <div className="flex justify-between items-center">

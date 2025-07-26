@@ -63,21 +63,6 @@ export function InstitutionModal({
   const institutions = useMemo(() => {
     if (!country) return [];
 
-    // Debug logging to help identify the issue
-    console.log("InstitutionModal - Country:", country);
-    console.log(
-      "InstitutionModal - All institutions keys:",
-      Object.keys(allInstitutions || {})
-    );
-    console.log(
-      "InstitutionModal - Institutions for country:",
-      allInstitutions?.[country]
-    );
-    console.log(
-      "InstitutionModal - Fallback institutions:",
-      fallbackInstitutions
-    );
-
     // Use pre-fetched data if available, otherwise use fallback
     return allInstitutions?.[country] || fallbackInstitutions || [];
   }, [country, allInstitutions, fallbackInstitutions]);
@@ -102,7 +87,7 @@ export function InstitutionModal({
           className="fixed bottom-0 left-0 right-0 z-50 bg-[#181818] border-none text-white p-0 m-0 w-full max-w-none rounded-t-[2.5rem] shadow-2xl animate-slide-up-smooth overflow-hidden"
           style={{
             padding: 0,
-            maxHeight: "60vh",
+            height: "65vh",
             display: "flex",
             flexDirection: "column",
           }}
@@ -153,8 +138,8 @@ export function InstitutionModal({
 
           {/* Content */}
           <div
-            className="overflow-y-auto px-2"
-            style={{ maxHeight: "calc(60vh - 100px)" }}
+            className="overflow-y-auto px-2 flex-1"
+            style={{ height: "calc(50vh - 120px)" }}
           >
             {isLoading && (
               <div className="flex flex-col gap-4 px-4 py-2">

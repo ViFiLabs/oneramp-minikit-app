@@ -67,9 +67,6 @@ export function useAllCountryInstitutions(method: "buy" | "sell" = "buy") {
       const institutionPromises = countries.map(async (countryCode) => {
         try {
           const institutions = await getInstitutions(countryCode, method);
-          console.log(
-            `Successfully fetched ${institutions.length} institutions for ${countryCode}`
-          );
           return { countryCode, institutions };
         } catch (error) {
           console.error(
@@ -91,10 +88,6 @@ export function useAllCountryInstitutions(method: "buy" | "sell" = "buy") {
         },
         {} as Record<string, Institution[]>
       );
-
-      // Debug logging to help identify issues
-      console.log("useAllCountryInstitutions - Results:", results);
-      console.log("useAllCountryInstitutions - Final map:", institutionsMap);
 
       return institutionsMap;
     },

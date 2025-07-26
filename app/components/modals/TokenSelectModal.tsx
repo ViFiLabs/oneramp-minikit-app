@@ -61,7 +61,15 @@ export function TokenSelectModal({ open, onClose }: TokenSelectModalProps) {
       <div
         className="fixed bottom-0 left-0 right-0 bg-[#181818] w-full max-w-none rounded-t-[2.5rem] shadow-2xl animate-slide-up-smooth z-[9999] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
-        style={{ position: "fixed", bottom: 0, left: 0, right: 0, maxHeight: '70vh', display: 'flex', flexDirection: 'column' }}
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: "65vh",
+          display: "flex",
+          flexDirection: "column",
+        }}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-3 md:p-4 border-b border-[#232323] flex-shrink-0 rounded-t-[2.5rem]">
@@ -162,7 +170,10 @@ export function TokenSelectModal({ open, onClose }: TokenSelectModalProps) {
         </div>
 
         {/* Token List */}
-        <div className="overflow-y-auto pb-2 px-4 md:px-6" style={{ maxHeight: '55vh' }}>
+        <div
+          className="overflow-y-auto pb-2 px-4 md:px-6 flex-1"
+          style={{ height: "calc(65vh - 120px)" }}
+        >
           {filteredTokens.length > 0 ? (
             selectedNetwork === "All Networks" ? (
               // Show all tokens grouped by networks
