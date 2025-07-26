@@ -63,7 +63,7 @@ export function CountryCurrencyModal({
       <DialogPortal>
         <DialogOverlay className="bg-black/60 backdrop-blur-lg" />
         <DialogPrimitive.Content
-          className="fixed bottom-0 left-0 right-0 z-50 bg-[#181818] border-none text-white p-0 m-0 w-full max-w-none rounded-t-[2.5rem] shadow-2xl animate-slide-up-smooth overflow-hidden"
+          className="fixed bottom-0 left-0 right-0 z-50 bg-[#181818] border-none text-white p-0 m-0 w-full max-w-none rounded-t-2xl shadow-2xl animate-slide-up-smooth overflow-hidden"
           style={{
             padding: 0,
             height: "65vh",
@@ -76,7 +76,7 @@ export function CountryCurrencyModal({
           </VisuallyHidden>
           <div className="flex flex-col h-full w-full">
             {/* Header with close button */}
-            <div className="flex items-center justify-between px-6 py-3 border-b border-[#232323] bg-[#181818] sticky top-0 z-10 rounded-t-[2.5rem]">
+            <div className="flex items-center justify-between px-6 py-3 border-b border-[#232323] bg-[#181818] sticky top-0 z-10 rounded-t-2xl">
               <h2 className="text-xl font-bold">Select Country</h2>
               <button
                 onClick={onClose}
@@ -110,10 +110,10 @@ export function CountryCurrencyModal({
               }}
             >
               <div className="flex flex-col gap-3 pb-4">
-                {sortedCountries.map((country, index) => {
-                  const isUserCountry =
-                    !isLocationLoading &&
-                    userCountryCode === country.countryCode;
+                {sortedCountries.map((country) => {
+                  // const isUserCountry =
+                  //   !isLocationLoading &&
+                  //   userCountryCode === country.countryCode;
                   const isSelected = selectedCurrency?.name === country.name;
 
                   return (

@@ -84,7 +84,7 @@ export function InstitutionModal({
       <DialogPortal>
         <DialogOverlay className="bg-black/60 backdrop-blur-lg" />
         <DialogPrimitive.Content
-          className="fixed bottom-0 left-0 right-0 z-50 bg-[#181818] border-none text-white p-0 m-0 w-full max-w-none rounded-t-[2.5rem] shadow-2xl animate-slide-up-smooth overflow-hidden"
+          className="fixed bottom-0 left-0 right-0 z-50 bg-[#181818] border-none text-white p-0 m-0 w-full max-w-none rounded-t-2xl shadow-2xl animate-slide-up-smooth overflow-hidden"
           style={{
             padding: 0,
             height: "65vh",
@@ -96,7 +96,7 @@ export function InstitutionModal({
             <DialogPrimitive.Title>Select Institution</DialogPrimitive.Title>
           </VisuallyHidden>
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-3 border-b border-[#232323] rounded-t-[2.5rem]">
+          <div className="flex items-center justify-between px-6 py-3 border-b border-[#232323] rounded-t-2xl">
             <div className="text-xl font-bold">Select institution</div>
             <button
               className="p-3 hover:bg-[#23232f] rounded-full transition-colors"

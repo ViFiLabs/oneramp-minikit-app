@@ -9,6 +9,13 @@ import AssetCard from "../cards/asset-card";
 import { useNetworkStore } from "@/store/network";
 import { useUserSelectionStore } from "@/store/user-selection";
 import { X } from "lucide-react";
+import {
+  Dialog,
+  DialogPortal,
+  DialogOverlay,
+  VisuallyHidden,
+} from "@/components/ui/dialog";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 
 interface TokenSelectModalProps {
   open: boolean;
@@ -54,41 +61,39 @@ export function TokenSelectModal({ open, onClose }: TokenSelectModalProps) {
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-lg"
-      onClick={onClose}
-    >
-      <div
-        className="fixed bottom-0 left-0 right-0 bg-[#181818] w-full max-w-none rounded-t-[2.5rem] shadow-2xl animate-slide-up-smooth z-[9999] overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: "65vh",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between p-3 md:p-4 border-b border-[#232323] flex-shrink-0 rounded-t-[2.5rem]">
-          <h2 className="text-lg md:text-xl font-bold text-white">
-            Select A Token
-          </h2>
-          <Button
-            variant="ghost"
-            className="text-neutral-400 hover:text-white p-2"
-            onClick={onClose}
-          >
-            <X className="text-white w-5 h-5 md:w-6 md:h-6" />
-          </Button>
-        </div>
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogPortal>
+        <DialogOverlay className="bg-black/60 backdrop-blur-lg" />
+        <DialogPrimitive.Content
+          className="fixed bottom-0 left-0 right-0 z-50 bg-[#181818] border-none text-white p-0 m-0 w-full max-w-none rounded-t-2xl shadow-2xl animate-slide-up-smooth overflow-hidden"
+          style={{
+            padding: 0,
+            height: "65vh",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <VisuallyHidden>
+            <DialogPrimitive.Title>Select Token</DialogPrimitive.Title>
+          </VisuallyHidden>
+          {/* Header */}
+          <div className="flex items-center justify-between p-3 md:p-4 border-b border-[#232323] flex-shrink-0 rounded-t-2xl">
+            <h2 className="text-lg md:text-xl font-bold text-white">
+              Select A Token
+            </h2>
+            <Button
+              variant="ghost"
+              className="text-neutral-400 hover:text-white p-2"
+              onClick={onClose}
+            >
+              <X className="text-white w-5 h-5 md:w-6 md:h-6" />
+            </Button>
+          </div>
 
-        {/* Search and Filter Area */}
-        <div className="p-4  gap-3 flex-col hidden">
-          {/* Search Input */}
-          {/* <div className="relative flex-1">
+          {/* Search and Filter Area */}
+          <div className="p-4  gap-3 flex-col hidden">
+            {/* Search Input */}
+            {/* <div className="relative flex-1">
             <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
               <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
                 <path
@@ -109,9 +114,9 @@ export function TokenSelectModal({ open, onClose }: TokenSelectModalProps) {
             />
           </div> */}
 
-          {/* Network Filter Dropdown */}
-          <div className="relative flex-1 min-w-[160px]">
-            {/* <button
+            {/* Network Filter Dropdown */}
+            <div className="relative flex-1 min-w-[160px]">
+              {/* <button
               onClick={() => setShowNetworkDropdown(!showNetworkDropdown)}
               className="w-full bg-[#23232a] text-white py-4 px-6 rounded-full border border-[#333] flex items-center gap-2 justify-between shadow-sm focus:outline-none focus:border-[#bcbcff] focus:ring-2 focus:ring-[#bcbcff]/20 transition-all text-lg"
             >
@@ -135,88 +140,89 @@ export function TokenSelectModal({ open, onClose }: TokenSelectModalProps) {
               </svg>
             </button> */}
 
-            {/* Network Dropdown Menu */}
-            {showNetworkDropdown && (
-              <div className="absolute right-0 mt-2 bg-[#23232a] border border-[#333] rounded-xl w-full z-10 shadow-lg">
-                <Button
-                  key="all-networks"
-                  className={`w-full text-left px-4 py-2 text-white hover:bg-[#3a4155] ${
-                    selectedNetwork === "All Networks" ? "bg-[#3a4155]" : ""
-                  }`}
-                  onClick={() => {
-                    setSelectedNetwork("All Networks");
-                    setShowNetworkDropdown(false);
-                  }}
-                >
-                  All Networks
-                </Button>
-                {SUPPORTED_NETWORKS_WITH_RPC_URLS.map((network) => (
+              {/* Network Dropdown Menu */}
+              {showNetworkDropdown && (
+                <div className="absolute right-0 mt-2 bg-[#23232a] border border-[#333] rounded-xl w-full z-10 shadow-lg">
                   <Button
-                    key={network.name}
+                    key="all-networks"
                     className={`w-full text-left px-4 py-2 text-white hover:bg-[#3a4155] ${
-                      selectedNetwork === network.name ? "bg-[#3a4155]" : ""
+                      selectedNetwork === "All Networks" ? "bg-[#3a4155]" : ""
                     }`}
                     onClick={() => {
-                      setSelectedNetwork(network.name);
+                      setSelectedNetwork("All Networks");
                       setShowNetworkDropdown(false);
                     }}
                   >
-                    {network.name}
+                    All Networks
                   </Button>
-                ))}
-              </div>
-            )}
+                  {SUPPORTED_NETWORKS_WITH_RPC_URLS.map((network) => (
+                    <Button
+                      key={network.name}
+                      className={`w-full text-left px-4 py-2 text-white hover:bg-[#3a4155] ${
+                        selectedNetwork === network.name ? "bg-[#3a4155]" : ""
+                      }`}
+                      onClick={() => {
+                        setSelectedNetwork(network.name);
+                        setShowNetworkDropdown(false);
+                      }}
+                    >
+                      {network.name}
+                    </Button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
 
-        {/* Token List */}
-        <div
-          className="overflow-y-auto pb-2 px-4 md:px-6 flex-1"
-          style={{ height: "calc(65vh - 120px)" }}
-        >
-          {filteredTokens.length > 0 ? (
-            selectedNetwork === "All Networks" ? (
-              // Show all tokens grouped by networks
-              SUPPORTED_NETWORKS_WITH_RPC_URLS.map((network) =>
+          {/* Token List */}
+          <div
+            className="overflow-y-auto pb-2 px-4 md:px-6 flex-1"
+            style={{ height: "calc(65vh - 120px)" }}
+          >
+            {filteredTokens.length > 0 ? (
+              selectedNetwork === "All Networks" ? (
+                // Show all tokens grouped by networks
+                SUPPORTED_NETWORKS_WITH_RPC_URLS.map((network) =>
+                  filteredTokens
+                    .filter(
+                      (token) =>
+                        token.networks[network.name] &&
+                        token.networks[network.name].tokenAddress
+                    )
+                    .map((token) => (
+                      <AssetCard
+                        key={`${token.symbol}-${network.name}`}
+                        token={token}
+                        network={network}
+                        handleTokenSelect={handleTokenSelect}
+                      />
+                    ))
+                )
+              ) : (
+                // Show tokens for selected network
                 filteredTokens
                   .filter(
                     (token) =>
-                      token.networks[network.name] &&
-                      token.networks[network.name].tokenAddress
+                      token.networks[selectedNetwork] &&
+                      token.networks[selectedNetwork].tokenAddress
                   )
                   .map((token) => (
                     <AssetCard
-                      key={`${token.symbol}-${network.name}`}
+                      key={`${token.symbol}-${selectedNetwork}`}
                       token={token}
-                      network={network}
+                      network={token.networks[selectedNetwork] as Network}
                       handleTokenSelect={handleTokenSelect}
                     />
                   ))
               )
             ) : (
-              // Show tokens for selected network
-              filteredTokens
-                .filter(
-                  (token) =>
-                    token.networks[selectedNetwork] &&
-                    token.networks[selectedNetwork].tokenAddress
-                )
-                .map((token) => (
-                  <AssetCard
-                    key={`${token.symbol}-${selectedNetwork}`}
-                    token={token}
-                    network={token.networks[selectedNetwork] as Network}
-                    handleTokenSelect={handleTokenSelect}
-                  />
-                ))
-            )
-          ) : (
-            <div className="p-4 text-center text-neutral-400">
-              No tokens found matching your criteria
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+              <div className="p-4 text-center text-neutral-400">
+                No tokens found matching your criteria
+              </div>
+            )}
+          </div>
+        </DialogPrimitive.Content>
+      </DialogPortal>
+    </Dialog>
   );
 }
