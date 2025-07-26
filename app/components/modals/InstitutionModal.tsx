@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Institution } from "@/types";
 import Image from "next/image";
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useAllCountryInstitutions } from "@/hooks/useExchangeRate";
 import {
   Dialog,
@@ -34,15 +35,55 @@ export function InstitutionModal({
   // Get all country institutions using optimized hook
   const {
     data: allInstitutions,
-    isLoading,
-    error,
+    isLoading: isAllInstitutionsLoading,
+    error: allInstitutionsError,
   } = useAllCountryInstitutions(buy ? "buy" : "sell");
+
+  // Fallback: If the country's institutions are not in the pre-fetched data,
+  // fetch them individually
+  const {
+    data: fallbackInstitutions,
+    isLoading: isFallbackLoading,
+    error: fallbackError,
+  } = useQuery({
+    queryKey: ["institutions", country, buy ? "buy" : "sell"],
+    queryFn: async () => {
+      if (!country) return [];
+      const { getInstitutions } = await import("@/actions/institutions");
+      return await getInstitutions(country, buy ? "buy" : "sell");
+    },
+    enabled:
+      !!country &&
+      !allInstitutions?.[country]?.length &&
+      !isAllInstitutionsLoading,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
   // Get current country's institutions from cached data
   const institutions = useMemo(() => {
-    if (!country || !allInstitutions) return [];
-    return allInstitutions[country] || [];
-  }, [country, allInstitutions]);
+    if (!country) return [];
+
+    // Debug logging to help identify the issue
+    console.log("InstitutionModal - Country:", country);
+    console.log(
+      "InstitutionModal - All institutions keys:",
+      Object.keys(allInstitutions || {})
+    );
+    console.log(
+      "InstitutionModal - Institutions for country:",
+      allInstitutions?.[country]
+    );
+    console.log(
+      "InstitutionModal - Fallback institutions:",
+      fallbackInstitutions
+    );
+
+    // Use pre-fetched data if available, otherwise use fallback
+    return allInstitutions?.[country] || fallbackInstitutions || [];
+  }, [country, allInstitutions, fallbackInstitutions]);
+
+  const isLoading = isAllInstitutionsLoading || isFallbackLoading;
+  const error = allInstitutionsError || fallbackError;
 
   if (!open) return null;
 
@@ -131,7 +172,14 @@ export function InstitutionModal({
 
             {error && (
               <div className="text-white text-xs py-8 text-center">
-                Error: {error.message}
+                <p className="text-red-400 mb-2">Failed to load institutions</p>
+                <p className="text-gray-400">Please try again later</p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="mt-2 text-blue-400 hover:text-blue-300 underline"
+                >
+                  Retry
+                </button>
               </div>
             )}
 
@@ -164,7 +212,20 @@ export function InstitutionModal({
 
               {filteredInstitutions?.length === 0 && (
                 <div className="py-8 text-center text-neutral-400">
-                  No institutions found matching &quot;{searchQuery}&quot;
+                  {searchQuery ? (
+                    <p>
+                      No institutions found matching &quot;{searchQuery}&quot;
+                    </p>
+                  ) : (
+                    <div>
+                      <p className="mb-2">
+                        No institutions available for {country}
+                      </p>
+                      <p className="text-sm">
+                        Please try again later or contact support
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

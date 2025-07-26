@@ -67,13 +67,17 @@ export function useAllCountryInstitutions(method: "buy" | "sell" = "buy") {
       const institutionPromises = countries.map(async (countryCode) => {
         try {
           const institutions = await getInstitutions(countryCode, method);
+          console.log(
+            `Successfully fetched ${institutions.length} institutions for ${countryCode}`
+          );
           return { countryCode, institutions };
         } catch (error) {
           console.error(
             `Failed to fetch institutions for ${countryCode}:`,
             error
           );
-          return { countryCode, institutions: [] };
+          // Return empty array but log the error for debugging
+          return { countryCode, institutions: [], error: String(error) };
         }
       });
 
@@ -88,13 +92,19 @@ export function useAllCountryInstitutions(method: "buy" | "sell" = "buy") {
         {} as Record<string, Institution[]>
       );
 
+      // Debug logging to help identify issues
+      console.log("useAllCountryInstitutions - Results:", results);
+      console.log("useAllCountryInstitutions - Final map:", institutionsMap);
+
       return institutionsMap;
     },
     enabled: true, // Always enabled to pre-fetch
     staleTime: 5 * 60 * 1000, // 5 minutes - institutions don't change often
     refetchInterval: 10 * 60 * 1000, // 10 minutes - very infrequent refetching
-    retry: 2,
+    retry: 3, // Increased retries for better reliability
     retryDelay: (attemptIndex) => Math.min(2000 * 2 ** attemptIndex, 10000),
+    // Retry on window focus to handle network issues
+    refetchOnWindowFocus: true,
   });
 }
 
