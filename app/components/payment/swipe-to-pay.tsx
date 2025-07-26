@@ -16,6 +16,7 @@ interface SwipeToPayButtonProps {
   isLoading?: boolean;
   disabled?: boolean;
   stepMessage?: string;
+  reset?: boolean; // Add reset prop to trigger rollback
 }
 
 export function SwipeToPayButton({
@@ -23,6 +24,7 @@ export function SwipeToPayButton({
   isLoading = false,
   disabled = false,
   stepMessage = "Processing...",
+  reset = false,
 }: SwipeToPayButtonProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [dragX, setDragX] = useState(0);
@@ -187,6 +189,15 @@ export function SwipeToPayButton({
       setDragX(0);
     }
   }, [isLoading]);
+
+  // Reset when reset prop changes
+  useEffect(() => {
+    if (reset) {
+      setIsCompleted(false);
+      setDragX(0);
+      setIsDragging(false);
+    }
+  }, [reset]);
 
   return (
     <div className="relative">

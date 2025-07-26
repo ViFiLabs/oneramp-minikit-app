@@ -33,6 +33,7 @@ import { useAmountStore } from "@/store/amount-store";
 import { useNetworkStore } from "@/store/network";
 import { useQuoteStore } from "@/store/quote-store";
 import { useTransferStore } from "@/store/transfer-store";
+import { useKYCStore } from "@/store/kyc-store";
 import { Institution, AppState } from "@/types";
 import {
   useAllCountryExchangeRates,
@@ -49,6 +50,8 @@ import {
   CryptoAmountSkeleton,
 } from "@/components/ui/skeleton";
 import FeeSummary, { FeeSummarySkeleton } from "./fee-summary";
+import { KYCVerificationModal } from "../modals/KYCVerificationModal";
+import { toast } from "sonner";
 
 export function PaymentInterface() {
   const {
@@ -133,8 +136,14 @@ export function PaymentInterface() {
   const [selectedPaymentType, setSelectedPaymentType] = useState("Buy Goods");
   const [showCountryModal, setShowCountryModal] = useState(false);
   const [showInstitutionModal, setShowInstitutionModal] = useState(false);
+  const [showKYCModal, setShowKYCModal] = useState(false);
+  const [kycTriggered, setKycTriggered] = useState(false);
+  const [swipeButtonReset, setSwipeButtonReset] = useState(false);
 
   const isProcessing = appState === AppState.Processing;
+
+  // Get KYC data
+  const { kycData } = useKYCStore();
 
   // Reset app state to Idle on component mount to prevent stuck Processing state
   useEffect(() => {
@@ -145,6 +154,18 @@ export function PaymentInterface() {
       });
     }
   }, []); // Empty dependency array - only run on mount
+
+  // Handle KYC completion and auto-retry payment
+  useEffect(() => {
+    if (kycTriggered && kycData && kycData.kycStatus === "VERIFIED") {
+      setKycTriggered(false);
+      setShowKYCModal(false);
+      // Auto-retry the payment after KYC completion
+      setTimeout(() => {
+        handleCreateBillQuote();
+      }, 500); // Small delay to ensure state is updated
+    }
+  }, [kycTriggered, kycData]);
 
   // Check if payment type is supported for the current country
   const isPaymentTypeSupportedForCountry = (paymentType: string) => {
@@ -387,6 +408,32 @@ export function PaymentInterface() {
       return;
     }
 
+    // Verify KYC before proceeding with payment
+    if (kycData && kycData.kycStatus !== "VERIFIED") {
+      // Reset transaction state immediately to prevent SwipeToPayButton from staying in submission mode
+      updateSelection({
+        appState: AppState.Idle,
+        orderStep: OrderStep.Initial,
+      });
+      billPaymentMutation.reset();
+      setBlockchainLoading(false);
+
+      // Reset swipe button to roll back to initial position
+      setSwipeButtonReset(true);
+      setTimeout(() => setSwipeButtonReset(false), 100); // Reset the flag after triggering
+
+      // Set flag to indicate KYC was triggered
+      setKycTriggered(true);
+      setShowKYCModal(true);
+      toast.error("KYC verification required");
+      return;
+    }
+
+    // If KYC was previously triggered and now completed, proceed with payment
+    if (kycTriggered) {
+      setKycTriggered(false); // Reset the flag
+    }
+
     // Validate payment-specific details
     const transferDetails = getTransferDetails();
 
@@ -564,6 +611,22 @@ export function PaymentInterface() {
     });
     billPaymentMutation.reset();
     setBlockchainLoading(false);
+  };
+
+  const resetPaymentState = () => {
+    // Reset payment-related states when KYC is cancelled
+    updateSelection({
+      appState: AppState.Idle,
+      orderStep: OrderStep.Initial,
+    });
+    billPaymentMutation.reset();
+    setBlockchainLoading(false);
+    setShowKYCModal(false);
+    setKycTriggered(false); // Reset KYC trigger flag
+
+    // Reset swipe button to roll back to initial position
+    setSwipeButtonReset(true);
+    setTimeout(() => setSwipeButtonReset(false), 100); // Reset the flag after triggering
   };
 
   const renderPaymentFields = () => {
@@ -1045,6 +1108,7 @@ export function PaymentInterface() {
                 !institution) ||
               isProcessing
             }
+            reset={swipeButtonReset}
           />
 
           {isProcessing && (
@@ -1080,6 +1144,13 @@ export function PaymentInterface() {
           buy={false}
         />
       )}
+
+      {/* KYC Verification Modal */}
+      <KYCVerificationModal
+        open={showKYCModal}
+        onClose={resetPaymentState}
+        kycLink={kycData?.message?.link || null}
+      />
     </div>
   );
 }

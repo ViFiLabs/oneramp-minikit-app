@@ -269,7 +269,7 @@ export function KYCVerificationModal({
           <Button
             disabled={!accepted}
             onClick={handleAcceptAndSign}
-            className="flex-1 py-6 bg-neutral-700 text-white hover:bg-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 py-6 !bg-neutral-700 !text-white hover:!bg-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Accept
           </Button>
