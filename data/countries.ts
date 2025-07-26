@@ -3,6 +3,7 @@ import { Country, Institution } from "@/types";
 // Payment support configuration for countries
 export interface PaymentSupport {
   name: string;
+  countryCode: string;
   supportedPaymentTypes: ("Buy Goods" | "Paybill" | "Send Money")[];
   requiresInstitution: boolean;
 }
@@ -11,11 +12,19 @@ export interface PaymentSupport {
 export const PAY_SUPPORTED_COUNTRIES: PaymentSupport[] = [
   {
     name: "Kenya",
+    countryCode: "KE",
     supportedPaymentTypes: ["Buy Goods", "Paybill", "Send Money"],
     requiresInstitution: false, // Kenya doesn't need institution selection for Buy Goods/Paybill
   },
   {
     name: "Uganda",
+    countryCode: "UG",
+    supportedPaymentTypes: ["Send Money"],
+    requiresInstitution: true,
+  },
+  {
+    name: "Tanzania",
+    countryCode: "TZ",
     supportedPaymentTypes: ["Send Money"],
     requiresInstitution: true,
   },

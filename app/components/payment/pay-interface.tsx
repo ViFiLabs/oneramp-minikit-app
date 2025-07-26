@@ -262,14 +262,12 @@ export function PaymentInterface() {
     transfer: Transfer
   ) => {
     if (!asset || !currentNetwork || !quote || !transfer) {
-      console.log("Missing required data for blockchain transaction");
       return;
     }
 
     // Debug the quote object to see its structure
     // Check if we're on the correct network
     if (chainId !== currentNetwork.chainId) {
-      console.log("Wrong chain, cannot proceed with transaction");
       return;
     }
 
@@ -277,7 +275,6 @@ export function PaymentInterface() {
     const contractAddress = asset.networks[networkName]?.tokenAddress;
 
     if (!contractAddress) {
-      console.log("No contract address found for network:", networkName);
       return;
     }
 
@@ -362,6 +359,7 @@ export function PaymentInterface() {
 
     // Validate payment-specific details
     const transferDetails = getTransferDetails();
+
     if (!transferDetails) {
       return;
     }
@@ -419,7 +417,6 @@ export function PaymentInterface() {
               data.quote &&
               data.transfer
             ) {
-              console.log("Starting blockchain transaction...");
               // Keep appState as Processing during blockchain transaction
               updateSelection({ appState: AppState.Processing });
               // Pass the actual quote object (data.quote), not the full response
