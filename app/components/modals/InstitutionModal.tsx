@@ -1,7 +1,6 @@
 "use client";
 import { Input } from "@/components/ui/input";
 import { Institution } from "@/types";
-import { Loader } from "lucide-react";
 import Image from "next/image";
 import { useState, useMemo } from "react";
 import { useAllCountryInstitutions } from "@/hooks/useExchangeRate";
@@ -12,6 +11,7 @@ import {
   VisuallyHidden,
 } from "@/components/ui/dialog";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface InstitutionModalProps {
   open: boolean;
@@ -116,8 +116,16 @@ export function InstitutionModal({
             style={{ maxHeight: "calc(60vh - 100px)" }}
           >
             {isLoading && (
-              <div className="text-white flex items-center justify-center py-8">
-                <Loader className="animate-spin size-6" />
+              <div className="flex flex-col gap-4 px-4 py-2">
+                {[...Array(6)].map((_, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center gap-4 w-full px-4 py-5"
+                  >
+                    <Skeleton className="w-11 h-11 rounded-full" />
+                    <Skeleton className="h-6 w-32" />
+                  </div>
+                ))}
               </div>
             )}
 
