@@ -164,15 +164,39 @@ export function PaymentInterface() {
     // even before a country is selected, improving the user experience
   }, []);
 
-  // Set default asset to USDC
+  // Get available assets for the current network
+  const availableAssets = useMemo(() => {
+    if (!currentNetwork) return assets;
+
+    return assets.filter((asset) => {
+      const networkConfig = asset.networks[currentNetwork.name];
+      return networkConfig && networkConfig.tokenAddress;
+    });
+  }, [currentNetwork]);
+
+  // Set default asset to first available asset for the current network
   useEffect(() => {
-    if (!asset) {
-      const defaultAsset = assets.find((a) => a.symbol === "USDC");
-      if (defaultAsset) {
-        updateSelection({ asset: defaultAsset });
+    if (!asset || !currentNetwork) {
+      const firstAvailableAsset = availableAssets[0];
+      if (firstAvailableAsset) {
+        updateSelection({ asset: firstAvailableAsset });
       }
     }
-  }, [asset, updateSelection]);
+  }, [asset, currentNetwork, availableAssets, updateSelection]);
+
+  // Auto-switch to available asset if current asset is not supported on selected network
+  useEffect(() => {
+    if (asset && currentNetwork && availableAssets.length > 0) {
+      const isCurrentAssetAvailable = availableAssets.some(
+        (availableAsset) => availableAsset.symbol === asset.symbol
+      );
+
+      if (!isCurrentAssetAvailable) {
+        // Switch to first available asset
+        updateSelection({ asset: availableAssets[0] });
+      }
+    }
+  }, [asset, currentNetwork, availableAssets, updateSelection]);
 
   // Set default network to Base
   useEffect(() => {
@@ -499,7 +523,7 @@ export function PaymentInterface() {
   };
 
   const handleAssetSelect = (selectedAsset: string) => {
-    const assetData = assets.find((a) => a.symbol === selectedAsset);
+    const assetData = availableAssets.find((a) => a.symbol === selectedAsset);
     if (assetData) {
       updateSelection({ asset: assetData });
     }
@@ -651,14 +675,14 @@ export function PaymentInterface() {
         {country && (
           <div className="flex items-center gap-2">
             <Select
-              value={asset?.symbol || "USDC"}
+              value={asset?.symbol || availableAssets[0]?.symbol || "USDC"}
               onValueChange={handleAssetSelect}
             >
               <SelectTrigger className="bg-transparent border-none text-sm sm:text-base text-white p-0 h-auto">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-neutral-900 !border-neutral-700 border">
-                {assets.map((assetItem) => (
+                {availableAssets.map((assetItem) => (
                   <SelectItem
                     key={assetItem.symbol}
                     value={assetItem.symbol}
@@ -838,6 +862,7 @@ export function PaymentInterface() {
                 <Select
                   value={currentNetwork?.name || "Base"}
                   onValueChange={handleNetworkSelect}
+                  disabled={true}
                 >
                   <SelectTrigger className="bg-transparent border-none text-sm sm:text-base text-white p-0 h-auto">
                     <SelectValue />

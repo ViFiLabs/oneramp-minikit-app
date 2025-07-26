@@ -12,7 +12,7 @@ import {
   useAllCountryInstitutions,
 } from "@/hooks/useExchangeRate";
 import { AnimatePresence, motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import SubmitButton from "./buttons/submit-button";
 import ExchangeRateComponent from "./exchange-rate-component";
 import { TransactionReviewModal } from "./modals/TransactionReviewModal";
@@ -25,13 +25,26 @@ import SelectInstitution from "./select-institution";
 const networks: Network[] = SUPPORTED_NETWORKS_WITH_RPC_URLS;
 
 export function SwapPanel() {
-  const [selectedCurrency, setSelectedCurrency] = useState<Asset>(assets[0]);
   const { countryPanelOnTop, updateSelection } = useUserSelectionStore();
-  const { setCurrentNetwork } = useNetworkStore();
+  const { currentNetwork, setCurrentNetwork } = useNetworkStore();
   const [selectedCountryCurrency] = useState<null | {
     name: string;
     logo: string;
   }>(null);
+
+  // Get available assets for the current network
+  const availableAssets = useMemo(() => {
+    if (!currentNetwork) return assets;
+
+    return assets.filter((asset) => {
+      const networkConfig = asset.networks[currentNetwork.name];
+      return networkConfig && networkConfig.tokenAddress;
+    });
+  }, [currentNetwork]);
+
+  const [selectedCurrency, setSelectedCurrency] = useState<Asset>(
+    availableAssets[0] || assets[0]
+  );
 
   // Wallet connection states
   const { isConnected: evmConnected } = useWalletGetInfo();
@@ -90,6 +103,7 @@ export function SwapPanel() {
         <SwapHeader
           selectedCurrency={selectedCurrency}
           onCurrencyChange={handleCurrencyChange}
+          availableAssets={availableAssets}
           onSettingsClick={handleSettingsClick}
         />
       </motion.div>
