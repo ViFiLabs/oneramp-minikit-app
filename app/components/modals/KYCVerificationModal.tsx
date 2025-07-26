@@ -44,8 +44,8 @@ export function KYCVerificationModal({
 
   if (showQR) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-lg">
-        <div className="bg-[#1c1c1c] rounded-2xl p-6 max-w-md w-full shadow-2xl relative">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1c1c1c] md:bg-black/60 md:backdrop-blur-lg">
+        <div className="bg-[#1c1c1c] md:rounded-2xl p-6 max-w-md w-full shadow-2xl relative">
           <button
             onClick={onClose}
             className="absolute right-4 top-4 text-neutral-400 hover:text-white"
@@ -127,8 +127,8 @@ export function KYCVerificationModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-lg">
-      <div className="bg-[#1c1c1c] rounded-2xl p-6 max-w-md w-full shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1c1c1c]   md:bg-black/60 md:backdrop-blur-lg">
+      <div className="bg-[#1c1c1c]  md:rounded-2xl p-6 max-w-md w-full shadow-2xl">
         <div className="flex items-start gap-4">
           <div className="p-2 bg-[#232323] rounded-xl">
             <svg
@@ -235,13 +235,6 @@ export function KYCVerificationModal({
               </p>
             </div>
           </div>
-
-          <a
-            href="#"
-            className="block mt-4 text-sm text-blue-500 hover:text-blue-400"
-          >
-            Read full KYC Policy
-          </a>
         </div>
 
         <div className="mt-4 flex items-start gap-2">
