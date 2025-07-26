@@ -35,9 +35,7 @@ export const useBillPayment = () => {
       try {
         // Step 1: Create bill quote
         setCurrentStep("creating-quote");
-        console.log("Creating bill quote with payload:", quotePayload);
         const quoteResponse = await createBillQuote(quotePayload);
-        console.log("Bill quote response:", quoteResponse);
 
         // Step 2: Create transfer using the quote ID
         if (!quoteResponse?.quote?.quoteId) {
@@ -55,9 +53,7 @@ export const useBillPayment = () => {
           }),
         };
 
-        console.log("Creating transfer with payload:", transferPayload);
         const transferResponse = await createPayoutTransfer(transferPayload);
-        console.log("Transfer response:", transferResponse);
 
         // Step 3: Ready for wallet interaction
         setCurrentStep("opening-wallet");
@@ -72,12 +68,10 @@ export const useBillPayment = () => {
         throw error;
       }
     },
-    onSuccess: (data) => {
-      console.log("✅ Bill payment flow completed successfully:", data);
+    onSuccess: () => {
       setCurrentStep("completed");
     },
-    onError: (error) => {
-      console.error("❌ Bill payment flow failed:", error);
+    onError: () => {
       setCurrentStep("error");
     },
     onMutate: () => {

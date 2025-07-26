@@ -193,7 +193,7 @@ export function SwipeToPayButton({
       <div
         ref={containerRef}
         className={`relative rounded-full h-16 flex items-center justify-center overflow-hidden cursor-pointer select-none ${
-          disabled ? "opacity-50" : ""
+          disabled && !isLoading ? "opacity-80" : ""
         }`}
         style={{
           background: disabled
@@ -238,7 +238,7 @@ export function SwipeToPayButton({
       </div>
 
       {/* Helper text */}
-      <div className="text-center text-gray-400 text-sm mt-3">
+      <div className="text-center text-gray-400 text-xs mt-1">
         <p>{getHelperText()}</p>
       </div>
     </div>

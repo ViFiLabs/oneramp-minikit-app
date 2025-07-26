@@ -33,7 +33,7 @@ import { useAmountStore } from "@/store/amount-store";
 import { useNetworkStore } from "@/store/network";
 import { useQuoteStore } from "@/store/quote-store";
 import { useTransferStore } from "@/store/transfer-store";
-import { Institution } from "@/types";
+import { Institution, AppState } from "@/types";
 import {
   useAllCountryExchangeRates,
   useAllCountryInstitutions,
@@ -41,14 +41,7 @@ import {
 import { useAssetBalance } from "@/hooks/useAssetBalance";
 import useWalletGetInfo from "@/hooks/useWalletGetInfo";
 import { useBillPayment, PaymentStep } from "@/hooks/useBillPayment";
-import {
-  OrderStep,
-  AppState,
-  ChainTypes,
-  Transfer,
-  Quote,
-  Country,
-} from "@/types";
+import { OrderStep, ChainTypes, Transfer, Quote, Country } from "@/types";
 import useEVMPay from "@/onchain/useEVMPay";
 import Image from "next/image";
 import {
@@ -65,6 +58,7 @@ export function PaymentInterface() {
     paymentMethod,
     billTillPayout,
     institution,
+    appState,
   } = useUserSelectionStore();
 
   const { amount, setAmount, setIsValid, setFiatAmount } = useAmountStore();
@@ -139,6 +133,18 @@ export function PaymentInterface() {
   const [selectedPaymentType, setSelectedPaymentType] = useState("Buy Goods");
   const [showCountryModal, setShowCountryModal] = useState(false);
   const [showInstitutionModal, setShowInstitutionModal] = useState(false);
+
+  const isProcessing = appState === AppState.Processing;
+
+  // Reset app state to Idle on component mount to prevent stuck Processing state
+  useEffect(() => {
+    if (appState === AppState.Processing) {
+      updateSelection({
+        appState: AppState.Idle,
+        orderStep: OrderStep.Initial,
+      });
+    }
+  }, []); // Empty dependency array - only run on mount
 
   // Check if payment type is supported for the current country
   const isPaymentTypeSupportedForCountry = (paymentType: string) => {
@@ -550,6 +556,16 @@ export function PaymentInterface() {
     setShowInstitutionModal(false);
   };
 
+  const handleCancelTransaction = () => {
+    // Reset all transaction-related states
+    updateSelection({
+      appState: AppState.Idle,
+      orderStep: OrderStep.Initial,
+    });
+    billPaymentMutation.reset();
+    setBlockchainLoading(false);
+  };
+
   const renderPaymentFields = () => {
     switch (selectedPaymentType) {
       case "Buy Goods":
@@ -567,6 +583,7 @@ export function PaymentInterface() {
                 }
                 className="!bg-neutral-800 !border-neutral-600 text-base text-white h-12 rounded-lg px-4 pr-12"
                 placeholder="Enter till number"
+                disabled={isProcessing}
               />
             </div>
           </div>
@@ -588,6 +605,7 @@ export function PaymentInterface() {
                   }
                   className="!bg-neutral-800 !border-neutral-600 text-sm sm:text-base text-white h-12 rounded-lg px-4 pr-12"
                   placeholder="Enter paybill number"
+                  disabled={isProcessing}
                 />
               </div>
             </div>
@@ -605,6 +623,7 @@ export function PaymentInterface() {
                   }
                   className="!bg-neutral-800 !border-neutral-600 text-sm sm:text-base text-white h-12 rounded-lg px-4 pr-12"
                   placeholder="Enter account number"
+                  disabled={isProcessing}
                 />
               </div>
             </div>
@@ -624,6 +643,7 @@ export function PaymentInterface() {
                   variant="ghost"
                   className="!bg-neutral-800 !border-neutral-600 text-sm sm:text-base text-white h-12 rounded-lg px-4 w-full flex items-center justify-between border hover:!bg-neutral-700"
                   onClick={() => setShowInstitutionModal(true)}
+                  disabled={isProcessing}
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-white">
@@ -656,6 +676,7 @@ export function PaymentInterface() {
                   }
                   className="!bg-neutral-800 !border-neutral-600 text-sm sm:text-base text-white h-12 rounded-lg px-4 pr-12"
                   placeholder=" 0700 000 000"
+                  disabled={isProcessing}
                 />
               </div>
             </div>
@@ -677,6 +698,7 @@ export function PaymentInterface() {
             <Select
               value={asset?.symbol || availableAssets[0]?.symbol || "USDC"}
               onValueChange={handleAssetSelect}
+              disabled={isProcessing}
             >
               <SelectTrigger className="bg-transparent border-none text-sm sm:text-base text-white p-0 h-auto">
                 <SelectValue />
@@ -714,6 +736,7 @@ export function PaymentInterface() {
           variant="ghost"
           className="!bg-neutral-800 !border-neutral-600 text-sm sm:text-base text-white h-12 rounded-t-2xl rounded-b-lg px-4 w-full flex items-center justify-between border hover:!bg-neutral-700"
           onClick={() => setShowCountryModal(true)}
+          disabled={isProcessing}
         >
           <div className="flex items-center gap-3">
             {country ? (
@@ -763,7 +786,7 @@ export function PaymentInterface() {
                       <Button
                         key={type}
                         variant="ghost"
-                        disabled={!isSupported}
+                        disabled={!isSupported || isProcessing}
                         className={`h-12 rounded-lg text-sm sm:text-base font-medium transition-all w-full ${
                           isSelected && isSupported
                             ? "!bg-neutral-600 !border-neutral-500 text-white shadow-sm"
@@ -793,6 +816,7 @@ export function PaymentInterface() {
                   <Button
                     variant="ghost"
                     className="h-12 rounded-lg text-sm sm:text-base font-medium transition-all w-full !bg-neutral-600 !border-neutral-500 text-white shadow-sm"
+                    disabled={isProcessing}
                   >
                     <h2 className="text-xs sm:text-sm">Send Money</h2>
                   </Button>
@@ -806,6 +830,7 @@ export function PaymentInterface() {
                 <Button
                   variant="ghost"
                   className="h-12 rounded-lg text-sm sm:text-base font-medium transition-all w-full !bg-neutral-600 !border-neutral-500 text-white shadow-sm"
+                  disabled={isProcessing}
                 >
                   <h2 className="text-xs sm:text-sm">Send Money</h2>
                 </Button>
@@ -829,8 +854,9 @@ export function PaymentInterface() {
                 type="number"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="text-right bg-transparent font-extrabold border-none text-2xl sm:text-3xl text-white p-0 h-auto"
+                className="text-right bg-transparent !font-extrabold border-none text-2xl sm:text-3xl text-white p-0 h-auto"
                 placeholder="0"
+                disabled={isProcessing}
               />
             </div>
             <div className="h-px bg-gray-700"></div>
@@ -997,6 +1023,8 @@ export function PaymentInterface() {
             />
           )}
 
+          {/* Cancel Transaction Button - Only show when processing */}
+
           {/* Swipe to Pay Button */}
           <SwipeToPayButton
             onPaymentComplete={handlePaymentComplete}
@@ -1014,10 +1042,22 @@ export function PaymentInterface() {
               !address ||
               (!!country?.name &&
                 requiresInstitutionSelection(country.name) &&
-                !institution)
-              // Removed isExchangeRateLoading to allow fallback rates
+                !institution) ||
+              isProcessing
             }
           />
+
+          {isProcessing && (
+            <div className="flex justify-center">
+              <Button
+                onClick={handleCancelTransaction}
+                variant="ghost"
+                className="!text-red-400 hover:!text-red-300 text-sm font-medium transition-colors"
+              >
+                Cancel Transaction
+              </Button>
+            </div>
+          )}
         </>
       )}
 
