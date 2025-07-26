@@ -18,9 +18,8 @@ interface KYCVerificationModalProps {
 export function KYCVerificationModal({
   open,
   onClose,
-  kycLink,
 }: KYCVerificationModalProps) {
-  const { setIsCheckingKyc, isCheckingKyc, kycData } = useKYCStore();
+  const { setIsCheckingKyc, kycData } = useKYCStore();
   const { address } = useWalletGetInfo();
   const [accepted, setAccepted] = useState(false);
   const [showQR, setShowQR] = useState(false);
@@ -39,7 +38,8 @@ export function KYCVerificationModal({
     setIsCheckingKyc(true);
   };
 
-  const fullKycUrl = `${kycLink}&metadata={"address":"${address}"}&redirect=https://mini.oneramp.io`;
+  // const fullKycUrl = `${kycLink}&metadata={"address":"${address}"}&redirect=https://mini.oneramp.io`;
+  const fullKycUrl = `https://signup.metamap.com/?clientId=671a3cf5673134001da20657&flowId=671a3cf5673134001da20656&metadata={"address":"${address}"}&redirect=https://mini.oneramp.io`;
   // https://signup.getmati.com/?merchantToken=your_client_id&flowId=your_flow_id&redirect=redirection_url&target=_blank
 
   if (showQR) {
@@ -78,10 +78,13 @@ export function KYCVerificationModal({
             <div className="text-center text-neutral-400 text-sm mb-4">or</div>
 
             <Button
-              className="w-full py-6 bg-neutral-800 text-white hover:bg-neutral-700"
-              disabled={kycData?.kycStatus === "PENDING"}
+              className="w-full py-6 bg-neutral-800 text-white hover:bg-neutral-700 cursor-pointer"
+              // disabled={kycData?.kycStatus === "PENDING"}
+              // onClick={() => {
+              //   if (kycLink) window.open(fullKycUrl, "_blank");
+              // }}
               onClick={() => {
-                if (kycLink) window.open(fullKycUrl, "_blank");
+                window.open(fullKycUrl, "_blank");
               }}
             >
               Open URL
@@ -114,13 +117,13 @@ export function KYCVerificationModal({
               </svg>
             </Button>
           </div>
-          {isCheckingKyc && (
+          {/* {isCheckingKyc && (
             <div className="w-full flex justify-end p-1">
               <span className="text-neutral-400 text-[10px] text-end">
                 Listening...
               </span>
             </div>
-          )}
+          )} */}
         </div>
       </div>
     );
