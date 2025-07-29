@@ -7,7 +7,7 @@ import { useUserSelectionStore } from "@/store/user-selection";
 import { OrderStep, TransferStatusEnum } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import ProcessingCard from "./processing-card";
 
 const PayOrderProcessing = () => {
@@ -15,6 +15,7 @@ const PayOrderProcessing = () => {
   const { transfer, resetTransfer, transactionHash } = useTransferStore();
   const { quote, resetQuote } = useQuoteStore();
   const router = useRouter();
+  const hashSubmittedRef = useRef(false);
 
   // Debug the quote structure
   useEffect(() => {
@@ -23,12 +24,20 @@ const PayOrderProcessing = () => {
     }
   }, [quote]);
 
+  // Reset submitted flag when transaction hash changes
+  useEffect(() => {
+    if (transactionHash) {
+      hashSubmittedRef.current = false;
+    }
+  }, [transactionHash]);
+
   // Submit transaction hash mutation
   const submitTxHashMutation = useMutation({
     mutationKey: ["submit-tx-hash-pay"],
     mutationFn: submitTransactionHash,
     onSuccess: () => {
       console.log("Transaction hash submitted successfully:");
+      hashSubmittedRef.current = true;
       // Transition to regular transfer status polling
       updateSelection({ orderStep: OrderStep.GotTransfer });
     },
@@ -43,19 +52,22 @@ const PayOrderProcessing = () => {
     if (
       transfer?.transferId &&
       transactionHash &&
-      !submitTxHashMutation.isPending
+      !submitTxHashMutation.isPending &&
+      !hashSubmittedRef.current
     ) {
-      // Wait 10 seconds before submitting (like TransactionReviewModal)
+      // Wait 2 seconds before submitting (reduced from 10 seconds)
       const timer = setTimeout(() => {
-        submitTxHashMutation.mutate({
-          transferId: transfer.transferId,
-          txHash: transactionHash,
-        });
-      }, 10000);
+        if (!hashSubmittedRef.current && transfer?.transferId && transactionHash) {
+          submitTxHashMutation.mutate({
+            transferId: transfer.transferId,
+            txHash: transactionHash,
+          });
+        }
+      }, 2000);
 
       return () => clearTimeout(timer);
     }
-  }, [transfer?.transferId, transactionHash, submitTxHashMutation]);
+  }, [transfer?.transferId, transactionHash]); // Removed submitTxHashMutation from dependencies
 
   // Monitor transfer status after hash submission
   const { data: transferStatus, isLoading } = useQuery({
@@ -84,7 +96,7 @@ const PayOrderProcessing = () => {
     ) {
       updateSelection({ orderStep: OrderStep.PaymentFailed });
     }
-  }, [transferStatus?.status, isLoading, updateSelection]);
+  }, [transferStatus?.status, isLoading]); // Removed updateSelection from dependencies
 
   // Extract actual quote if it's nested
   const actualQuote = quote;
