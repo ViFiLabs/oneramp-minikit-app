@@ -42,7 +42,7 @@ export function SwapPanel() {
   const [showWalletModal, setShowWalletModal] = useState(false);
   const userSelectionStore = useUserSelectionStore();
   const { countryPanelOnTop, updateSelection, country, institution, accountNumber, asset } = userSelectionStore;
-  const { currentNetwork, setCurrentNetwork, currentNetwork } = useNetworkStore();
+  const { currentNetwork, setCurrentNetwork } = useNetworkStore();
   const { chainId } = useWalletGetInfo();
   const [selectedCountryCurrency] = useState<null | {
     name: string;
