@@ -29,10 +29,10 @@ interface FormInputs {
   walletAddress?: string;
 }
 
-const SelectInstitution = ({ 
-  buy, 
-  disableSubmit = false 
-}: { 
+const SelectInstitution = ({
+  buy,
+  disableSubmit = false,
+}: {
   buy?: boolean;
   disableSubmit?: boolean;
 }) => {
@@ -622,10 +622,14 @@ const SelectInstitution = ({
                 userPayLoad.appState === AppState.Processing ||
                 Object.keys(errors).length > 0 ||
                 !isAmountValid ||
-                !currentNetwork
+                !currentNetwork ||
+                !institution
               }
               className={`w-full  text-white text-base font-bold h-14 mt-2 rounded-2xl ${
-                buttonDisabled || !isAmountValid || !currentNetwork
+                buttonDisabled ||
+                !isAmountValid ||
+                !currentNetwork ||
+                !institution
                   ? "!bg-[#232323] !hover:bg-[#2a2a2a] cursor-not-allowed"
                   : "!bg-[#2563eb] !hover:bg-[#1d4ed8]"
               }`}

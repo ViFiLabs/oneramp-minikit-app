@@ -5,7 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import useWalletGetInfo from "@/hooks/useWalletGetInfo";
 import { useKYCStore } from "@/store/kyc-store";
 // import { KYC_REDIRECT_URL } from "@/constants";
-import { X } from "lucide-react";
+import { X, AlertCircle, CheckCircle, Clock } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
@@ -19,7 +19,7 @@ export function KYCVerificationModal({
   open,
   onClose,
 }: KYCVerificationModalProps) {
-  const { setIsCheckingKyc, kycData } = useKYCStore();
+  const { setIsCheckingKyc, kycData, clearKycData } = useKYCStore();
   const { address } = useWalletGetInfo();
   const [accepted, setAccepted] = useState(false);
   const [showQR, setShowQR] = useState(false);
@@ -38,14 +38,207 @@ export function KYCVerificationModal({
     setIsCheckingKyc(true);
   };
 
+  // Handle KYC rejection
+  const handleKYCRejection = () => {
+    // Reset KYC state and close modal
+    setIsCheckingKyc(false);
+    clearKycData(); // Clear rejected KYC data
+    onClose();
+  };
+
   // const fullKycUrl = `${kycLink}&metadata={"address":"${address}"}&redirect=https://mini.oneramp.io`;
   const fullKycUrl = `https://signup.metamap.com/?clientId=671a3cf5673134001da20657&flowId=671a3cf5673134001da20656&metadata={"address":"${address}"}&redirect=https://mini.oneramp.io`;
   // https://signup.getmati.com/?merchantToken=your_client_id&flowId=your_flow_id&redirect=redirection_url&target=_blank
 
+  // Show KYC status based on current status
+  if (kycData?.kycStatus === "REJECTED") {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1c1c1c] md:bg-black/60 md:backdrop-blur-lg">
+        <div
+          className="bg-[#1c1c1c] md:rounded-2xl p-6 max-w-md w-full shadow-2xl relative
+        /* Mobile: full screen */
+        /* Desktop: centered modal */
+        md:max-w-lg md:mx-4"
+        >
+          <button
+            onClick={handleKYCRejection}
+            className="absolute right-4 top-4 text-neutral-400 hover:text-white"
+          >
+            <X size={24} />
+          </button>
+
+          <div className="text-center">
+            <div className="flex justify-center mb-4">
+              <div className="p-3 bg-red-900/20 rounded-full">
+                <AlertCircle className="w-8 h-8 text-red-400" />
+              </div>
+            </div>
+
+            <h2 className="text-xl text-white font-semibold mb-2">
+              KYC Verification Rejected
+            </h2>
+            <p className="text-neutral-400 text-sm mb-6">
+              Your identity verification was not approved. This could be due to:
+            </p>
+
+            <div className="bg-[#232323] rounded-xl p-4 mb-6 text-left">
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="mt-1">
+                    <div className="w-2 h-2 bg-red-400 rounded-full"></div>
+                  </div>
+                  <p className="text-neutral-400 text-sm">
+                    Document quality issues (blurry, incomplete, or expired)
+                  </p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="mt-1">
+                    <div className="w-2 h-2 bg-red-400 rounded-full"></div>
+                  </div>
+                  <p className="text-neutral-400 text-sm">
+                    Information mismatch between documents
+                  </p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="mt-1">
+                    <div className="w-2 h-2 bg-red-400 rounded-full"></div>
+                  </div>
+                  <p className="text-neutral-400 text-sm">
+                    Unsupported document type for your region
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <Button
+                onClick={() => {
+                  window.open("https://t.me/+Hnr5eySeSoMyOTM0", "_blank");
+                }}
+                className="w-full py-4 !bg-blue-600 text-white hover:!bg-blue-700"
+              >
+                Contact Support
+              </Button>
+            </div>
+
+            <div className="mt-4 text-center">
+              <p className="text-neutral-500 text-xs">
+                Need help? Contact our support team for assistance
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show pending KYC status
+  if (kycData?.kycStatus === "PENDING") {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1c1c1c] md:bg-black/60 md:backdrop-blur-lg">
+        <div
+          className="bg-[#1c1c1c] md:rounded-2xl p-6 max-w-md w-full shadow-2xl relative
+        /* Mobile: full screen */
+        /* Desktop: centered modal */
+        md:max-w-lg md:mx-4"
+        >
+          <button
+            onClick={onClose}
+            className="absolute right-4 top-4 text-neutral-400 hover:text-white"
+          >
+            <X size={24} />
+          </button>
+
+          <div className="text-center">
+            <div className="flex justify-center mb-4">
+              <div className="p-3 bg-yellow-900/20 rounded-full">
+                <Clock className="w-8 h-8 text-yellow-400" />
+              </div>
+            </div>
+
+            <h2 className="text-xl text-white font-semibold mb-2">
+              Verification in Progress
+            </h2>
+            <p className="text-neutral-400 text-sm mb-6">
+              Your identity verification is being reviewed. This usually takes
+              2-5 minutes.
+            </p>
+
+            <div className="bg-[#232323] rounded-xl p-4 mb-6">
+              <div className="flex items-center justify-center mb-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
+              </div>
+              <p className="text-neutral-400 text-sm">
+                Please wait while we verify your documents...
+              </p>
+            </div>
+
+            <Button
+              onClick={onClose}
+              variant="ghost"
+              className="w-full py-4 text-neutral-400 hover:text-white hover:bg-neutral-800"
+            >
+              Close
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show successful KYC status
+  if (kycData?.kycStatus === "VERIFIED") {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1c1c1c] md:bg-black/60 md:backdrop-blur-lg">
+        <div
+          className="bg-[#1c1c1c] md:rounded-2xl p-6 max-w-md w-full shadow-2xl relative
+        /* Mobile: full screen */
+        /* Desktop: centered modal */
+        md:max-w-lg md:mx-4"
+        >
+          <button
+            onClick={onClose}
+            className="absolute right-4 top-4 text-neutral-400 hover:text-white"
+          >
+            <X size={24} />
+          </button>
+
+          <div className="text-center">
+            <div className="flex justify-center mb-4">
+              <div className="p-3 bg-green-900/20 rounded-full">
+                <CheckCircle className="w-8 h-8 text-green-400" />
+              </div>
+            </div>
+
+            <h2 className="text-xl text-white font-semibold mb-2">
+              Verification Successful!
+            </h2>
+            <p className="text-neutral-400 text-sm mb-6">
+              Your identity has been verified successfully. You can now proceed
+              with your transaction.
+            </p>
+
+            <Button
+              onClick={onClose}
+              className="w-full py-4 bg-green-600 text-white hover:bg-green-700"
+            >
+              Continue
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (showQR) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1c1c1c] md:bg-black/60 md:backdrop-blur-lg">
-        <div className="bg-[#1c1c1c] md:rounded-2xl p-6 max-w-md w-full shadow-2xl relative">
+        <div
+          className="bg-[#1c1c1c] md:rounded-2xl p-6 max-w-md w-full shadow-2xl relative
+        /* Mobile: full screen */
+        /* Desktop: centered modal */
+        md:max-w-lg md:mx-4"
+        >
           <button
             onClick={onClose}
             className="absolute right-4 top-4 text-neutral-400 hover:text-white"
@@ -79,10 +272,6 @@ export function KYCVerificationModal({
 
             <Button
               className="w-full py-6 bg-neutral-800 text-white hover:bg-neutral-700 cursor-pointer"
-              // disabled={kycData?.kycStatus === "PENDING"}
-              // onClick={() => {
-              //   if (kycLink) window.open(fullKycUrl, "_blank");
-              // }}
               onClick={() => {
                 window.open(fullKycUrl, "_blank");
               }}
@@ -117,13 +306,6 @@ export function KYCVerificationModal({
               </svg>
             </Button>
           </div>
-          {/* {isCheckingKyc && (
-            <div className="w-full flex justify-end p-1">
-              <span className="text-neutral-400 text-[10px] text-end">
-                Listening...
-              </span>
-            </div>
-          )} */}
         </div>
       </div>
     );
@@ -131,7 +313,12 @@ export function KYCVerificationModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1c1c1c]   md:bg-black/60 md:backdrop-blur-lg">
-      <div className="bg-[#1c1c1c]  md:rounded-2xl p-6 max-w-md w-full shadow-2xl">
+      <div
+        className="bg-[#1c1c1c]  md:rounded-2xl p-6 max-w-md w-full shadow-2xl
+      /* Mobile: full screen */
+      /* Desktop: centered modal */
+      md:max-w-lg md:mx-4"
+      >
         <div className="flex items-start gap-4">
           <div className="p-2 bg-[#232323] rounded-xl">
             <svg

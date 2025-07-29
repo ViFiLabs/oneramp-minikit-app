@@ -393,7 +393,13 @@ const TransactionsModal = () => {
       </Button>
 
       <Dialog open={modalTxOpen} onOpenChange={setModalTxOpen}>
-        <DialogContent className="fixed border-none inset-0 z-50 w-screen h-screen max-w-none max-h-none p-0 bg-[#181818] text-white flex flex-col translate-x-0 translate-y-0 top-0 lg:right-0 lg:left-auto lg:w-96 lg:max-w-sm lg:shadow-2xl lg:border-l lg:border-[#232323]">
+        <DialogContent
+          className="fixed border-none inset-0 z-50 w-screen h-screen max-w-none max-h-none p-0 bg-[#181818] text-white flex flex-col translate-x-0 translate-y-0 top-0 
+           /* Mobile: full screen */
+           /* Desktop: centered modal */
+           md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-2xl md:h-[65vh] md:rounded-2xl md:shadow-2xl md:border md:border-[#232323] md:animate-in md:fade-in md:duration-200
+           desktop-modal-center"
+        >
           <div className="flex flex-col h-full w-full">
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-5 border-b border-[#232323]">
