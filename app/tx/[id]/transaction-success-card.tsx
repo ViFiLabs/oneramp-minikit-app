@@ -3,6 +3,9 @@
 import React from "react";
 import { FiCheck, FiLink, FiFileText } from "react-icons/fi";
 import { TransferType, TransferStatus } from "@/types";
+import { assets } from "@/data/currencies";
+import { countries } from "@/data/countries";
+import Image from "next/image";
 
 import CountryAvator from "@/app/components/cards/country-avator";
 
@@ -23,18 +26,59 @@ const TransactionSuccessCard: React.FC<TransactionSuccessCardProps> = ({
     " " +
     new Date().toLocaleTimeString("en-GB");
 
-  let totalAmount = 0;
-  if (transferStatus.fiatType === "KES" || transferStatus.fiatType === "UGX") {
-    totalAmount = Number(transferStatus.amountProvided);
-  } else {
-    totalAmount = Number(transferStatus.amountProvided);
-  }
+  // Get the correct country data based on fiat type
+  const getCountryFromFiatType = (fiatType: string) => {
+    return (
+      countries.find((country) => country.currency === fiatType)?.countryCode ||
+      "UG"
+    );
+  };
+
+  // Get the correct asset data
+  const getAssetData = (cryptoType: string) => {
+    return assets.find((asset) => asset.symbol === cryptoType);
+  };
+
+  const countryCode = getCountryFromFiatType(transferStatus.fiatType);
+  const assetData = getAssetData(transferStatus.cryptoType);
+
+  // Calculate correct amounts - we need to calculate crypto amount from fiat
+  const fiatAmount = Number(transferStatus.amountProvided);
+
+  // Get exchange rate from countries data (fallback to 1 if not found)
+  const countryData = countries.find(
+    (country) => country.currency === transferStatus.fiatType
+  );
+  const exchangeRate = countryData?.exchangeRate || 1;
+
+  // Calculate crypto amount
+  const cryptoAmount = fiatAmount / exchangeRate;
+
+  const sourceAmount =
+    transferStatus.transferType === TransferType.TransferIn
+      ? fiatAmount
+      : cryptoAmount;
+
+  const destinationAmount =
+    transferStatus.transferType === TransferType.TransferIn
+      ? cryptoAmount
+      : fiatAmount;
+
+  const sourceCurrency =
+    transferStatus.transferType === TransferType.TransferIn
+      ? transferStatus.fiatType
+      : transferStatus.cryptoType;
+
+  const destinationCurrency =
+    transferStatus.transferType === TransferType.TransferIn
+      ? transferStatus.cryptoType
+      : transferStatus.fiatType;
 
   return (
-    <div className="min-h-screen text-white flex items-center w-full md:w-1/3 justify-center bg-black">
+    <div className="min-h-screen text-white flex items-center w-full md:w-1/3 justify-center !bg-[#181818] md:bg-black">
       <div className="w-full h-full max-w-lg">
         {/* Main Card */}
-        <div className="bg-[#181818] rounded-2xl border border-[#232323] overflow-hidden">
+        <div className="!bg-[#181818] md:rounded-2xl border !border-[#232323] overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-[#232323]">
             <div className="flex items-center gap-3">
@@ -58,55 +102,48 @@ const TransactionSuccessCard: React.FC<TransactionSuccessCardProps> = ({
               <div className="flex-1 bg-[#232323] rounded-xl p-6 h-44 flex flex-col items-center justify-center">
                 <div className="mb-4 flex items-center justify-center relative size-24">
                   {transferStatus.transferType === TransferType.TransferIn ? (
-                    <CountryAvator country="UG" iconOnly />
+                    <CountryAvator country={countryCode} iconOnly />
                   ) : (
-                    // <AssetAvator
-                    //   cryptoType={transferStatus.cryptoType}
-                    //   cryptoAmount={transferStatus.amountReceived}
-                    //   iconOnly
-                    // />
-                    <></>
+                    assetData && (
+                      <div className="relative w-full h-full">
+                        <Image
+                          src={assetData.logo}
+                          alt={transferStatus.cryptoType}
+                          fill
+                          className="rounded-full"
+                        />
+                      </div>
+                    )
                   )}
                 </div>
                 <div className="flex flex-col items-center text-center">
                   <h2 className="text-gray-300 font-mono text-base">
-                    {transferStatus.transferType === TransferType.TransferIn
-                      ? `${totalAmount.toFixed(2)} ${transferStatus.fiatType}`
-                      : `${Number(transferStatus.amountReceived).toFixed(3)} ${
-                          transferStatus.cryptoType
-                        }`}
+                    {sourceAmount.toFixed(3)} {sourceCurrency}
                   </h2>
                 </div>
               </div>
-
-              {/* Arrow positioned in the middle */}
-              {/* <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
-                <div className="bg-[#181818] border-4 border-[#232323] rounded-xl p-2 md:p-3 shadow-lg text-green-500">
-                  <FiArrowRight size={20} />
-                </div>
-              </div> */}
 
               {/* Destination Card - Changes based on Transfer Type */}
               <div className="flex-1 bg-[#232323] rounded-xl p-6 h-44 flex flex-col items-center justify-center">
                 <div className="mb-4 flex items-center justify-center relative size-24">
                   {transferStatus.transferType === TransferType.TransferIn ? (
-                    // <AssetAvator
-                    //   cryptoType={transferStatus.cryptoType}
-                    //   cryptoAmount={transferStatus.amountReceived}
-                    //   iconOnly
-                    // />
-                    <></>
+                    assetData && (
+                      <div className="relative w-full h-full">
+                        <Image
+                          src={assetData.logo}
+                          alt={transferStatus.cryptoType}
+                          fill
+                          className="rounded-full"
+                        />
+                      </div>
+                    )
                   ) : (
-                    <CountryAvator country="UG" iconOnly />
+                    <CountryAvator country={countryCode} iconOnly />
                   )}
                 </div>
                 <div className="flex flex-col items-center text-center">
                   <h2 className="text-gray-300 font-mono text-base">
-                    {transferStatus.transferType === TransferType.TransferIn
-                      ? `${Number(transferStatus.amountReceived).toFixed(3)} ${
-                          transferStatus.cryptoType
-                        }`
-                      : `${totalAmount.toFixed(2)} ${transferStatus.fiatType}`}
+                    {destinationAmount.toFixed(3)} {destinationCurrency}
                   </h2>
                 </div>
               </div>

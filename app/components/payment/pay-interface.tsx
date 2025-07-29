@@ -35,10 +35,7 @@ import { useQuoteStore } from "@/store/quote-store";
 import { useTransferStore } from "@/store/transfer-store";
 import { useKYCStore } from "@/store/kyc-store";
 import { Institution, AppState } from "@/types";
-import {
-  useAllCountryExchangeRates,
-  useAllCountryInstitutions,
-} from "@/hooks/useExchangeRate";
+import { useAllCountryExchangeRates } from "@/hooks/useExchangeRate";
 import { useAssetBalance } from "@/hooks/useAssetBalance";
 import useWalletGetInfo from "@/hooks/useWalletGetInfo";
 import { useBillPayment, PaymentStep } from "@/hooks/useBillPayment";
@@ -105,9 +102,6 @@ export function PaymentInterface() {
 
   // Pre-fetch institutions for all supported countries
   // This ensures institutions are ready when users select a country
-  // Note: The data is used in InstitutionModal, this just triggers the pre-fetching
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { data: allInstitutions } = useAllCountryInstitutions("sell");
 
   // Bill payment mutation
   const billPaymentMutation = useBillPayment();

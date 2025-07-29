@@ -8,7 +8,7 @@ import AssetAvator from "./asset-avator";
 import CountryAvator from "./country-avator";
 import { Button } from "@/components/ui/button";
 import TransactionsModal from "@/components/modals/transactions-modal";
-import { useUserSelectionStore } from "@/store/user-selection";
+
 import { PAY_SUPPORTED_COUNTRIES } from "@/data/countries";
 
 interface ProcessingCardProps {
@@ -27,7 +27,6 @@ const ProcessingCard: React.FC<ProcessingCardProps> = ({
   transfer,
   onCancel,
 }) => {
-  const { isPayout } = useUserSelectionStore();
   const [showTooltip, setShowTooltip] = useState(false);
   const [isTooltipClosing, setIsTooltipClosing] = useState(false);
   const bellButtonRef = useRef<HTMLDivElement>(null);
@@ -36,6 +35,7 @@ const ProcessingCard: React.FC<ProcessingCardProps> = ({
     " " +
     new Date().toLocaleTimeString("en-GB");
 
+  // Calculate correct amounts based on transfer type and country
   let totalAmount = 0;
   const isPaySupportedCountry = PAY_SUPPORTED_COUNTRIES.some(
     (country) => country.countryCode === quote.country
@@ -46,6 +46,27 @@ const ProcessingCard: React.FC<ProcessingCardProps> = ({
   } else {
     totalAmount = Number(quote.fiatAmount) + Number(quote.feeInFiat);
   }
+
+  // Get correct amounts for display
+  const sourceAmount =
+    quote.transferType === TransferType.TransferIn
+      ? totalAmount
+      : Number(quote.amountPaid);
+
+  const destinationAmount =
+    quote.transferType === TransferType.TransferIn
+      ? Number(quote.amountPaid)
+      : totalAmount;
+
+  const sourceCurrency =
+    quote.transferType === TransferType.TransferIn
+      ? quote.fiatType
+      : quote.cryptoType;
+
+  const destinationCurrency =
+    quote.transferType === TransferType.TransferIn
+      ? quote.cryptoType
+      : quote.fiatType;
 
   // Show tooltip after 10 seconds
   useEffect(() => {
@@ -161,23 +182,7 @@ const ProcessingCard: React.FC<ProcessingCardProps> = ({
                         quote.network.slice(1)}
                   </h1>
                   <h2 className="text-gray-300 font-mono text-sm">
-                    {isPayout ? (
-                      <>
-                        {quote.transferType === TransferType.TransferIn
-                          ? `${totalAmount.toFixed(2)} ${quote.fiatType}`
-                          : `${Number(quote.cryptoAmount).toFixed(2)} ${
-                              quote.cryptoType
-                            }`}
-                      </>
-                    ) : (
-                      <>
-                        {quote.transferType === TransferType.TransferIn
-                          ? `${totalAmount.toFixed(2)} ${quote.fiatType}`
-                          : `${Number(quote.amountPaid).toFixed(3)} ${
-                              quote.cryptoType
-                            }`}
-                      </>
-                    )}
+                    {sourceAmount.toFixed(3)} {sourceCurrency}
                   </h2>
                 </div>
               </div>
@@ -206,11 +211,7 @@ const ProcessingCard: React.FC<ProcessingCardProps> = ({
                       : quote.fiatType}
                   </h1>
                   <h2 className="text-gray-300 font-mono text-sm">
-                    {quote.transferType === TransferType.TransferIn
-                      ? `${Number(quote.amountPaid).toFixed(3)} ${
-                          quote.cryptoType
-                        }`
-                      : `${totalAmount.toFixed(2)} ${quote.fiatType}`}
+                    {destinationAmount.toFixed(3)} {destinationCurrency}
                   </h2>
                 </div>
               </div>

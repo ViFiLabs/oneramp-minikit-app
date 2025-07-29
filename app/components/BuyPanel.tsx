@@ -16,10 +16,7 @@ import SelectCountryModal from "./modals/select-country-modal";
 import { TokenSelectModal } from "./modals/TokenSelectModal";
 import SelectInstitution from "./select-institution";
 import { countries } from "@/data/countries";
-import {
-  useAllCountryExchangeRates,
-  useAllCountryInstitutions,
-} from "@/hooks/useExchangeRate";
+import { useAllCountryExchangeRates } from "@/hooks/useExchangeRate";
 
 // Reuse the same country list from SwapPanel
 export const countryCurrencies = [
@@ -60,8 +57,6 @@ export function BuyPanel() {
     orderType: "buying",
     providerType: "momo",
   });
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { data: allInstitutions } = useAllCountryInstitutions("buy");
 
   // New states for recipient details
   const [accountNumber] = useState("");

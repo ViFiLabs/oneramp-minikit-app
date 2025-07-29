@@ -9,12 +9,17 @@ import { useUserSelectionStore } from "@/store/user-selection";
 import { useQuoteStore } from "@/store/quote-store";
 import { useTransferStore } from "@/store/transfer-store";
 import { useKYCStore } from "@/store/kyc-store";
-import { Asset, Network, OrderStep, AppState, ChainTypes, TransferType,  TransferBankRequest,
-  TransferMomoRequest } from "@/types";
 import {
-  useAllCountryExchangeRates,
-  useAllCountryInstitutions,
-} from "@/hooks/useExchangeRate";
+  Asset,
+  Network,
+  OrderStep,
+  AppState,
+  ChainTypes,
+  TransferType,
+  Quote,
+  Transfer,
+} from "@/types";
+import { useAllCountryExchangeRates } from "@/hooks/useExchangeRate";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useMutation } from "@tanstack/react-query";
@@ -41,7 +46,14 @@ export function SwapPanel() {
   const [showKYCModal, setShowKYCModal] = useState(false);
   const [showWalletModal, setShowWalletModal] = useState(false);
   const userSelectionStore = useUserSelectionStore();
-  const { countryPanelOnTop, updateSelection, country, institution, accountNumber, asset } = userSelectionStore;
+  const {
+    countryPanelOnTop,
+    updateSelection,
+    country,
+    institution,
+    accountNumber,
+    asset,
+  } = userSelectionStore;
   const { currentNetwork, setCurrentNetwork } = useNetworkStore();
   const { chainId } = useWalletGetInfo();
   const [selectedCountryCurrency] = useState<null | {
@@ -80,20 +92,14 @@ export function SwapPanel() {
   // This improves the user experience by having rates ready when countries are selected
   // Note: The data is used in ExchangeRateComponent and SelectCountry, this triggers the pre-fetching
   // Using "selling" endpoint for better performance and real-time rate updates
-  const { data: allExchangeRates, isLoading: isExchangeRateLoading } = useAllCountryExchangeRates({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { data: allExchangeRates } = useAllCountryExchangeRates({
     orderType: "selling", // Using selling endpoint for better performance
     providerType: "momo", // Default provider type
   });
 
-  // Pre-fetch institutions for all supported countries when component mounts
-  // This ensures institutions are ready when users select a country
-  // Note: The data is used in InstitutionModal, this just triggers the pre-fetching
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { data: allInstitutions } = useAllCountryInstitutions("buy");
-
   // Used to show wallet requirement in the network modal
-  const canSwitchNetwork = (network: Network) => {
-    // console.log(network); // Commented out to prevent performance issues
+  const canSwitchNetwork = () => {
     return evmConnected;
   };
 
@@ -136,138 +142,163 @@ export function SwapPanel() {
     // Beneficiary selection functionality to be implemented
   };
 
-  const createTransferPayload = useCallback((quoteId: string) => {
-    if (!country || !kycData?.fullKYC) {
-      throw new Error("Missing country or KYC data");
-    }
+  const createTransferPayload = useCallback(
+    (quoteId: string) => {
+      if (!country || !kycData?.fullKYC) {
+        throw new Error("Missing country or KYC data");
+      }
 
-    const { fullKYC } = kycData;
-    const {
-      fullName,
-      nationality,
-      dateOfBirth,
-      documentNumber,
-      documentType,
-      documentSubType,
-      phoneNumber,
-    } = fullKYC;
+      const { fullKYC } = kycData;
+      const {
+        fullName,
+        nationality,
+        dateOfBirth,
+        documentNumber,
+        documentType,
+        documentSubType,
+        phoneNumber,
+      } = fullKYC;
 
-    let updatedDocumentType = documentType;
-    let updatedDocumentTypeSubType = documentSubType;
+      let updatedDocumentType = documentType;
+      let updatedDocumentTypeSubType = documentSubType;
 
-    if (country.countryCode === "NG") {
-      updatedDocumentTypeSubType = "BVN";
-      updatedDocumentType = "NIN";
-    } else if (documentType === "ID") {
-      updatedDocumentType = "NIN";
-    } else if (documentType === "P") {
-      updatedDocumentType = "Passport";
-    } else {
-      updatedDocumentType = "License";
-    }
-
-    const baseUserDetails = {
-      name: fullName,
-      country: nationality,
-      address: country.countryCode || "",
-      dob: dateOfBirth,
-      idNumber: documentNumber,
-      idType: updatedDocumentType,
-      additionalIdType: updatedDocumentType,
-      additionalIdNumber: updatedDocumentTypeSubType,
-    };
-
-    const isNigeriaOrSouthAfrican = country.countryCode === "NG" || country.countryCode === "ZA";
-
-    if (userSelectionStore.paymentMethod === "momo") {
-      if (isNigeriaOrSouthAfrican) {
-        if (!phoneNumber) throw new Error("Phone number required for Nigeria/SA");
-        
-        return {
-          bank: {
-            code: "",
-            accountNumber: "",
-            accountName: "",
-          },
-          operator: "bank",
-          quoteId,
-          userDetails: {
-            ...baseUserDetails,
-            phone: phoneNumber,
-          },
-        };
+      if (country.countryCode === "NG") {
+        updatedDocumentTypeSubType = "BVN";
+        updatedDocumentType = "NIN";
+      } else if (documentType === "ID") {
+        updatedDocumentType = "NIN";
+      } else if (documentType === "P") {
+        updatedDocumentType = "Passport";
       } else {
-        if (!institution || !accountNumber) {
-          throw new Error("Institution and account number required");
-        }
-        
-        const accountNumberWithoutLeadingZero = accountNumber.replace(/^0+/, "");
-        const fullPhoneNumber = `${country.phoneCode}${accountNumberWithoutLeadingZero}`;
-        
-        return {
-          phone: fullPhoneNumber,
-          operator: institution.name.toLowerCase(),
-          quoteId,
-          userDetails: {
-            ...baseUserDetails,
+        updatedDocumentType = "License";
+      }
+
+      const baseUserDetails = {
+        name: fullName,
+        country: nationality,
+        address: country.countryCode || "",
+        dob: dateOfBirth,
+        idNumber: documentNumber,
+        idType: updatedDocumentType,
+        additionalIdType: updatedDocumentType,
+        additionalIdNumber: updatedDocumentTypeSubType,
+      };
+
+      const isNigeriaOrSouthAfrican =
+        country.countryCode === "NG" || country.countryCode === "ZA";
+
+      if (userSelectionStore.paymentMethod === "momo") {
+        if (isNigeriaOrSouthAfrican) {
+          if (!phoneNumber)
+            throw new Error("Phone number required for Nigeria/SA");
+
+          return {
+            bank: {
+              code: "",
+              accountNumber: "",
+              accountName: "",
+            },
+            operator: "bank",
+            quoteId,
+            userDetails: {
+              ...baseUserDetails,
+              phone: phoneNumber,
+            },
+          };
+        } else {
+          if (!institution || !accountNumber) {
+            throw new Error("Institution and account number required");
+          }
+
+          const accountNumberWithoutLeadingZero = accountNumber.replace(
+            /^0+/,
+            ""
+          );
+          const fullPhoneNumber = `${country.phoneCode}${accountNumberWithoutLeadingZero}`;
+
+          return {
             phone: fullPhoneNumber,
-          },
-        };
-      }
-    }
-
-    if (userSelectionStore.paymentMethod === "bank") {
-      const accountName = userSelectionStore.accountName === "OK" ? fullName : (userSelectionStore.accountName || fullName);
-
-      if (isNigeriaOrSouthAfrican) {
-        if (!phoneNumber) throw new Error("Phone number required for Nigeria/SA bank transfers");
-        if (!institution || !accountNumber) {
-          throw new Error("Institution and account number required for Nigeria/SA bank transfers");
+            operator: institution.name.toLowerCase(),
+            quoteId,
+            userDetails: {
+              ...baseUserDetails,
+              phone: fullPhoneNumber,
+            },
+          };
         }
-        
-        const nigeriaPayload = {
-          bank: {
-            code: institution.code,
-            accountNumber: accountNumber,
-            accountName: accountName,
-          },
-          operator: "bank",
-          quoteId,
-          userDetails: {
-            ...baseUserDetails,
-            phone: phoneNumber, // Use phoneNumber from KYC for Nigeria, not accountNumber
-          },
-        };
-        
-        return nigeriaPayload;
-      } else {
-        if (!institution || !accountNumber) {
-          throw new Error("Institution and account number required");
-        }
-        
-        return {
-          bank: {
-            code: institution.code,
-            accountNumber: accountNumber,
-            accountName: accountName,
-          },
-          operator: "bank",
-          quoteId,
-          userDetails: {
-            ...baseUserDetails,
-            phone: phoneNumber || accountNumber,
-          },
-        };
       }
-    }
 
-    throw new Error("No valid payment method found");
-  }, [country, kycData, userSelectionStore, institution, accountNumber]);
+      if (userSelectionStore.paymentMethod === "bank") {
+        const accountName =
+          userSelectionStore.accountName === "OK"
+            ? fullName
+            : userSelectionStore.accountName || fullName;
+
+        if (isNigeriaOrSouthAfrican) {
+          if (!phoneNumber)
+            throw new Error(
+              "Phone number required for Nigeria/SA bank transfers"
+            );
+          if (!institution || !accountNumber) {
+            throw new Error(
+              "Institution and account number required for Nigeria/SA bank transfers"
+            );
+          }
+
+          const nigeriaPayload = {
+            bank: {
+              code: institution.code,
+              accountNumber: accountNumber,
+              accountName: accountName,
+            },
+            operator: "bank",
+            quoteId,
+            userDetails: {
+              ...baseUserDetails,
+              phone: phoneNumber, // Use phoneNumber from KYC for Nigeria, not accountNumber
+            },
+          };
+
+          return nigeriaPayload;
+        } else {
+          if (!institution || !accountNumber) {
+            throw new Error("Institution and account number required");
+          }
+
+          return {
+            bank: {
+              code: institution.code,
+              accountNumber: accountNumber,
+              accountName: accountName,
+            },
+            operator: "bank",
+            quoteId,
+            userDetails: {
+              ...baseUserDetails,
+              phone: phoneNumber || accountNumber,
+            },
+          };
+        }
+      }
+
+      throw new Error("No valid payment method found");
+    },
+    [country, kycData, userSelectionStore, institution, accountNumber]
+  );
 
   const handleWithdrawTransfer = useCallback(async () => {
     console.log("🚀 Withdrawal transfer starting...");
-    
-    if (!country || !institution || !accountNumber || !asset || !currentNetwork || !amount || !address || !kycData?.fullKYC) {
+
+    if (
+      !country ||
+      !institution ||
+      !accountNumber ||
+      !asset ||
+      !currentNetwork ||
+      !amount ||
+      !address ||
+      !kycData?.fullKYC
+    ) {
       console.log("❌ Missing required data - stopping withdrawal");
       throw new Error("Missing required data for withdrawal");
     }
@@ -275,7 +306,7 @@ export function SwapPanel() {
     // Step 1: Create quote
     console.log("📊 Step 1: Creating quote...");
     setStepMessage("Checking rates...");
-    
+
     const quotePayload = {
       address: address,
       cryptoType: asset.symbol,
@@ -295,24 +326,34 @@ export function SwapPanel() {
     // Step 2: Create transfer
     console.log("💸 Step 2: Creating transfer...");
     setStepMessage("Setting up withdrawal...");
-    
+
     const transferPayload = createTransferPayload(quoteResponse.quote.quoteId);
     const transferResponse = await createTransferOut(transferPayload);
-    
+
     console.log("✅ Transfer response:", transferResponse);
 
     return {
       quote: quoteResponse,
       transfer: transferResponse,
     };
-  }, [country, institution, accountNumber, asset, currentNetwork, amount, address, kycData, createTransferPayload]);
+  }, [
+    country,
+    institution,
+    accountNumber,
+    asset,
+    currentNetwork,
+    amount,
+    address,
+    kycData,
+    createTransferPayload,
+  ]);
 
   // Withdrawal flow mutation
   const withdrawMutation = useMutation({
     mutationFn: handleWithdrawTransfer,
     onSuccess: (data) => {
       console.log("✅ Withdrawal flow completed successfully:", data);
-      
+
       // Update global state with quote and transfer
       if (data?.quote) {
         setQuote(data.quote.quote);
@@ -322,7 +363,11 @@ export function SwapPanel() {
         setTransfer(data.transfer);
 
         // Check if we have EVM network and can proceed with blockchain transaction
-        if (currentNetwork?.type === ChainTypes.EVM && data.quote && data.transfer) {
+        if (
+          currentNetwork?.type === ChainTypes.EVM &&
+          data.quote &&
+          data.transfer
+        ) {
           console.log("Starting blockchain transaction...");
           setStepMessage("Opening in Wallet...");
           // Start blockchain transaction immediately
@@ -349,7 +394,10 @@ export function SwapPanel() {
   });
 
   // Blockchain transaction functions
-  const makeBlockchainTransaction = async (quote: any, transfer: any) => {
+  const makeBlockchainTransaction = async (
+    quote: Quote,
+    transfer: Transfer
+  ) => {
     if (!asset || !currentNetwork || !quote || !transfer) {
       console.log("Missing required data for blockchain transaction");
       setWithdrawLoading(false);
@@ -403,14 +451,13 @@ export function SwapPanel() {
 
   const handleEVMPaySuccess = async (txHash: string) => {
     console.log("✅ EVM transaction successful:", txHash);
-    
 
     // Store transaction hash
     setTransactionHash(txHash);
 
     // Show success state with green button and tick
     setStepMessage("Transaction Complete!");
-    
+
     // Show success state for 1 second to let user see the green tick
     setTimeout(() => {
       setWithdrawLoading(false);
@@ -426,16 +473,15 @@ export function SwapPanel() {
     console.error("❌ EVM transaction failed:", error);
     setWithdrawLoading(false);
     setStepMessage("");
-    updateSelection({ 
+    updateSelection({
       appState: AppState.Idle,
-      orderStep: OrderStep.PaymentFailed 
+      orderStep: OrderStep.PaymentFailed,
     });
     return error;
   };
 
   // Handle swipe to withdraw completion
   const handleWithdrawComplete = () => {
-
     if (!isAmountValid || !country || !institution || !accountNumber) {
       console.log("Basic validation failed");
       return;
@@ -465,7 +511,7 @@ export function SwapPanel() {
       toast.error("KYC verification required");
       return;
     }
-    
+
     // If somehow KYC is already verified, proceed with withdrawal
     if (kycData?.kycStatus === "VERIFIED") {
       console.log("KYC already verified, proceeding...");
@@ -473,7 +519,14 @@ export function SwapPanel() {
   };
 
   // Determine if withdraw should be disabled
-  const isWithdrawDisabled = !isAmountValid || !country || !institution || !accountNumber || !evmConnected || !kycData?.fullKYC || stepMessage === "Transaction Complete!";
+  const isWithdrawDisabled =
+    !isAmountValid ||
+    !country ||
+    !institution ||
+    !accountNumber ||
+    !evmConnected ||
+    !kycData?.fullKYC ||
+    stepMessage === "Transaction Complete!";
 
   return (
     <div className="w-full max-w-md mx-auto min-h-[400px] bg-[#181818] rounded-3xl p-0 flex flex-col gap-0 md:shadow-lg md:border border-[#232323] relative">
@@ -609,10 +662,7 @@ export function SwapPanel() {
           </div>
         ) : (
           <div className="px-3 md:px-4 mt-4">
-            <SwapButton
-              onClick={handleSwapClick}
-              text="Swap"
-            />
+            <SwapButton onClick={handleSwapClick} text="Swap" />
           </div>
         )}
       </motion.div>
@@ -631,7 +681,9 @@ export function SwapPanel() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-[#181818] p-6 rounded-2xl border border-[#232323] max-w-sm w-full mx-4">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-white text-lg font-semibold">Connect Wallet</h3>
+              <h3 className="text-white text-lg font-semibold">
+                Connect Wallet
+              </h3>
               <button
                 onClick={() => setShowWalletModal(false)}
                 className="text-gray-400 hover:text-white transition-colors"

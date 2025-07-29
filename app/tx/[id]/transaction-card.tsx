@@ -4,9 +4,11 @@ import React from "react";
 import { FiLink, FiArrowRight, FiFileText } from "react-icons/fi";
 import { Loader } from "lucide-react";
 import { TransferType, TransferStatus } from "@/types";
+import { assets } from "@/data/currencies";
+import { countries } from "@/data/countries";
+import Image from "next/image";
 
 import CountryAvator from "@/app/components/cards/country-avator";
-// import AssetAvator from "@/app/components/cards/asset-avator";
 
 interface TransactionCardProps {
   transferStatus: TransferStatus;
@@ -25,12 +27,53 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
     " " +
     new Date().toLocaleTimeString("en-GB");
 
-  let totalAmount = 0;
-  if (transferStatus.fiatType === "KES" || transferStatus.fiatType === "UGX") {
-    totalAmount = Number(transferStatus.amountProvided);
-  } else {
-    totalAmount = Number(transferStatus.amountProvided);
-  }
+  // Get the correct country data based on fiat type
+  const getCountryFromFiatType = (fiatType: string) => {
+    return (
+      countries.find((country) => country.currency === fiatType)?.countryCode ||
+      "UG"
+    );
+  };
+
+  // Get the correct asset data
+  const getAssetData = (cryptoType: string) => {
+    return assets.find((asset) => asset.symbol === cryptoType);
+  };
+
+  const countryCode = getCountryFromFiatType(transferStatus.fiatType);
+  const assetData = getAssetData(transferStatus.cryptoType);
+
+  // Calculate correct amounts - we need to calculate crypto amount from fiat
+  const fiatAmount = Number(transferStatus.amountProvided);
+
+  // Get exchange rate from countries data (fallback to 1 if not found)
+  const countryData = countries.find(
+    (country) => country.currency === transferStatus.fiatType
+  );
+  const exchangeRate = countryData?.exchangeRate || 1;
+
+  // Calculate crypto amount
+  const cryptoAmount = fiatAmount / exchangeRate;
+
+  const sourceAmount =
+    transferStatus.transferType === TransferType.TransferIn
+      ? fiatAmount
+      : cryptoAmount;
+
+  const destinationAmount =
+    transferStatus.transferType === TransferType.TransferIn
+      ? cryptoAmount
+      : fiatAmount;
+
+  const sourceCurrency =
+    transferStatus.transferType === TransferType.TransferIn
+      ? transferStatus.fiatType
+      : transferStatus.cryptoType;
+
+  const destinationCurrency =
+    transferStatus.transferType === TransferType.TransferIn
+      ? transferStatus.cryptoType
+      : transferStatus.fiatType;
 
   return (
     <div className="min-h-screen text-white flex items-center w-full md:w-1/3 justify-center bg-black">
@@ -60,22 +103,23 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
               <div className="flex-1 bg-[#232323] rounded-xl p-6 h-44 flex flex-col items-center justify-center">
                 <div className="mb-4 flex items-center justify-center relative size-24">
                   {transferStatus.transferType === TransferType.TransferIn ? (
-                    <CountryAvator country="UG" iconOnly />
+                    <CountryAvator country={countryCode} iconOnly />
                   ) : (
-                    // <AssetAvator
-                    //   quote={null}
-                    //   iconOnly
-                    // />
-                    <></>
+                    assetData && (
+                      <div className="relative w-full h-full">
+                        <Image
+                          src={assetData.logo}
+                          alt={transferStatus.cryptoType}
+                          fill
+                          className="rounded-full"
+                        />
+                      </div>
+                    )
                   )}
                 </div>
                 <div className="flex flex-col items-center text-center">
                   <h2 className="text-gray-300 font-mono text-base">
-                    {transferStatus.transferType === TransferType.TransferIn
-                      ? `${totalAmount.toFixed(2)} ${transferStatus.fiatType}`
-                      : `${Number(transferStatus.amountReceived).toFixed(3)} ${
-                          transferStatus.cryptoType
-                        }`}
+                    {sourceAmount.toFixed(3)} {sourceCurrency}
                   </h2>
                 </div>
               </div>
@@ -91,23 +135,23 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
               <div className="flex-1 bg-[#232323] rounded-xl p-6 h-44 flex flex-col items-center justify-center">
                 <div className="mb-4 flex items-center justify-center relative size-24">
                   {transferStatus.transferType === TransferType.TransferIn ? (
-                    // <AssetAvator
-                    //   cryptoType={transferStatus.cryptoType}
-                    //   cryptoAmount={transferStatus.amountReceived}
-                    //   iconOnly
-                    // />
-                    <></>
+                    assetData && (
+                      <div className="relative w-full h-full">
+                        <Image
+                          src={assetData.logo}
+                          alt={transferStatus.cryptoType}
+                          fill
+                          className="rounded-full"
+                        />
+                      </div>
+                    )
                   ) : (
-                    <CountryAvator country="UG" iconOnly />
+                    <CountryAvator country={countryCode} iconOnly />
                   )}
                 </div>
                 <div className="flex flex-col items-center text-center">
                   <h2 className="text-gray-300 font-mono text-base">
-                    {transferStatus.transferType === TransferType.TransferIn
-                      ? `${Number(transferStatus.amountReceived).toFixed(3)} ${
-                          transferStatus.cryptoType
-                        }`
-                      : `${totalAmount.toFixed(2)} ${transferStatus.fiatType}`}
+                    {destinationAmount.toFixed(3)} {destinationCurrency}
                   </h2>
                 </div>
               </div>
@@ -199,17 +243,6 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
                     </a>
                   </div>
                 )}
-
-              {/* <div className="flex items-center justify-between">
-                <span className="text-gray-400">Action</span>
-                <Button
-                  onClick={onCancel}
-                  variant="ghost"
-                  className="bg-transparent px-0 border-red-500 text-red-500 hover:bg-red-500 hover:text-white text-sm font-medium h-14 rounded-xl transition-colors"
-                >
-                  Go Back
-                </Button>
-              </div> */}
             </div>
           </div>
         </div>

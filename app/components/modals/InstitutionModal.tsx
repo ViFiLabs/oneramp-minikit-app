@@ -1,10 +1,8 @@
 "use client";
 import { Input } from "@/components/ui/input";
 import { Institution } from "@/types";
-import Image from "next/image";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useAllCountryInstitutions } from "@/hooks/useExchangeRate";
 import {
   Dialog,
   DialogPortal,
@@ -13,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getInstitutions } from "@/actions/institutions";
 
 interface InstitutionModalProps {
   open: boolean;
@@ -32,43 +31,23 @@ export function InstitutionModal({
 }: InstitutionModalProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Get all country institutions using optimized hook
+  // Fetch institutions only when modal is open and country is available
   const {
-    data: allInstitutions,
-    isLoading: isAllInstitutionsLoading,
-    error: allInstitutionsError,
-  } = useAllCountryInstitutions(buy ? "buy" : "sell");
-
-  // Fallback: If the country's institutions are not in the pre-fetched data,
-  // fetch them individually
-  const {
-    data: fallbackInstitutions,
-    isLoading: isFallbackLoading,
-    error: fallbackError,
+    data: institutions = [],
+    isLoading,
+    error,
   } = useQuery({
     queryKey: ["institutions", country, buy ? "buy" : "sell"],
     queryFn: async () => {
       if (!country) return [];
-      const { getInstitutions } = await import("@/actions/institutions");
       return await getInstitutions(country, buy ? "buy" : "sell");
     },
-    enabled:
-      !!country &&
-      !allInstitutions?.[country]?.length &&
-      !isAllInstitutionsLoading,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    enabled: open && !!country, // Only fetch when modal is open
+    staleTime: 10 * 60 * 1000, // 10 minutes - institutions don't change often
+    gcTime: 30 * 60 * 1000, // 30 minutes cache (replaces cacheTime)
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
   });
-
-  // Get current country's institutions from cached data
-  const institutions = useMemo(() => {
-    if (!country) return [];
-
-    // Use pre-fetched data if available, otherwise use fallback
-    return allInstitutions?.[country] || fallbackInstitutions || [];
-  }, [country, allInstitutions, fallbackInstitutions]);
-
-  const isLoading = isAllInstitutionsLoading || isFallbackLoading;
-  const error = allInstitutionsError || fallbackError;
 
   if (!open) return null;
 
@@ -76,8 +55,6 @@ export function InstitutionModal({
   const filteredInstitutions = institutions?.filter((institution) =>
     institution.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  if (!institutions) return null;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -100,125 +77,96 @@ export function InstitutionModal({
           <VisuallyHidden>
             <DialogPrimitive.Title>Select Institution</DialogPrimitive.Title>
           </VisuallyHidden>
+
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-3 border-b border-[#232323] rounded-t-2xl lg:rounded-t-2xl">
-            <div className="text-xl font-bold">Select institution</div>
+          <div className="flex items-center justify-between p-6 border-b border-[#232323]">
+            <h2 className="text-xl font-medium text-white">
+              Select Institution
+            </h2>
             <button
-              className="p-3 hover:bg-[#23232f] rounded-full transition-colors"
               onClick={onClose}
-              aria-label="Close"
+              className="text-neutral-400 hover:text-white transition-colors"
             >
               <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
                 <path
                   d="M18 6L6 18M6 6l12 12"
-                  stroke="#fff"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </button>
-          </div>
-
-          {/* Search Bar */}
-          <div className="relative px-6 py-1 h-14 items-center flex">
-            <div className="absolute inset-y-0 left-9 flex items-center pointer-events-none">
-              <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
-                <path
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  stroke="#888"
+                  stroke="currentColor"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
               </svg>
-            </div>
-            <Input
-              type="text"
-              placeholder="Search institutions..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-full bg-[#23232a] text-white placeholder:text-[#aaa] py-4 pl-12 pr-4 rounded-full border border-[#333] shadow-sm focus:outline-none focus:border-[#bcbcff] focus:ring-2 focus:ring-[#bcbcff]/20 transition-all"
-            />
+            </button>
           </div>
 
-          {/* Content */}
-          <div
-            className="overflow-y-auto px-2 flex-1"
-            style={{ height: "calc(50vh - 120px)" }}
-          >
-            {isLoading && (
-              <div className="flex flex-col gap-4 px-4 py-2">
-                {[...Array(6)].map((_, index) => (
+          {/* Search Input */}
+          <div className="p-6 pb-0">
+            <div className="relative">
+              <Input
+                type="text"
+                placeholder="Search institutions..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-[#232323] border-neutral-600 text-white placeholder:text-neutral-400"
+              />
+            </div>
+          </div>
+
+          {/* Institutions List */}
+          <div className="flex-1 overflow-y-auto p-6 pt-4">
+            {isLoading ? (
+              // Skeleton loaders for better UX
+              <div className="space-y-3">
+                {Array.from({ length: 8 }).map((_, index) => (
                   <div
                     key={index}
-                    className="flex items-center gap-4 w-full px-4 py-5"
+                    className="flex items-center gap-3 p-3 rounded-lg"
                   >
-                    <Skeleton className="w-11 h-11 rounded-full" />
-                    <Skeleton className="h-6 w-32" />
+                    <Skeleton className="w-8 h-8 rounded-full" />
+                    <Skeleton className="flex-1 h-4" />
                   </div>
                 ))}
               </div>
-            )}
-
-            {error && (
-              <div className="text-white text-xs py-8 text-center">
-                <p className="text-red-400 mb-2">Failed to load institutions</p>
-                <p className="text-gray-400">Please try again later</p>
+            ) : error ? (
+              <div className="text-center py-8">
+                <p className="text-red-400 text-sm">
+                  Failed to load institutions. Please try again.
+                </p>
                 <button
                   onClick={() => window.location.reload()}
-                  className="mt-2 text-blue-400 hover:text-blue-300 underline"
+                  className="mt-2 text-blue-400 hover:text-blue-300 text-sm"
                 >
                   Retry
                 </button>
               </div>
+            ) : filteredInstitutions.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-neutral-400 text-sm">
+                  {searchQuery
+                    ? "No institutions found matching your search."
+                    : "No institutions available for this country."}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {filteredInstitutions.map((institution) => (
+                  <button
+                    key={institution.name}
+                    onClick={() => onSelect(institution)}
+                    className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[#232323] transition-colors text-left"
+                  >
+                    <div className="w-8 h-8 bg-[#232323] rounded-md flex items-center justify-center">
+                      <span className="text-white text-sm font-medium">
+                        {institution.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <span className="text-white font-medium">
+                      {institution.name}
+                    </span>
+                  </button>
+                ))}
+              </div>
             )}
-
-            <div className="flex flex-col">
-              {filteredInstitutions?.map((institution) => (
-                <button
-                  key={institution.name}
-                  className="flex items-center gap-4 w-full px-4 py-5 hover:bg-[#23232f] transition-colors text-left border-b border-[#333] last:border-0 rounded-full"
-                  onClick={() => onSelect(institution)}
-                  style={{ minHeight: 64 }}
-                >
-                  {institution.logo ? (
-                    <Image
-                      src={institution.logo}
-                      alt={institution.name}
-                      width={44}
-                      height={44}
-                      className="rounded-full"
-                    />
-                  ) : (
-                    <div className="w-11 h-11 rounded-full bg-[#444] flex items-center justify-center text-white text-lg font-bold">
-                      {institution.name.charAt(0)}
-                    </div>
-                  )}
-                  <span className="text-white text-lg font-medium">
-                    {institution.name}
-                  </span>
-                </button>
-              ))}
-
-              {filteredInstitutions?.length === 0 && (
-                <div className="py-8 text-center text-neutral-400">
-                  {searchQuery ? (
-                    <p>
-                      No institutions found matching &quot;{searchQuery}&quot;
-                    </p>
-                  ) : (
-                    <div>
-                      <p className="mb-2">
-                        No institutions available for {country}
-                      </p>
-                      <p className="text-sm">
-                        Please try again later or contact support
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
           </div>
         </DialogPrimitive.Content>
       </DialogPortal>
