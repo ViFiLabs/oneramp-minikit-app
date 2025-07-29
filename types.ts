@@ -67,6 +67,20 @@ export interface Asset {
 
 export interface Institution {
   name: string;
+  code: string;
+  status: string;
+  accountNumberType: string;
+  country: string;
+  bankId: string;
+  id: string;
+  seerbitId: string;
+  countryAccountNumberType: string;
+  createdAt: string;
+  updatedAt: string;
+  featureFlagEnabled: string[];
+  tempDisabledFor: string[];
+  channelIds: string[];
+  [key: string]: string | string[] | number | boolean;
 }
 
 export interface AccountNumberInputDetails {
@@ -213,9 +227,6 @@ export interface ExchangeRateResponse {
 }
 
 // Institution interface of type key value pair
-export interface Institution {
-  [key: string]: string;
-}
 
 export interface KYCVerificationResponse {
   kycStatus: string;
