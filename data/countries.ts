@@ -1,4 +1,9 @@
-import { Country, Institution } from "@/types";
+import { Country } from "@/types";
+
+// Simplified institution interface for static data
+interface SimpleInstitution {
+  name: string;
+}
 
 // Payment support configuration for countries
 export interface PaymentSupport {
@@ -72,7 +77,7 @@ export const requiresInstitutionSelection = (countryName: string): boolean => {
 };
 
 // Country-specific institution lists
-export const countryInstitutions: Record<string, Institution[]> = {
+export const countryInstitutions: Record<string, SimpleInstitution[]> = {
   Nigeria: [
     { name: "OPay" },
     { name: "PalmPay" },
@@ -186,7 +191,7 @@ export const countries: Country[] = [
     countryCode: "NG",
     phoneCode: "+234",
     exchangeRate: 1_588.69,
-    institutions: countryInstitutions.Nigeria,
+    institutions: [],
     fiatMinMax: { min: 1_000, max: 480_000 },
     cryptoMinMax: { min: 1, max: 2_500 },
     accountNumberLength: {
@@ -201,7 +206,7 @@ export const countries: Country[] = [
     countryCode: "KE",
     phoneCode: "+254",
     exchangeRate: 130,
-    institutions: countryInstitutions.Kenya,
+    institutions: [],
     fiatMinMax: { min: 120, max: 25_000 },
     cryptoMinMax: { min: 1, max: 2_500 },
     accountNumberLength: {
@@ -216,7 +221,7 @@ export const countries: Country[] = [
     countryCode: "GHA",
     phoneCode: "+233",
     exchangeRate: 15.43,
-    institutions: countryInstitutions.Ghana,
+    institutions: [],
     fiatMinMax: { min: 15.43, max: 35_000 },
     cryptoMinMax: { min: 1, max: 2_500 },
     accountNumberLength: {
@@ -231,7 +236,7 @@ export const countries: Country[] = [
     countryCode: "ZM",
     phoneCode: "+260",
     exchangeRate: 127.38,
-    institutions: countryInstitutions.Zambia,
+    institutions: [],
     fiatMinMax: { min: 110.38, max: 100_000 },
     cryptoMinMax: { min: 5, max: 2_500 },
     accountNumberLength: {
@@ -246,7 +251,7 @@ export const countries: Country[] = [
     countryCode: "UG",
     phoneCode: "+256",
     exchangeRate: 3_804.44,
-    institutions: countryInstitutions.Uganda,
+    institutions: [],
     fiatMinMax: { min: 1_500.44, max: 4_556_194 },
     cryptoMinMax: { min: 1, max: 2_500 },
     accountNumberLength: {
@@ -261,7 +266,7 @@ export const countries: Country[] = [
     countryCode: "TZ",
     phoneCode: "+255",
     exchangeRate: 2_941.0,
-    institutions: countryInstitutions.Tanzania,
+    institutions: [],
     fiatMinMax: { min: 1_800.0, max: 13_475_000 },
     cryptoMinMax: { min: 1, max: 2_500 },
     accountNumberLength: {
@@ -276,7 +281,7 @@ export const countries: Country[] = [
     countryCode: "ZA",
     phoneCode: "+27",
     exchangeRate: 18.57,
-    institutions: countryInstitutions.SouthAfrica,
+    institutions: [],
     fiatMinMax: { min: 300, max: 35_000 },
     cryptoMinMax: { min: 15, max: 2_500 },
     accountNumberLength: {

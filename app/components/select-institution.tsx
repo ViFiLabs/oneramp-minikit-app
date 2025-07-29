@@ -376,7 +376,7 @@ const SelectInstitution = ({
       instType = inst.accountNumberType;
     }
 
-    if (instType.includes("mobile")) {
+    if (typeof instType === "string" && instType.includes("mobile")) {
       instType = "momo";
     }
 
