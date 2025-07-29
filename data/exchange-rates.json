@@ -1,72 +1,64 @@
 {
-  "lastUpdated": "2025-01-29T00:00:00.000Z",
+  "lastUpdated": "2025-07-29T16:37:22.780Z",
   "exchangeRates": {
     "NG": {
       "buying": {
         "momo": {
-          "exchange": 1588.69,
           "country": "NG",
-          "orderType": "buying",
-          "providerType": "momo",
+          "exchange": 1615,
           "conversionResponse": {
             "success": true,
-            "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0,
-            "exchangeRate": 1588.69,
-            "cryptoAmount": 0,
-            "fiatAmount": 0,
-            "providerPayoutAmount": 0,
-            "gasFeeInFiat": 0
+            "chargeFeeInFiat": 403.75,
+            "chargeFeeInUsd": 0.25,
+            "exchangeRate": 1615,
+            "cryptoAmount": 1,
+            "fiatAmount": 1615,
+            "providerPayoutAmount": 1615,
+            "gasFeeInFiat": 32.3
           }
         },
         "bank": {
-          "exchange": 1588.69,
           "country": "NG",
-          "orderType": "buying",
-          "providerType": "bank",
+          "exchange": 1615,
           "conversionResponse": {
             "success": true,
-            "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0,
-            "exchangeRate": 1588.69,
-            "cryptoAmount": 0,
-            "fiatAmount": 0,
-            "providerPayoutAmount": 0,
-            "gasFeeInFiat": 0
+            "chargeFeeInFiat": 403.75,
+            "chargeFeeInUsd": 0.25,
+            "exchangeRate": 1615,
+            "cryptoAmount": 1,
+            "fiatAmount": 1615,
+            "providerPayoutAmount": 1615,
+            "gasFeeInFiat": 32.3
           }
         }
       },
       "selling": {
         "momo": {
-          "exchange": 1588.69,
           "country": "NG",
-          "orderType": "selling",
-          "providerType": "momo",
+          "exchange": 1508.65,
           "conversionResponse": {
             "success": true,
-            "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0,
-            "exchangeRate": 1588.69,
-            "cryptoAmount": 0,
-            "fiatAmount": 0,
-            "providerPayoutAmount": 0,
-            "gasFeeInFiat": 0
+            "chargeFeeInFiat": 181.038,
+            "chargeFeeInUsd": 0.12,
+            "exchangeRate": 1508.65,
+            "cryptoAmount": 1,
+            "fiatAmount": 1508.65,
+            "providerPayoutAmount": 1508.65,
+            "gasFeeInFiat": 30.173000000000002
           }
         },
         "bank": {
-          "exchange": 1588.69,
           "country": "NG",
-          "orderType": "selling",
-          "providerType": "bank",
+          "exchange": 1508.65,
           "conversionResponse": {
             "success": true,
-            "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0,
-            "exchangeRate": 1588.69,
-            "cryptoAmount": 0,
-            "fiatAmount": 0,
-            "providerPayoutAmount": 0,
-            "gasFeeInFiat": 0
+            "chargeFeeInFiat": 181.038,
+            "chargeFeeInUsd": 0.12,
+            "exchangeRate": 1508.65,
+            "cryptoAmount": 1,
+            "fiatAmount": 1508.65,
+            "providerPayoutAmount": 1508.65,
+            "gasFeeInFiat": 30.173000000000002
           }
         }
       }
@@ -74,69 +66,53 @@
     "KE": {
       "buying": {
         "momo": {
-          "exchange": 130,
+          "exchange": 129.2,
           "country": "KE",
-          "orderType": "buying",
-          "providerType": "momo",
           "conversionResponse": {
             "success": true,
             "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0,
-            "exchangeRate": 130,
-            "cryptoAmount": 0,
-            "fiatAmount": 0,
-            "providerPayoutAmount": 0,
-            "gasFeeInFiat": 0
+            "chargeFeeInUsd": 0.025,
+            "exchangeRate": 129.2,
+            "fiatAmount": 129.2,
+            "gasFeeInFiat": 2.6630000000000003
           }
         },
         "bank": {
-          "exchange": 130,
+          "exchange": 129.2,
           "country": "KE",
-          "orderType": "buying",
-          "providerType": "bank",
           "conversionResponse": {
             "success": true,
             "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0,
-            "exchangeRate": 130,
-            "cryptoAmount": 0,
-            "fiatAmount": 0,
-            "providerPayoutAmount": 0,
-            "gasFeeInFiat": 0
+            "chargeFeeInUsd": 0.025,
+            "exchangeRate": 129.2,
+            "fiatAmount": 129.2,
+            "gasFeeInFiat": 2.6630000000000003
           }
         }
       },
       "selling": {
         "momo": {
-          "exchange": 130,
+          "exchange": 129.2,
           "country": "KE",
-          "orderType": "selling",
-          "providerType": "momo",
           "conversionResponse": {
             "success": true,
             "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0,
-            "exchangeRate": 130,
-            "cryptoAmount": 0,
-            "fiatAmount": 0,
-            "providerPayoutAmount": 0,
-            "gasFeeInFiat": 0
+            "chargeFeeInUsd": 0.026,
+            "exchangeRate": 129.2,
+            "fiatAmount": 129.2,
+            "gasFeeInFiat": 2.5500000000000003
           }
         },
         "bank": {
-          "exchange": 130,
+          "exchange": 129.2,
           "country": "KE",
-          "orderType": "selling",
-          "providerType": "bank",
           "conversionResponse": {
             "success": true,
             "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0,
-            "exchangeRate": 130,
-            "cryptoAmount": 0,
-            "fiatAmount": 0,
-            "providerPayoutAmount": 0,
-            "gasFeeInFiat": 0
+            "chargeFeeInUsd": 0.026,
+            "exchangeRate": 129.2,
+            "fiatAmount": 129.2,
+            "gasFeeInFiat": 2.5500000000000003
           }
         }
       }
@@ -144,69 +120,53 @@
     "UG": {
       "buying": {
         "momo": {
-          "exchange": 3804.44,
+          "exchange": 3565,
           "country": "UG",
-          "orderType": "buying",
-          "providerType": "momo",
           "conversionResponse": {
             "success": true,
             "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0,
-            "exchangeRate": 3804.44,
-            "cryptoAmount": 0,
-            "fiatAmount": 0,
-            "providerPayoutAmount": 0,
-            "gasFeeInFiat": 0
+            "chargeFeeInUsd": 0.04,
+            "exchangeRate": 3565,
+            "fiatAmount": 3565,
+            "gasFeeInFiat": 76.0888
           }
         },
         "bank": {
-          "exchange": 3804.44,
+          "exchange": 3565,
           "country": "UG",
-          "orderType": "buying",
-          "providerType": "bank",
           "conversionResponse": {
             "success": true,
             "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0,
-            "exchangeRate": 3804.44,
-            "cryptoAmount": 0,
-            "fiatAmount": 0,
-            "providerPayoutAmount": 0,
-            "gasFeeInFiat": 0
+            "chargeFeeInUsd": 0.04,
+            "exchangeRate": 3565,
+            "fiatAmount": 3565,
+            "gasFeeInFiat": 76.0888
           }
         }
       },
       "selling": {
         "momo": {
-          "exchange": 3804.44,
+          "exchange": 3565,
           "country": "UG",
-          "orderType": "selling",
-          "providerType": "momo",
           "conversionResponse": {
             "success": true,
             "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0,
-            "exchangeRate": 3804.44,
-            "cryptoAmount": 0,
-            "fiatAmount": 0,
-            "providerPayoutAmount": 0,
-            "gasFeeInFiat": 0
+            "chargeFeeInUsd": 0.04,
+            "exchangeRate": 3565,
+            "fiatAmount": 3565,
+            "gasFeeInFiat": 72.41640000000001
           }
         },
         "bank": {
-          "exchange": 3804.44,
+          "exchange": 3565,
           "country": "UG",
-          "orderType": "selling",
-          "providerType": "bank",
           "conversionResponse": {
             "success": true,
             "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0,
-            "exchangeRate": 3804.44,
-            "cryptoAmount": 0,
-            "fiatAmount": 0,
-            "providerPayoutAmount": 0,
-            "gasFeeInFiat": 0
+            "chargeFeeInUsd": 0.04,
+            "exchangeRate": 3565,
+            "fiatAmount": 3565,
+            "gasFeeInFiat": 72.41640000000001
           }
         }
       }
@@ -214,69 +174,61 @@
     "GHA": {
       "buying": {
         "momo": {
-          "exchange": 15.43,
           "country": "GHA",
-          "orderType": "buying",
-          "providerType": "momo",
+          "exchange": 16.35,
           "conversionResponse": {
             "success": true,
-            "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0,
-            "exchangeRate": 15.43,
-            "cryptoAmount": 0,
-            "fiatAmount": 0,
-            "providerPayoutAmount": 0,
-            "gasFeeInFiat": 0
+            "chargeFeeInFiat": 0.9810000000000001,
+            "chargeFeeInUsd": 0.06,
+            "exchangeRate": 16.35,
+            "cryptoAmount": 1,
+            "fiatAmount": 16.35,
+            "providerPayoutAmount": 16.35,
+            "gasFeeInFiat": 0.327
           }
         },
         "bank": {
-          "exchange": 15.43,
           "country": "GHA",
-          "orderType": "buying",
-          "providerType": "bank",
+          "exchange": 16.35,
           "conversionResponse": {
             "success": true,
-            "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0,
-            "exchangeRate": 15.43,
-            "cryptoAmount": 0,
-            "fiatAmount": 0,
-            "providerPayoutAmount": 0,
-            "gasFeeInFiat": 0
+            "chargeFeeInFiat": 0.9810000000000001,
+            "chargeFeeInUsd": 0.06,
+            "exchangeRate": 16.35,
+            "cryptoAmount": 1,
+            "fiatAmount": 16.35,
+            "providerPayoutAmount": 16.35,
+            "gasFeeInFiat": 0.327
           }
         }
       },
       "selling": {
         "momo": {
-          "exchange": 15.43,
           "country": "GHA",
-          "orderType": "selling",
-          "providerType": "momo",
+          "exchange": 15.17,
           "conversionResponse": {
             "success": true,
-            "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0,
-            "exchangeRate": 15.43,
-            "cryptoAmount": 0,
-            "fiatAmount": 0,
-            "providerPayoutAmount": 0,
-            "gasFeeInFiat": 0
+            "chargeFeeInFiat": 0.25789,
+            "chargeFeeInUsd": 0.017,
+            "exchangeRate": 15.17,
+            "cryptoAmount": 1,
+            "fiatAmount": 15.17,
+            "providerPayoutAmount": 15.17,
+            "gasFeeInFiat": 0.3034
           }
         },
         "bank": {
-          "exchange": 15.43,
           "country": "GHA",
-          "orderType": "selling",
-          "providerType": "bank",
+          "exchange": 15.17,
           "conversionResponse": {
             "success": true,
-            "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0,
-            "exchangeRate": 15.43,
-            "cryptoAmount": 0,
-            "fiatAmount": 0,
-            "providerPayoutAmount": 0,
-            "gasFeeInFiat": 0
+            "chargeFeeInFiat": 0.25789,
+            "chargeFeeInUsd": 0.017,
+            "exchangeRate": 15.17,
+            "cryptoAmount": 1,
+            "fiatAmount": 15.17,
+            "providerPayoutAmount": 15.17,
+            "gasFeeInFiat": 0.3034
           }
         }
       }
@@ -284,69 +236,61 @@
     "ZM": {
       "buying": {
         "momo": {
-          "exchange": 127.38,
           "country": "ZM",
-          "orderType": "buying",
-          "providerType": "momo",
+          "exchange": 27.73,
           "conversionResponse": {
             "success": true,
-            "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0,
-            "exchangeRate": 127.38,
-            "cryptoAmount": 0,
-            "fiatAmount": 0,
-            "providerPayoutAmount": 0,
-            "gasFeeInFiat": 0
+            "chargeFeeInFiat": 6.9325,
+            "chargeFeeInUsd": 0.25,
+            "exchangeRate": 27.73,
+            "cryptoAmount": 1,
+            "fiatAmount": 27.73,
+            "providerPayoutAmount": 27.73,
+            "gasFeeInFiat": 0.5546
           }
         },
         "bank": {
-          "exchange": 127.38,
           "country": "ZM",
-          "orderType": "buying",
-          "providerType": "bank",
+          "exchange": 27.73,
           "conversionResponse": {
             "success": true,
-            "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0,
-            "exchangeRate": 127.38,
-            "cryptoAmount": 0,
-            "fiatAmount": 0,
-            "providerPayoutAmount": 0,
-            "gasFeeInFiat": 0
+            "chargeFeeInFiat": 6.9325,
+            "chargeFeeInUsd": 0.25,
+            "exchangeRate": 27.73,
+            "cryptoAmount": 1,
+            "fiatAmount": 27.73,
+            "providerPayoutAmount": 27.73,
+            "gasFeeInFiat": 0.5546
           }
         }
       },
       "selling": {
         "momo": {
-          "exchange": 127.38,
           "country": "ZM",
-          "orderType": "selling",
-          "providerType": "momo",
+          "exchange": 25.12,
           "conversionResponse": {
             "success": true,
-            "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0,
-            "exchangeRate": 127.38,
-            "cryptoAmount": 0,
-            "fiatAmount": 0,
-            "providerPayoutAmount": 0,
-            "gasFeeInFiat": 0
+            "chargeFeeInFiat": 3.0144,
+            "chargeFeeInUsd": 0.12,
+            "exchangeRate": 25.12,
+            "cryptoAmount": 1,
+            "fiatAmount": 25.12,
+            "providerPayoutAmount": 25.12,
+            "gasFeeInFiat": 0.5024000000000001
           }
         },
         "bank": {
-          "exchange": 127.38,
           "country": "ZM",
-          "orderType": "selling",
-          "providerType": "bank",
+          "exchange": 25.12,
           "conversionResponse": {
             "success": true,
-            "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0,
-            "exchangeRate": 127.38,
-            "cryptoAmount": 0,
-            "fiatAmount": 0,
-            "providerPayoutAmount": 0,
-            "gasFeeInFiat": 0
+            "chargeFeeInFiat": 3.0144,
+            "chargeFeeInUsd": 0.12,
+            "exchangeRate": 25.12,
+            "cryptoAmount": 1,
+            "fiatAmount": 25.12,
+            "providerPayoutAmount": 25.12,
+            "gasFeeInFiat": 0.5024000000000001
           }
         }
       }
@@ -354,69 +298,61 @@
     "TZ": {
       "buying": {
         "momo": {
-          "exchange": 2941.0,
           "country": "TZ",
-          "orderType": "buying",
-          "providerType": "momo",
+          "exchange": 2530,
           "conversionResponse": {
             "success": true,
-            "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0,
-            "exchangeRate": 2941.0,
-            "cryptoAmount": 0,
-            "fiatAmount": 0,
-            "providerPayoutAmount": 0,
-            "gasFeeInFiat": 0
+            "chargeFeeInFiat": 88.55000000000001,
+            "chargeFeeInUsd": 0.035,
+            "exchangeRate": 2530,
+            "cryptoAmount": 1,
+            "fiatAmount": 2530,
+            "providerPayoutAmount": 2530,
+            "gasFeeInFiat": 50.6
           }
         },
         "bank": {
-          "exchange": 2941.0,
           "country": "TZ",
-          "orderType": "buying",
-          "providerType": "bank",
+          "exchange": 2530,
           "conversionResponse": {
             "success": true,
-            "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0,
-            "exchangeRate": 2941.0,
-            "cryptoAmount": 0,
-            "fiatAmount": 0,
-            "providerPayoutAmount": 0,
-            "gasFeeInFiat": 0
+            "chargeFeeInFiat": 88.55000000000001,
+            "chargeFeeInUsd": 0.035,
+            "exchangeRate": 2530,
+            "cryptoAmount": 1,
+            "fiatAmount": 2530,
+            "providerPayoutAmount": 2530,
+            "gasFeeInFiat": 50.6
           }
         }
       },
       "selling": {
         "momo": {
-          "exchange": 2941.0,
           "country": "TZ",
-          "orderType": "selling",
-          "providerType": "momo",
+          "exchange": 2552.01,
           "conversionResponse": {
             "success": true,
-            "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0,
-            "exchangeRate": 2941.0,
-            "cryptoAmount": 0,
-            "fiatAmount": 0,
-            "providerPayoutAmount": 0,
-            "gasFeeInFiat": 0
+            "chargeFeeInFiat": 102.08040000000001,
+            "chargeFeeInUsd": 0.04,
+            "exchangeRate": 2552.01,
+            "cryptoAmount": 1,
+            "fiatAmount": 2552.01,
+            "providerPayoutAmount": 2552.01,
+            "gasFeeInFiat": 51.040200000000006
           }
         },
         "bank": {
-          "exchange": 2941.0,
           "country": "TZ",
-          "orderType": "selling",
-          "providerType": "bank",
+          "exchange": 2552.01,
           "conversionResponse": {
             "success": true,
-            "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0,
-            "exchangeRate": 2941.0,
-            "cryptoAmount": 0,
-            "fiatAmount": 0,
-            "providerPayoutAmount": 0,
-            "gasFeeInFiat": 0
+            "chargeFeeInFiat": 102.08040000000001,
+            "chargeFeeInUsd": 0.04,
+            "exchangeRate": 2552.01,
+            "cryptoAmount": 1,
+            "fiatAmount": 2552.01,
+            "providerPayoutAmount": 2552.01,
+            "gasFeeInFiat": 51.040200000000006
           }
         }
       }
@@ -424,69 +360,61 @@
     "ZA": {
       "buying": {
         "momo": {
-          "exchange": 18.57,
           "country": "ZA",
-          "orderType": "buying",
-          "providerType": "momo",
+          "exchange": 18.57,
           "conversionResponse": {
             "success": true,
-            "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0,
+            "chargeFeeInFiat": 1.2999,
+            "chargeFeeInUsd": 0.07,
             "exchangeRate": 18.57,
-            "cryptoAmount": 0,
-            "fiatAmount": 0,
-            "providerPayoutAmount": 0,
-            "gasFeeInFiat": 0
+            "cryptoAmount": 1,
+            "fiatAmount": 18.57,
+            "providerPayoutAmount": 18.57,
+            "gasFeeInFiat": 0.3714
           }
         },
         "bank": {
-          "exchange": 18.57,
           "country": "ZA",
-          "orderType": "buying",
-          "providerType": "bank",
+          "exchange": 18.57,
           "conversionResponse": {
             "success": true,
-            "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0,
+            "chargeFeeInFiat": 1.2999,
+            "chargeFeeInUsd": 0.07,
             "exchangeRate": 18.57,
-            "cryptoAmount": 0,
-            "fiatAmount": 0,
-            "providerPayoutAmount": 0,
-            "gasFeeInFiat": 0
+            "cryptoAmount": 1,
+            "fiatAmount": 18.57,
+            "providerPayoutAmount": 18.57,
+            "gasFeeInFiat": 0.3714
           }
         }
       },
       "selling": {
         "momo": {
-          "exchange": 18.57,
           "country": "ZA",
-          "orderType": "selling",
-          "providerType": "momo",
+          "exchange": 18.32,
           "conversionResponse": {
             "success": true,
-            "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0,
-            "exchangeRate": 18.57,
-            "cryptoAmount": 0,
-            "fiatAmount": 0,
-            "providerPayoutAmount": 0,
-            "gasFeeInFiat": 0
+            "chargeFeeInFiat": 0.32976,
+            "chargeFeeInUsd": 0.018,
+            "exchangeRate": 18.32,
+            "cryptoAmount": 1,
+            "fiatAmount": 18.32,
+            "providerPayoutAmount": 18.32,
+            "gasFeeInFiat": 0.3664
           }
         },
         "bank": {
-          "exchange": 18.57,
           "country": "ZA",
-          "orderType": "selling",
-          "providerType": "bank",
+          "exchange": 18.32,
           "conversionResponse": {
             "success": true,
-            "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0,
-            "exchangeRate": 18.57,
-            "cryptoAmount": 0,
-            "fiatAmount": 0,
-            "providerPayoutAmount": 0,
-            "gasFeeInFiat": 0
+            "chargeFeeInFiat": 0.32976,
+            "chargeFeeInUsd": 0.018,
+            "exchangeRate": 18.32,
+            "cryptoAmount": 1,
+            "fiatAmount": 18.32,
+            "providerPayoutAmount": 18.32,
+            "gasFeeInFiat": 0.3664
           }
         }
       }

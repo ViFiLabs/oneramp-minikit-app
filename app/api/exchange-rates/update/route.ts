@@ -12,16 +12,12 @@ const EXCHANGE_RATES_FILE_PATH = path.join(
 interface ExchangeRateResponse {
   exchange: number;
   country: string;
-  orderType: string;
-  providerType: string;
   conversionResponse: {
     success: boolean;
     chargeFeeInFiat: number;
     chargeFeeInUsd: number;
     exchangeRate: number;
-    cryptoAmount: number;
     fiatAmount: number;
-    providerPayoutAmount: number;
     gasFeeInFiat: number;
   };
 }
@@ -68,9 +64,11 @@ export async function POST(request: NextRequest) {
 
         for (const providerType of providerTypes) {
           try {
-            const response = await oneRampApi.get(
-              `/exchange-rate/${country}/${orderType}/${providerType}`
-            );
+            const response = await oneRampApi.post("/exchange", {
+              country,
+              orderType,
+              providerType,
+            });
             updatedExchangeRates[country][orderType][providerType] =
               response.data;
           } catch {
@@ -78,16 +76,12 @@ export async function POST(request: NextRequest) {
             updatedExchangeRates[country][orderType][providerType] = {
               exchange: 0,
               country,
-              orderType,
-              providerType,
               conversionResponse: {
                 success: false,
                 chargeFeeInFiat: 0,
                 chargeFeeInUsd: 0,
                 exchangeRate: 0,
-                cryptoAmount: 0,
                 fiatAmount: 0,
-                providerPayoutAmount: 0,
                 gasFeeInFiat: 0,
               },
             };
