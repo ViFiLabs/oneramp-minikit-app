@@ -50,10 +50,13 @@ export function useAllCountryExchangeRates({
       return ratesMap;
     },
     enabled: !!(providerType && orderType),
-    staleTime: 60 * 1000, // 60 seconds - longer to reduce API calls
-    refetchInterval: 5 * 60 * 1000, // 5 minutes - less frequent refetching
+    staleTime: 30 * 1000, // 30 seconds - shorter for more responsive updates
+    refetchInterval: 2 * 60 * 1000, // 2 minutes - more frequent for better UX
     retry: 2, // Fewer retries to avoid overwhelming the API
-    retryDelay: (attemptIndex) => Math.min(2000 * 2 ** attemptIndex, 10000),
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
+    // Enable background refetching for real-time updates
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 }
 

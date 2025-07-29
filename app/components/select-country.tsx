@@ -1,10 +1,9 @@
 "use client";
 
-import { getCountryExchangeRate } from "@/actions/rates";
 import { cn } from "@/lib/utils";
 import { useAmountStore } from "@/store/amount-store";
-import { useExchangeRateStore } from "@/store/exchange-rate-store";
 import { useUserSelectionStore } from "@/store/user-selection";
+import { useAllCountryExchangeRates } from "@/hooks/useExchangeRate";
 import { Country } from "@/types";
 import { useEffect, useMemo } from "react";
 import SelectCountryModal from "./modals/select-country-modal";
@@ -14,34 +13,18 @@ const SelectCountry = () => {
   const { country, updateSelection, paymentMethod, countryPanelOnTop } =
     useUserSelectionStore();
   const { amount, setIsValid, setFiatAmount } = useAmountStore();
-  const { exchangeRate, setExchangeRate, setError } = useExchangeRateStore();
 
-  // Fetch exchange rate when country or payment method changes
-  useEffect(() => {
-    const fetchExchangeRate = async () => {
-      if (!country?.countryCode || !paymentMethod) return;
+  // Use the optimized hook to get all exchange rates (same as SwapPanel)
+  const { data: allExchangeRates } = useAllCountryExchangeRates({
+    orderType: "selling",
+    providerType: paymentMethod || "momo", // Default to momo if no payment method
+  });
 
-      try {
-        const response = await getCountryExchangeRate({
-          country: country.countryCode,
-          orderType: "selling",
-          providerType: paymentMethod,
-        });
-
-        setExchangeRate(response);
-        setError(null);
-      } catch (error) {
-        setError(
-          error instanceof Error
-            ? error.message
-            : "Failed to fetch exchange rate"
-        );
-        setExchangeRate(null);
-      }
-    };
-
-    fetchExchangeRate();
-  }, [country?.countryCode, paymentMethod, setExchangeRate, setError]);
+  // Get current country's exchange rate from cached data
+  const exchangeRate = useMemo(() => {
+    if (!country?.countryCode || !allExchangeRates) return null;
+    return allExchangeRates[country.countryCode];
+  }, [country?.countryCode, allExchangeRates]);
 
   const calculatedAmount = useMemo(() => {
     if (!country || !amount || !exchangeRate) return null;
@@ -74,6 +57,7 @@ const SelectCountry = () => {
   }, [isAmountValid, calculatedAmount, setIsValid, setFiatAmount]);
 
   const handleCountrySelect = (selectedCountry: Country) => {
+    // Use the exchange rate from allExchangeRates if available, otherwise fallback to country default
     const rate = exchangeRate?.exchange ?? selectedCountry.exchangeRate;
 
     updateSelection({

@@ -78,10 +78,9 @@ export function SwapPanel() {
 
   // Pre-fetch exchange rates for all supported countries when component mounts
   // This improves the user experience by having rates ready when countries are selected
-  // Note: The data is used in ExchangeRateComponent, this just triggers the pre-fetching
-  // Using "selling" endpoint for better performance (same as PaymentInterface)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { data: allExchangeRates } = useAllCountryExchangeRates({
+  // Note: The data is used in ExchangeRateComponent and SelectCountry, this triggers the pre-fetching
+  // Using "selling" endpoint for better performance and real-time rate updates
+  const { data: allExchangeRates, isLoading: isExchangeRateLoading } = useAllCountryExchangeRates({
     orderType: "selling", // Using selling endpoint for better performance
     providerType: "momo", // Default provider type
   });
