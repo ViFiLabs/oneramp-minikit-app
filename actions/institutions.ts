@@ -13,9 +13,20 @@ const INSTITUTIONS_FILE_PATH = path.join(
 
 interface Institution {
   name: string;
-  type: string;
   code: string;
-  [key: string]: string;
+  status: string;
+  accountNumberType: string;
+  country: string;
+  bankId: string;
+  id: string;
+  seerbitId: string;
+  countryAccountNumberType: string;
+  createdAt: string;
+  updatedAt: string;
+  featureFlagEnabled: string[];
+  tempDisabledFor: string[];
+  channelIds: string[];
+  [key: string]: string | string[] | number | boolean;
 }
 
 interface InstitutionsData {
@@ -93,15 +104,27 @@ export async function getInstitutionsSync(
   try {
     if (!country) return [];
 
+    console.log(`🔍 Cache lookup: ${country} - ${method}`);
+
     // Read file asynchronously but still very fast
     const fileContent = await fs.readFile(INSTITUTIONS_FILE_PATH, "utf-8");
     const data = JSON.parse(fileContent) as InstitutionsData;
 
+    console.log(
+      `📋 Available countries in cache: ${Object.keys(data.institutions).join(
+        ", "
+      )}`
+    );
+
     const countryInstitutions = data.institutions[country];
     if (countryInstitutions && countryInstitutions[method]) {
+      console.log(
+        `✅ Cache hit: Found ${countryInstitutions[method].length} institutions for ${country} - ${method}`
+      );
       return countryInstitutions[method];
     }
 
+    console.log(`❌ Cache miss: No data for ${country} - ${method}`);
     return [];
   } catch (error) {
     console.error("Failed to load institutions from cache:", error);

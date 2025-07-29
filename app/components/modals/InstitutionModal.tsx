@@ -1,6 +1,23 @@
 "use client";
 import { Input } from "@/components/ui/input";
-import { Institution } from "@/types";
+// Use the actual API response type for institutions
+interface Institution {
+  name: string;
+  code: string;
+  status: string;
+  accountNumberType: string;
+  country: string;
+  bankId: string;
+  id: string;
+  seerbitId: string;
+  countryAccountNumberType: string;
+  createdAt: string;
+  updatedAt: string;
+  featureFlagEnabled: string[];
+  tempDisabledFor: string[];
+  channelIds: string[];
+  [key: string]: string | string[] | number | boolean;
+}
 import { useState, useEffect } from "react";
 import {
   Dialog,
