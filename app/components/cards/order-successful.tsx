@@ -48,7 +48,7 @@ const OrderSuccessful = () => {
         setExploreUrl(
           currentNetwork?.blockExplorers?.default.url + "/tx/" + transactionHash
         );
-      } 
+      }
     }
   }, [transactionHash, currentNetwork]);
 

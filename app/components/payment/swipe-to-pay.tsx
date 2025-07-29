@@ -16,6 +16,7 @@ interface SwipeToPayButtonProps {
   isLoading?: boolean;
   disabled?: boolean;
   stepMessage?: string;
+  reset?: boolean; // Add reset prop to trigger rollback
 }
 
 export function SwipeToPayButton({
@@ -23,6 +24,7 @@ export function SwipeToPayButton({
   isLoading = false,
   disabled = false,
   stepMessage = "Processing...",
+  reset = false,
 }: SwipeToPayButtonProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [dragX, setDragX] = useState(0);
@@ -188,12 +190,21 @@ export function SwipeToPayButton({
     }
   }, [isLoading]);
 
+  // Reset when reset prop changes
+  useEffect(() => {
+    if (reset) {
+      setIsCompleted(false);
+      setDragX(0);
+      setIsDragging(false);
+    }
+  }, [reset]);
+
   return (
     <div className="relative">
       <div
         ref={containerRef}
         className={`relative rounded-full h-16 flex items-center justify-center overflow-hidden cursor-pointer select-none ${
-          disabled ? "opacity-50" : ""
+          disabled && !isLoading ? "opacity-80" : ""
         }`}
         style={{
           background: disabled
@@ -238,7 +249,7 @@ export function SwipeToPayButton({
       </div>
 
       {/* Helper text */}
-      <div className="text-center text-gray-400 text-sm mt-3">
+      <div className="text-center text-gray-400 text-xs mt-1">
         <p>{getHelperText()}</p>
       </div>
     </div>

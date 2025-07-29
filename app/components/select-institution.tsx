@@ -495,7 +495,7 @@ const SelectInstitution = ({
                 setValue("accountNumber", "");
                 updateSelection({ paymentMethod: undefined });
               }}
-              className="bg-transparent border w-full h-full !border-neutral-600 text-neutral-400 rounded-t-2xl rounded-b-lg p-3 cursor-pointer flex items-center justify-center"
+              className="bg-transparent border w-full h-full !border-neutral-600 text-neutral-400 rounded-full p-3 cursor-pointer flex items-center justify-center"
             >
               <span className="line-clamp-1 text-white">
                 {institution?.name || "Select institution"}

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import CountryAvator from "./country-avator";
 import TransactionsModal from "@/components/modals/transactions-modal";
 import { useUserSelectionStore } from "@/store/user-selection";
+import { PAY_SUPPORTED_COUNTRIES } from "@/data/countries";
 
 interface SuccessCardProps {
   transactionHash?: string;
@@ -30,7 +31,11 @@ const SuccessCard: React.FC<SuccessCardProps> = ({
     new Date().toLocaleTimeString("en-GB");
 
   let totalAmount = 0;
-  if (quote.country === "KE" || quote.country === "UG") {
+  const isPaySupportedCountry = PAY_SUPPORTED_COUNTRIES.some(
+    (country) => country.countryCode === quote.country
+  );
+
+  if (isPaySupportedCountry) {
     totalAmount = Number(quote.fiatAmount);
   } else {
     totalAmount = Number(quote.fiatAmount) + Number(quote.feeInFiat);

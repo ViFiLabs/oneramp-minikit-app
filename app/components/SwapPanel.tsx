@@ -11,8 +11,12 @@ import { useTransferStore } from "@/store/transfer-store";
 import { useKYCStore } from "@/store/kyc-store";
 import { Asset, Network, OrderStep, AppState, ChainTypes, TransferType,  TransferBankRequest,
   TransferMomoRequest } from "@/types";
+import {
+  useAllCountryExchangeRates,
+  useAllCountryInstitutions,
+} from "@/hooks/useExchangeRate";
 import { AnimatePresence, motion } from "framer-motion";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { createQuoteOut } from "@/actions/quote";
 import { createTransferOut } from "@/actions/transfer";
@@ -32,14 +36,13 @@ import { ModalConnectButton } from "@/components/modal-connect-button";
 const networks: Network[] = SUPPORTED_NETWORKS_WITH_RPC_URLS;
 
 export function SwapPanel() {
-  const [selectedCurrency, setSelectedCurrency] = useState<Asset>(assets[0]);
   const [withdrawLoading, setWithdrawLoading] = useState(false);
   const [stepMessage, setStepMessage] = useState("");
   const [showKYCModal, setShowKYCModal] = useState(false);
   const [showWalletModal, setShowWalletModal] = useState(false);
   const userSelectionStore = useUserSelectionStore();
   const { countryPanelOnTop, updateSelection, country, institution, accountNumber, asset } = userSelectionStore;
-  const { setCurrentNetwork, currentNetwork } = useNetworkStore();
+  const { currentNetwork, setCurrentNetwork, currentNetwork } = useNetworkStore();
   const { chainId } = useWalletGetInfo();
   const [selectedCountryCurrency] = useState<null | {
     name: string;
@@ -51,6 +54,20 @@ export function SwapPanel() {
   const { setTransfer, setTransactionHash } = useTransferStore();
   const { kycData } = useKYCStore();
 
+  // Get available assets for the current network
+  const availableAssets = useMemo(() => {
+    if (!currentNetwork) return assets;
+
+    return assets.filter((asset) => {
+      const networkConfig = asset.networks[currentNetwork.name];
+      return networkConfig && networkConfig.tokenAddress;
+    });
+  }, [currentNetwork]);
+
+  const [selectedCurrency, setSelectedCurrency] = useState<Asset>(
+    availableAssets[0] || assets[0]
+  );
+
   // Wallet connection states
   const { isConnected: evmConnected, address } = useWalletGetInfo();
 
@@ -58,6 +75,22 @@ export function SwapPanel() {
 
   // EVM payment hook
   const { payWithEVM } = useEVMPay();
+
+  // Pre-fetch exchange rates for all supported countries when component mounts
+  // This improves the user experience by having rates ready when countries are selected
+  // Note: The data is used in ExchangeRateComponent, this just triggers the pre-fetching
+  // Using "selling" endpoint for better performance (same as PaymentInterface)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { data: allExchangeRates } = useAllCountryExchangeRates({
+    orderType: "selling", // Using selling endpoint for better performance
+    providerType: "momo", // Default provider type
+  });
+
+  // Pre-fetch institutions for all supported countries when component mounts
+  // This ensures institutions are ready when users select a country
+  // Note: The data is used in InstitutionModal, this just triggers the pre-fetching
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { data: allInstitutions } = useAllCountryInstitutions("buy");
 
   // Used to show wallet requirement in the network modal
   const canSwitchNetwork = (network: Network) => {
@@ -454,6 +487,7 @@ export function SwapPanel() {
         <SwapHeader
           selectedCurrency={selectedCurrency}
           onCurrencyChange={handleCurrencyChange}
+          availableAssets={availableAssets}
           onSettingsClick={handleSettingsClick}
         />
       </motion.div>

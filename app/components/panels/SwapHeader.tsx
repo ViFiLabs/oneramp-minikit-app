@@ -7,12 +7,14 @@ import { CurrencySelector } from "./CurrencySelector";
 interface SwapHeaderProps {
   selectedCurrency: Asset;
   onCurrencyChange: (currency: Asset) => void;
+  availableAssets?: Asset[];
   onSettingsClick?: () => void;
 }
 
 export function SwapHeader({
   selectedCurrency,
   onCurrencyChange,
+  availableAssets,
   onSettingsClick,
 }: SwapHeaderProps) {
   return (
@@ -22,6 +24,7 @@ export function SwapHeader({
         <CurrencySelector
           selectedCurrency={selectedCurrency}
           onCurrencyChange={onCurrencyChange}
+          availableAssets={availableAssets}
         />
       </div>
       <Button

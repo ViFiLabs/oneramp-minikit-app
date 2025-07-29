@@ -7,7 +7,7 @@ import { useNetworkStore } from "@/store/network";
 import { useUserSelectionStore } from "@/store/user-selection";
 import { Country, Institution } from "@/types";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import ExchangeRateComponent from "./exchange-rate-component";
 import BuyValueInput from "./inputs/BuyValueInput";
 import { BuyTransactionReviewModal } from "./modals/BuyTransactionReviewModal";
@@ -15,6 +15,7 @@ import { CountryCurrencyModal } from "./modals/CountryCurrencyModal";
 import SelectCountryModal from "./modals/select-country-modal";
 import { TokenSelectModal } from "./modals/TokenSelectModal";
 import SelectInstitution from "./select-institution";
+import { countries } from "@/data/countries";
 
 // Reuse the same country list from SwapPanel
 export const countryCurrencies = [
@@ -53,6 +54,25 @@ export function BuyPanel() {
   const [accountNumber] = useState("");
   const [description] = useState("");
   const [showReviewModal, setShowReviewModal] = useState(false);
+
+  // Countries disabled for BuyPanel testing
+  const DISABLED_COUNTRIES_FOR_BUY = [
+    "Nigeria",
+    // Add more countries here as needed for testing
+    // "Kenya",
+    // "Ghana",
+    "Zambia",
+    // "Uganda",
+    // "Tanzania",
+    "South Africa",
+  ];
+
+  // Filter out disabled countries for BuyPanel
+  const buyPanelCountries = useMemo(() => {
+    return countries.filter(
+      (country) => !DISABLED_COUNTRIES_FOR_BUY.includes(country.name)
+    );
+  }, []);
 
   // Fetch exchange rate when country or payment method changes
   useEffect(() => {
@@ -106,7 +126,10 @@ export function BuyPanel() {
         <span className="text-neutral-400 text-base md:text-lg">
           You&apos;re buying
         </span>
-        <SelectCountryModal handleCountrySelect={handleCountrySelect} />
+        <SelectCountryModal
+          handleCountrySelect={handleCountrySelect}
+          filteredCountries={buyPanelCountries}
+        />
       </div>
       <div className="flex flex-col items-center justify-center gap-3 md:gap-4">
         <div className="w-full flex items-center justify-center">

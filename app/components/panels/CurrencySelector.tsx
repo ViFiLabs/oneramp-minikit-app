@@ -11,12 +11,14 @@ import { useState } from "react";
 interface CurrencySelectorProps {
   selectedCurrency: Asset;
   onCurrencyChange: (currency: Asset) => void;
+  availableAssets?: Asset[];
   className?: string;
 }
 
 export function CurrencySelector({
   selectedCurrency,
   onCurrencyChange,
+  availableAssets = assets,
   className = "",
 }: CurrencySelectorProps) {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -70,7 +72,7 @@ export function CurrencySelector({
             exit={{ opacity: 0, scale: 0.95, y: -10 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
           >
-            {assets.map((currency, index) => (
+            {availableAssets.map((currency, index) => (
               <motion.button
                 key={currency.symbol}
                 className={`flex items-center justify-between w-full px-4 py-3 rounded-xl transition-colors gap-3 ${

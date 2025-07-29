@@ -1,14 +1,15 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FiLink } from "react-icons/fi";
-import { Loader } from "lucide-react";
+import { Loader, X } from "lucide-react";
 import { TransferType, Quote, Transfer } from "@/types";
 import AssetAvator from "./asset-avator";
 import CountryAvator from "./country-avator";
 import { Button } from "@/components/ui/button";
 import TransactionsModal from "@/components/modals/transactions-modal";
 import { useUserSelectionStore } from "@/store/user-selection";
+import { PAY_SUPPORTED_COUNTRIES } from "@/data/countries";
 
 interface ProcessingCardProps {
   transactionHash?: string;
@@ -27,21 +28,101 @@ const ProcessingCard: React.FC<ProcessingCardProps> = ({
   onCancel,
 }) => {
   const { isPayout } = useUserSelectionStore();
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [isTooltipClosing, setIsTooltipClosing] = useState(false);
+  const bellButtonRef = useRef<HTMLDivElement>(null);
   const currentDate =
     new Date().toLocaleDateString("en-CA") +
     " " +
     new Date().toLocaleTimeString("en-GB");
 
   let totalAmount = 0;
-  if (quote.country === "KE" || quote.country === "UG") {
+  const isPaySupportedCountry = PAY_SUPPORTED_COUNTRIES.some(
+    (country) => country.countryCode === quote.country
+  );
+
+  if (isPaySupportedCountry) {
     totalAmount = Number(quote.fiatAmount);
   } else {
     totalAmount = Number(quote.fiatAmount) + Number(quote.feeInFiat);
   }
 
+  // Show tooltip after 10 seconds
+  useEffect(() => {
+    const showTimer = setTimeout(() => {
+      setShowTooltip(true);
+    }, 10000);
+
+    return () => clearTimeout(showTimer);
+  }, []);
+
+  // Auto-hide tooltip after 8 seconds once shown
+  useEffect(() => {
+    if (!showTooltip) return;
+
+    const hideTimer = setTimeout(() => {
+      setIsTooltipClosing(true);
+      setTimeout(() => setShowTooltip(false), 300);
+    }, 8000);
+
+    return () => clearTimeout(hideTimer);
+  }, [showTooltip]);
+
+  const handleCloseTooltip = () => {
+    setIsTooltipClosing(true);
+    setTimeout(() => setShowTooltip(false), 300);
+  };
+
   return (
     <div className="min-h-screen !bg-[#181818] text-white flex items-center w-full md:w-1/3 justify-center md:bg-black">
       <div className="w-full h-full max-w-lg">
+        {/* Tooltip */}
+        {showTooltip && (
+          <div
+            className={`absolute z-60 bg-blue-600 text-white px-4 py-3 rounded-lg shadow-lg max-w-xs ${
+              isTooltipClosing ? "animate-fade-out" : "animate-slide-in-top"
+            }`}
+            style={{
+              // Position below and to the left of the bell icon
+              top: bellButtonRef.current
+                ? bellButtonRef.current.offsetTop +
+                  bellButtonRef.current.offsetHeight +
+                  8
+                : "4rem",
+              right: bellButtonRef.current ? "0.5rem" : "0.5rem",
+            }}
+          >
+            {/* Arrow pointing up to bell icon */}
+            <div className="absolute -top-2 right-1 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-blue-600"></div>
+
+            {/* Bell icon highlight/glow effect */}
+            <div className="absolute -top-1 -right-1 w-8 h-8 bg-blue-600/20 rounded-full animate-pulse"></div>
+            <div
+              className="absolute -top-0.5 -right-0.5 w-6 h-6 bg-blue-600/40 rounded-full animate-pulse"
+              style={{ animationDelay: "0.5s" }}
+            ></div>
+
+            <div className="flex items-start gap-3">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium">
+                  You don&apos;t need to stay on this screen!
+                </p>
+                <p className="text-xs text-blue-100 mt-1 leading-relaxed">
+                  Your transaction will continue processing in the background.
+                  You can close this page and track progress in the transaction
+                  page.
+                </p>
+              </div>
+              <button
+                onClick={handleCloseTooltip}
+                className="flex-shrink-0 text-blue-200 hover:text-white transition-colors p-1"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Main Card */}
         <div className="bg-[#181818]  overflow-hidden">
           {/* Header */}
@@ -52,7 +133,12 @@ const ProcessingCard: React.FC<ProcessingCardProps> = ({
               </div>
               <h2 className="text-xl font-medium text-white">Processing</h2>
             </div>
-            <TransactionsModal />
+            <div ref={bellButtonRef} className={showTooltip ? "relative" : ""}>
+              {showTooltip && (
+                <div className="absolute inset-0 bg-blue-600/10 rounded-full animate-pulse"></div>
+              )}
+              <TransactionsModal />
+            </div>
           </div>
 
           {/* Transaction Flow */}

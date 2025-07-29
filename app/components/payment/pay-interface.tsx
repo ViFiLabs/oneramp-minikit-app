@@ -13,35 +13,36 @@ import {
 } from "@/components/ui/select";
 import { SwipeToPayButton } from "./swipe-to-pay";
 import { CountryCurrencyModal } from "../modals/CountryCurrencyModal";
+import { InstitutionModal } from "../modals/InstitutionModal";
 
 // Import app data and stores
 import { assets } from "@/data/currencies";
-import { countries } from "@/data/countries";
+import {
+  getPaySupportedCountries,
+  isPaymentTypeSupported,
+  requiresInstitutionSelection,
+} from "@/data/countries";
 
 // Note: Actions are now handled by the useBillPayment hook
 
 // Countries that support Pay functionality
-const payEnabledCountries = countries.filter(
-  (country) => country.name === "Kenya" || country.name === "Uganda"
-);
+const payEnabledCountries = getPaySupportedCountries();
 
 import { useUserSelectionStore } from "@/store/user-selection";
 import { useAmountStore } from "@/store/amount-store";
 import { useNetworkStore } from "@/store/network";
 import { useQuoteStore } from "@/store/quote-store";
 import { useTransferStore } from "@/store/transfer-store";
-import { useAllCountryExchangeRates } from "@/hooks/useExchangeRate";
+import { useKYCStore } from "@/store/kyc-store";
+import { Institution, AppState } from "@/types";
+import {
+  useAllCountryExchangeRates,
+  useAllCountryInstitutions,
+} from "@/hooks/useExchangeRate";
 import { useAssetBalance } from "@/hooks/useAssetBalance";
 import useWalletGetInfo from "@/hooks/useWalletGetInfo";
 import { useBillPayment, PaymentStep } from "@/hooks/useBillPayment";
-import {
-  OrderStep,
-  AppState,
-  ChainTypes,
-  Transfer,
-  Quote,
-  Country,
-} from "@/types";
+import { OrderStep, ChainTypes, Transfer, Quote, Country } from "@/types";
 import useEVMPay from "@/onchain/useEVMPay";
 import Image from "next/image";
 import {
@@ -49,10 +50,19 @@ import {
   CryptoAmountSkeleton,
 } from "@/components/ui/skeleton";
 import FeeSummary, { FeeSummarySkeleton } from "./fee-summary";
+import { KYCVerificationModal } from "../modals/KYCVerificationModal";
+import { toast } from "sonner";
 
 export function PaymentInterface() {
-  const { country, asset, updateSelection, paymentMethod, billTillPayout } =
-    useUserSelectionStore();
+  const {
+    country,
+    asset,
+    updateSelection,
+    paymentMethod,
+    billTillPayout,
+    institution,
+    appState,
+  } = useUserSelectionStore();
 
   const { amount, setAmount, setIsValid, setFiatAmount } = useAmountStore();
 
@@ -93,6 +103,12 @@ export function PaymentInterface() {
     return allExchangeRates[country.countryCode];
   }, [country?.countryCode, allExchangeRates]);
 
+  // Pre-fetch institutions for all supported countries
+  // This ensures institutions are ready when users select a country
+  // Note: The data is used in InstitutionModal, this just triggers the pre-fetching
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { data: allInstitutions } = useAllCountryInstitutions("sell");
+
   // Bill payment mutation
   const billPaymentMutation = useBillPayment();
 
@@ -119,18 +135,51 @@ export function PaymentInterface() {
 
   const [selectedPaymentType, setSelectedPaymentType] = useState("Buy Goods");
   const [showCountryModal, setShowCountryModal] = useState(false);
+  const [showInstitutionModal, setShowInstitutionModal] = useState(false);
+  const [showKYCModal, setShowKYCModal] = useState(false);
+  const [kycTriggered, setKycTriggered] = useState(false);
+  const [swipeButtonReset, setSwipeButtonReset] = useState(false);
+
+  const isProcessing = appState === AppState.Processing;
+
+  // Get KYC data
+  const { kycData } = useKYCStore();
+
+  // Reset app state to Idle on component mount to prevent stuck Processing state
+  useEffect(() => {
+    if (appState === AppState.Processing) {
+      updateSelection({
+        appState: AppState.Idle,
+        orderStep: OrderStep.Initial,
+      });
+    }
+  }, []); // Empty dependency array - only run on mount
+
+  // Handle KYC completion and auto-retry payment
+  useEffect(() => {
+    if (kycTriggered && kycData && kycData.kycStatus === "VERIFIED") {
+      setKycTriggered(false);
+      setShowKYCModal(false);
+      // Auto-retry the payment after KYC completion
+      setTimeout(() => {
+        handleCreateBillQuote();
+      }, 500); // Small delay to ensure state is updated
+    }
+  }, [kycTriggered, kycData]);
 
   // Check if payment type is supported for the current country
-  const isPaymentTypeSupported = (paymentType: string) => {
-    if (country?.name === "Uganda") {
-      return paymentType === "Send Money";
-    }
-    return true; // Kenya supports all payment types
+  const isPaymentTypeSupportedForCountry = (paymentType: string) => {
+    if (!country?.name) return false;
+    return isPaymentTypeSupported(country.name, paymentType);
   };
 
-  // Reset payment type when country changes to Uganda
+  // Reset payment type when country changes to countries that only support "Send Money"
   useEffect(() => {
-    if (country?.name === "Uganda" && selectedPaymentType !== "Send Money") {
+    if (
+      country?.name &&
+      !isPaymentTypeSupported(country.name, "Buy Goods") &&
+      selectedPaymentType !== "Send Money"
+    ) {
       setSelectedPaymentType("Send Money");
     }
   }, [country?.name, selectedPaymentType]);
@@ -142,15 +191,39 @@ export function PaymentInterface() {
     // even before a country is selected, improving the user experience
   }, []);
 
-  // Set default asset to USDC
+  // Get available assets for the current network
+  const availableAssets = useMemo(() => {
+    if (!currentNetwork) return assets;
+
+    return assets.filter((asset) => {
+      const networkConfig = asset.networks[currentNetwork.name];
+      return networkConfig && networkConfig.tokenAddress;
+    });
+  }, [currentNetwork]);
+
+  // Set default asset to first available asset for the current network
   useEffect(() => {
-    if (!asset) {
-      const defaultAsset = assets.find((a) => a.symbol === "USDC");
-      if (defaultAsset) {
-        updateSelection({ asset: defaultAsset });
+    if (!asset || !currentNetwork) {
+      const firstAvailableAsset = availableAssets[0];
+      if (firstAvailableAsset) {
+        updateSelection({ asset: firstAvailableAsset });
       }
     }
-  }, [asset, updateSelection]);
+  }, [asset, currentNetwork, availableAssets, updateSelection]);
+
+  // Auto-switch to available asset if current asset is not supported on selected network
+  useEffect(() => {
+    if (asset && currentNetwork && availableAssets.length > 0) {
+      const isCurrentAssetAvailable = availableAssets.some(
+        (availableAsset) => availableAsset.symbol === asset.symbol
+      );
+
+      if (!isCurrentAssetAvailable) {
+        // Switch to first available asset
+        updateSelection({ asset: availableAssets[0] });
+      }
+    }
+  }, [asset, currentNetwork, availableAssets, updateSelection]);
 
   // Set default network to Base
   useEffect(() => {
@@ -225,7 +298,7 @@ export function PaymentInterface() {
 
         return {
           requestType: "payout" as const,
-          accountName: "mtn", // Default name for payout
+          accountName: institution?.name?.toLowerCase() || "mtn", // Use selected institution name
           accountNumber: fullPhoneNumber,
           businessNumber: undefined,
         };
@@ -240,14 +313,12 @@ export function PaymentInterface() {
     transfer: Transfer
   ) => {
     if (!asset || !currentNetwork || !quote || !transfer) {
-      console.log("Missing required data for blockchain transaction");
       return;
     }
 
     // Debug the quote object to see its structure
     // Check if we're on the correct network
     if (chainId !== currentNetwork.chainId) {
-      console.log("Wrong chain, cannot proceed with transaction");
       return;
     }
 
@@ -255,7 +326,6 @@ export function PaymentInterface() {
     const contractAddress = asset.networks[networkName]?.tokenAddress;
 
     if (!contractAddress) {
-      console.log("No contract address found for network:", networkName);
       return;
     }
 
@@ -338,8 +408,35 @@ export function PaymentInterface() {
       return;
     }
 
+    // Verify KYC before proceeding with payment
+    if (kycData && kycData.kycStatus !== "VERIFIED") {
+      // Reset transaction state immediately to prevent SwipeToPayButton from staying in submission mode
+      updateSelection({
+        appState: AppState.Idle,
+        orderStep: OrderStep.Initial,
+      });
+      billPaymentMutation.reset();
+      setBlockchainLoading(false);
+
+      // Reset swipe button to roll back to initial position
+      setSwipeButtonReset(true);
+      setTimeout(() => setSwipeButtonReset(false), 100); // Reset the flag after triggering
+
+      // Set flag to indicate KYC was triggered
+      setKycTriggered(true);
+      setShowKYCModal(true);
+      toast.error("KYC verification required");
+      return;
+    }
+
+    // If KYC was previously triggered and now completed, proceed with payment
+    if (kycTriggered) {
+      setKycTriggered(false); // Reset the flag
+    }
+
     // Validate payment-specific details
     const transferDetails = getTransferDetails();
+
     if (!transferDetails) {
       return;
     }
@@ -397,7 +494,6 @@ export function PaymentInterface() {
               data.quote &&
               data.transfer
             ) {
-              console.log("Starting blockchain transaction...");
               // Keep appState as Processing during blockchain transaction
               updateSelection({ appState: AppState.Processing });
               // Pass the actual quote object (data.quote), not the full response
@@ -480,7 +576,7 @@ export function PaymentInterface() {
   };
 
   const handleAssetSelect = (selectedAsset: string) => {
-    const assetData = assets.find((a) => a.symbol === selectedAsset);
+    const assetData = availableAssets.find((a) => a.symbol === selectedAsset);
     if (assetData) {
       updateSelection({ asset: assetData });
     }
@@ -497,6 +593,40 @@ export function PaymentInterface() {
         updateSelection({ paymentMethod: "momo" }); // Default to mobile money for Pay
       }
     }
+  };
+
+  const handleInstitutionSelect = (institution: Institution) => {
+    updateSelection({
+      institution: institution,
+      paymentMethod: "momo",
+    });
+    setShowInstitutionModal(false);
+  };
+
+  const handleCancelTransaction = () => {
+    // Reset all transaction-related states
+    updateSelection({
+      appState: AppState.Idle,
+      orderStep: OrderStep.Initial,
+    });
+    billPaymentMutation.reset();
+    setBlockchainLoading(false);
+  };
+
+  const resetPaymentState = () => {
+    // Reset payment-related states when KYC is cancelled
+    updateSelection({
+      appState: AppState.Idle,
+      orderStep: OrderStep.Initial,
+    });
+    billPaymentMutation.reset();
+    setBlockchainLoading(false);
+    setShowKYCModal(false);
+    setKycTriggered(false); // Reset KYC trigger flag
+
+    // Reset swipe button to roll back to initial position
+    setSwipeButtonReset(true);
+    setTimeout(() => setSwipeButtonReset(false), 100); // Reset the flag after triggering
   };
 
   const renderPaymentFields = () => {
@@ -516,6 +646,7 @@ export function PaymentInterface() {
                 }
                 className="!bg-neutral-800 !border-neutral-600 text-base text-white h-12 rounded-lg px-4 pr-12"
                 placeholder="Enter till number"
+                disabled={isProcessing}
               />
             </div>
           </div>
@@ -537,6 +668,7 @@ export function PaymentInterface() {
                   }
                   className="!bg-neutral-800 !border-neutral-600 text-sm sm:text-base text-white h-12 rounded-lg px-4 pr-12"
                   placeholder="Enter paybill number"
+                  disabled={isProcessing}
                 />
               </div>
             </div>
@@ -554,6 +686,7 @@ export function PaymentInterface() {
                   }
                   className="!bg-neutral-800 !border-neutral-600 text-sm sm:text-base text-white h-12 rounded-lg px-4 pr-12"
                   placeholder="Enter account number"
+                  disabled={isProcessing}
                 />
               </div>
             </div>
@@ -562,20 +695,53 @@ export function PaymentInterface() {
 
       case "Send Money":
         return (
-          <div className="space-y-3">
-            <div className="text-gray-400 text-sm sm:text-base">
-              <h3>Enter Telephone Number</h3>
-            </div>
-            <div className="relative">
-              <Input
-                value={billTillPayout?.phoneNumber || ""}
-                type="tel"
-                onChange={(e) =>
-                  updateBillTillPayout({ phoneNumber: e.target.value })
-                }
-                className="!bg-neutral-800 !border-neutral-600 text-sm sm:text-base text-white h-12 rounded-lg px-4 pr-12"
-                placeholder=" 0700 000 000"
-              />
+          <div className="space-y-4">
+            {/* Institution Selection for countries that require it */}
+            {country?.name && requiresInstitutionSelection(country.name) && (
+              <div className="space-y-3">
+                <div className="text-gray-400 text-sm sm:text-base">
+                  <h3>Select Mobile Money Provider</h3>
+                </div>
+                <Button
+                  variant="ghost"
+                  className="!bg-neutral-800 !border-neutral-600 text-sm sm:text-base text-white h-12 rounded-lg px-4 w-full flex items-center justify-between border hover:!bg-neutral-700"
+                  onClick={() => setShowInstitutionModal(true)}
+                  disabled={isProcessing}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-white">
+                      {institution?.name || "Select provider"}
+                    </span>
+                  </div>
+                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
+                    <path
+                      d="M7 10l5 5 5-5"
+                      stroke="#fff"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </Button>
+              </div>
+            )}
+
+            <div className="space-y-3">
+              <div className="text-gray-400 text-sm sm:text-base">
+                <h3>Enter Telephone Number</h3>
+              </div>
+              <div className="relative">
+                <Input
+                  value={billTillPayout?.phoneNumber || ""}
+                  type="tel"
+                  onChange={(e) =>
+                    updateBillTillPayout({ phoneNumber: e.target.value })
+                  }
+                  className="!bg-neutral-800 !border-neutral-600 text-sm sm:text-base text-white h-12 rounded-lg px-4 pr-12"
+                  placeholder=" 0700 000 000"
+                  disabled={isProcessing}
+                />
+              </div>
             </div>
           </div>
         );
@@ -593,14 +759,15 @@ export function PaymentInterface() {
         {country && (
           <div className="flex items-center gap-2">
             <Select
-              value={asset?.symbol || "USDC"}
+              value={asset?.symbol || availableAssets[0]?.symbol || "USDC"}
               onValueChange={handleAssetSelect}
+              disabled={isProcessing}
             >
               <SelectTrigger className="bg-transparent border-none text-sm sm:text-base text-white p-0 h-auto">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-neutral-900 !border-neutral-700 border">
-                {assets.map((assetItem) => (
+                {availableAssets.map((assetItem) => (
                   <SelectItem
                     key={assetItem.symbol}
                     value={assetItem.symbol}
@@ -632,6 +799,7 @@ export function PaymentInterface() {
           variant="ghost"
           className="!bg-neutral-800 !border-neutral-600 text-sm sm:text-base text-white h-12 rounded-t-2xl rounded-b-lg px-4 w-full flex items-center justify-between border hover:!bg-neutral-700"
           onClick={() => setShowCountryModal(true)}
+          disabled={isProcessing}
         >
           <div className="flex items-center gap-3">
             {country ? (
@@ -665,30 +833,73 @@ export function PaymentInterface() {
       {country && (
         <>
           {/* Payment Type Buttons */}
-          <div className="grid grid-cols-3 gap-3">
-            {["Buy Goods", "Paybill", "Send Money"].map((type) => {
-              const isSupported = isPaymentTypeSupported(type);
-              const isSelected = selectedPaymentType === type;
-
+          {(() => {
+            // For countries with multiple payment types, show grid
+            if (
+              country?.name &&
+              isPaymentTypeSupported(country.name, "Buy Goods")
+            ) {
               return (
-                <Button
-                  key={type}
-                  variant="ghost"
-                  disabled={!isSupported}
-                  className={`h-12 rounded-lg text-sm sm:text-base font-medium transition-all w-full ${
-                    isSelected && isSupported
-                      ? "!bg-neutral-600 !border-neutral-500 text-white shadow-sm"
-                      : isSupported
-                      ? "!bg-neutral-800 !border-neutral-600 text-gray-300 hover:!bg-neutral-700 hover:text-white border"
-                      : "!bg-neutral-900 !border-neutral-700 text-gray-500 border cursor-not-allowed opacity-50"
-                  }`}
-                  onClick={() => isSupported && setSelectedPaymentType(type)}
-                >
-                  <h2 className="text-xs sm:text-sm">{type}</h2>
-                </Button>
+                <div className="grid grid-cols-3 gap-3">
+                  {["Buy Goods", "Paybill", "Send Money"].map((type) => {
+                    const isSupported = isPaymentTypeSupportedForCountry(type);
+                    const isSelected = selectedPaymentType === type;
+
+                    return (
+                      <Button
+                        key={type}
+                        variant="ghost"
+                        disabled={!isSupported || isProcessing}
+                        className={`h-12 rounded-lg text-sm sm:text-base font-medium transition-all w-full ${
+                          isSelected && isSupported
+                            ? "!bg-neutral-600 !border-neutral-500 text-white shadow-sm"
+                            : isSupported
+                            ? "!bg-neutral-800 !border-neutral-600 text-gray-300 hover:!bg-neutral-700 hover:text-white border"
+                            : "!bg-neutral-900 !border-neutral-700 text-gray-500 border cursor-not-allowed opacity-50"
+                        }`}
+                        onClick={() =>
+                          isSupported && setSelectedPaymentType(type)
+                        }
+                      >
+                        <h2 className="text-xs sm:text-sm">{type}</h2>
+                      </Button>
+                    );
+                  })}
+                </div>
               );
-            })}
-          </div>
+            }
+
+            // For countries with only "Send Money", show full width button
+            if (
+              country?.name &&
+              !isPaymentTypeSupported(country.name, "Buy Goods")
+            ) {
+              return (
+                <div className="w-full">
+                  <Button
+                    variant="ghost"
+                    className="h-12 rounded-lg text-sm sm:text-base font-medium transition-all w-full !bg-neutral-600 !border-neutral-500 text-white shadow-sm"
+                    disabled={isProcessing}
+                  >
+                    <h2 className="text-xs sm:text-sm">Send Money</h2>
+                  </Button>
+                </div>
+              );
+            }
+
+            // For other countries, only show "Send Money" with full width
+            return (
+              <div className="w-full">
+                <Button
+                  variant="ghost"
+                  className="h-12 rounded-lg text-sm sm:text-base font-medium transition-all w-full !bg-neutral-600 !border-neutral-500 text-white shadow-sm"
+                  disabled={isProcessing}
+                >
+                  <h2 className="text-xs sm:text-sm">Send Money</h2>
+                </Button>
+              </div>
+            );
+          })()}
 
           {/* Dynamic Payment Fields */}
           <div className="min-h-[80px]">{renderPaymentFields()}</div>
@@ -706,8 +917,9 @@ export function PaymentInterface() {
                 type="number"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="text-right bg-transparent font-extrabold border-none text-2xl sm:text-3xl text-white p-0 h-auto"
+                className="text-right bg-transparent !font-extrabold border-none text-2xl sm:text-3xl text-white p-0 h-auto"
                 placeholder="0"
+                disabled={isProcessing}
               />
             </div>
             <div className="h-px bg-gray-700"></div>
@@ -739,6 +951,7 @@ export function PaymentInterface() {
                 <Select
                   value={currentNetwork?.name || "Base"}
                   onValueChange={handleNetworkSelect}
+                  disabled={true}
                 >
                   <SelectTrigger className="bg-transparent border-none text-sm sm:text-base text-white p-0 h-auto">
                     <SelectValue />
@@ -873,6 +1086,8 @@ export function PaymentInterface() {
             />
           )}
 
+          {/* Cancel Transaction Button - Only show when processing */}
+
           {/* Swipe to Pay Button */}
           <SwipeToPayButton
             onPaymentComplete={handlePaymentComplete}
@@ -887,10 +1102,26 @@ export function PaymentInterface() {
               !amount ||
               !isAmountValidForCountry ||
               !isConnected ||
-              !address
-              // Removed isExchangeRateLoading to allow fallback rates
+              !address ||
+              (!!country?.name &&
+                requiresInstitutionSelection(country.name) &&
+                !institution) ||
+              isProcessing
             }
+            reset={swipeButtonReset}
           />
+
+          {isProcessing && (
+            <div className="flex justify-center">
+              <Button
+                onClick={handleCancelTransaction}
+                variant="ghost"
+                className="!text-red-400 hover:!text-red-300 text-sm font-medium transition-colors"
+              >
+                Cancel Transaction
+              </Button>
+            </div>
+          )}
         </>
       )}
 
@@ -900,6 +1131,25 @@ export function PaymentInterface() {
         onClose={() => setShowCountryModal(false)}
         onSelect={handleCountrySelect}
         filteredCountries={payEnabledCountries}
+      />
+
+      {/* Institution Selection Modal */}
+      {country && (
+        <InstitutionModal
+          open={showInstitutionModal}
+          onClose={() => setShowInstitutionModal(false)}
+          selectedInstitution={institution || null}
+          onSelect={handleInstitutionSelect}
+          country={country.countryCode}
+          buy={false}
+        />
+      )}
+
+      {/* KYC Verification Modal */}
+      <KYCVerificationModal
+        open={showKYCModal}
+        onClose={resetPaymentState}
+        kycLink={kycData?.message?.link || null}
       />
     </div>
   );

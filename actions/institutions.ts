@@ -12,6 +12,7 @@ export async function getInstitutions(country: string, method = "buy") {
     const response = await oneRampApi.get(`/institutions/${country}/${method}`);
     return response.data;
   } catch (error) {
+    console.error(error);
     return [];
   }
 }

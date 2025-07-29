@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useBalance, useToken } from "wagmi";
 import { WalletDetailsModal } from "./WalletDetailsModal";
+import { Badge } from "@/components/ui/badge";
 
 interface AppKitAccount {
   address?: string;
@@ -132,23 +133,39 @@ export function Header({ logoOnly }: { logoOnly?: boolean }) {
         {logoOnly ? (
           <div className=" items-center hidden md:flex">
             <div className="block md:hidden ">
-              <Image
-                src="/large.png"
-                alt="OneRamp"
-                width={32}
-                height={32}
-                priority
-                className="rounded-full"
-              />
+              <div className="relative">
+                <Image
+                  src="/large.png"
+                  alt="OneRamp"
+                  width={32}
+                  height={32}
+                  priority
+                  className="rounded-full"
+                />
+                <Badge
+                  variant="secondary"
+                  className="absolute -bottom-1 -right-1 text-[8px] px-1 py-0 bg-blue-500 text-white border-0"
+                >
+                  BETA
+                </Badge>
+              </div>
             </div>
             <div className="hidden md:block ">
-              <Image
-                src="/large.png"
-                alt="OneRamp"
-                width={100}
-                height={32}
-                priority
-              />
+              <div className="relative">
+                <Image
+                  src="/large.png"
+                  alt="OneRamp"
+                  width={100}
+                  height={32}
+                  priority
+                />
+                <Badge
+                  variant="secondary"
+                  className="absolute -bottom-1 -right-1 text-[10px] px-1.5 py-0.5 bg-blue-500 text-white border-0"
+                >
+                  BETA
+                </Badge>
+              </div>
             </div>
           </div>
         ) : (

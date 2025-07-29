@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import useWalletGetInfo from "@/hooks/useWalletGetInfo";
 import { useKYCStore } from "@/store/kyc-store";
-import { KYC_REDIRECT_URL } from "@/constants";
+// import { KYC_REDIRECT_URL } from "@/constants";
 import { X } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -18,9 +18,8 @@ interface KYCVerificationModalProps {
 export function KYCVerificationModal({
   open,
   onClose,
-  kycLink,
 }: KYCVerificationModalProps) {
-  const { setIsCheckingKyc, isCheckingKyc, kycData } = useKYCStore();
+  const { setIsCheckingKyc, kycData } = useKYCStore();
   const { address } = useWalletGetInfo();
   const [accepted, setAccepted] = useState(false);
   const [showQR, setShowQR] = useState(false);
@@ -39,12 +38,14 @@ export function KYCVerificationModal({
     setIsCheckingKyc(true);
   };
 
-  const fullKycUrl = `${kycLink}&metadata={"address":"${address}"}&redirect=${KYC_REDIRECT_URL}`;
+  // const fullKycUrl = `${kycLink}&metadata={"address":"${address}"}&redirect=https://mini.oneramp.io`;
+  const fullKycUrl = `https://signup.metamap.com/?clientId=671a3cf5673134001da20657&flowId=671a3cf5673134001da20656&metadata={"address":"${address}"}&redirect=https://mini.oneramp.io`;
+  // https://signup.getmati.com/?merchantToken=your_client_id&flowId=your_flow_id&redirect=redirection_url&target=_blank
 
   if (showQR) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-lg">
-        <div className="bg-[#1c1c1c] rounded-2xl p-6 max-w-md w-full shadow-2xl relative">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1c1c1c] md:bg-black/60 md:backdrop-blur-lg">
+        <div className="bg-[#1c1c1c] md:rounded-2xl p-6 max-w-md w-full shadow-2xl relative">
           <button
             onClick={onClose}
             className="absolute right-4 top-4 text-neutral-400 hover:text-white"
@@ -77,10 +78,13 @@ export function KYCVerificationModal({
             <div className="text-center text-neutral-400 text-sm mb-4">or</div>
 
             <Button
-              className="w-full py-6 bg-neutral-800 text-white hover:bg-neutral-700"
-              disabled={kycData?.kycStatus === "PENDING"}
+              className="w-full py-6 bg-neutral-800 text-white hover:bg-neutral-700 cursor-pointer"
+              // disabled={kycData?.kycStatus === "PENDING"}
+              // onClick={() => {
+              //   if (kycLink) window.open(fullKycUrl, "_blank");
+              // }}
               onClick={() => {
-                if (kycLink) window.open(fullKycUrl, "_blank");
+                window.open(fullKycUrl, "_blank");
               }}
             >
               Open URL
@@ -113,21 +117,21 @@ export function KYCVerificationModal({
               </svg>
             </Button>
           </div>
-          {isCheckingKyc && (
+          {/* {isCheckingKyc && (
             <div className="w-full flex justify-end p-1">
               <span className="text-neutral-400 text-[10px] text-end">
                 Listening...
               </span>
             </div>
-          )}
+          )} */}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-lg">
-      <div className="bg-[#1c1c1c] rounded-2xl p-6 max-w-md w-full shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1c1c1c]   md:bg-black/60 md:backdrop-blur-lg">
+      <div className="bg-[#1c1c1c]  md:rounded-2xl p-6 max-w-md w-full shadow-2xl">
         <div className="flex items-start gap-4">
           <div className="p-2 bg-[#232323] rounded-xl">
             <svg
@@ -234,13 +238,6 @@ export function KYCVerificationModal({
               </p>
             </div>
           </div>
-
-          <a
-            href="#"
-            className="block mt-4 text-sm text-blue-500 hover:text-blue-400"
-          >
-            Read full KYC Policy
-          </a>
         </div>
 
         <div className="mt-4 flex items-start gap-2">
@@ -268,7 +265,7 @@ export function KYCVerificationModal({
           <Button
             disabled={!accepted}
             onClick={handleAcceptAndSign}
-            className="flex-1 py-6 bg-neutral-700 text-white hover:bg-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 py-6 !bg-neutral-700 !text-white hover:!bg-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Accept
           </Button>

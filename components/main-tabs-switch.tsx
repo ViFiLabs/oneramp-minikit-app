@@ -6,7 +6,7 @@ import { BuyPanel } from "@/app/components/BuyPanel";
 import { useUserSelectionStore } from "@/store/user-selection";
 import { useAmountStore } from "@/store/amount-store";
 import { AnimatePresence, motion } from "framer-motion";
-import { countries } from "@/data/countries";
+// import { countries } from "@/data/countries";
 import { PayPanel } from "@/app/components/PayPanel";
 import { useEffect, useState } from "react";
 
