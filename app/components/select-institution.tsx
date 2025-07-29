@@ -29,7 +29,13 @@ interface FormInputs {
   walletAddress?: string;
 }
 
-const SelectInstitution = ({ buy }: { buy?: boolean }) => {
+const SelectInstitution = ({ 
+  buy, 
+  disableSubmit = false 
+}: { 
+  buy?: boolean;
+  disableSubmit?: boolean;
+}) => {
   const { institution, country, updateSelection, countryPanelOnTop } =
     useUserSelectionStore();
   const [showInstitutionModal, setShowInstitutionModal] = useState(false);
@@ -606,62 +612,66 @@ const SelectInstitution = ({ buy }: { buy?: boolean }) => {
         </>
       )}
 
-      {userPayLoad.pastedAddress && buy ? (
-        <SubmitButton
-          onClick={onSubmit}
-          disabled={
-            createMutation.isPending ||
-            userPayLoad.appState === AppState.Processing ||
-            Object.keys(errors).length > 0 ||
-            !isAmountValid ||
-            !currentNetwork
-          }
-          className={`w-full  text-white text-base font-bold h-14 mt-2 rounded-2xl ${
-            buttonDisabled || !isAmountValid || !currentNetwork
-              ? "!bg-[#232323] !hover:bg-[#2a2a2a] cursor-not-allowed"
-              : "!bg-[#2563eb] !hover:bg-[#1d4ed8]"
-          }`}
-        >
-          {createMutation.isPending ? (
-            <Loader className="size-4 animate-spin" />
+      {!disableSubmit && (
+        <>
+          {userPayLoad.pastedAddress && buy ? (
+            <SubmitButton
+              onClick={onSubmit}
+              disabled={
+                createMutation.isPending ||
+                userPayLoad.appState === AppState.Processing ||
+                Object.keys(errors).length > 0 ||
+                !isAmountValid ||
+                !currentNetwork
+              }
+              className={`w-full  text-white text-base font-bold h-14 mt-2 rounded-2xl ${
+                buttonDisabled || !isAmountValid || !currentNetwork
+                  ? "!bg-[#232323] !hover:bg-[#2a2a2a] cursor-not-allowed"
+                  : "!bg-[#2563eb] !hover:bg-[#1d4ed8]"
+              }`}
+            >
+              {createMutation.isPending ? (
+                <Loader className="size-4 animate-spin" />
+              ) : (
+                "Buy"
+              )}
+            </SubmitButton>
           ) : (
-            "Buy"
-          )}
-        </SubmitButton>
-      ) : (
-        // ) : buttonText === "Connect Wallet" ? (
-        //   <div className="flex w-full justify-center my-4">
-        //     <ModalConnectButton large />
-        //   </div>
+            // ) : buttonText === "Connect Wallet" ? (
+            //   <div className="flex w-full justify-center my-4">
+            //     <ModalConnectButton large />
+            //   </div>
 
-        <div className="mb-4">
-          <SubmitButton
-            onClick={onSubmit}
-            disabled={
-              buttonDisabled ||
-              createMutation.isPending ||
-              userPayLoad.appState === AppState.Processing
-            }
-            className={`w-full text-white text-base font-bold h-14 mt-2 rounded-2xl ${
-              buttonDisabled
-                ? "!bg-[#232323] !hover:bg-[#2a2a2a] cursor-not-allowed"
-                : "!bg-[#2563eb] !hover:bg-[#1d4ed8]"
-            }`}
-          >
-            {createMutation.isPending ? (
-              <Loader className="size-4 animate-spin" />
-            ) : (
-              buttonText
-            )}
-          </SubmitButton>
+            <div className="mb-4">
+              <SubmitButton
+                onClick={onSubmit}
+                disabled={
+                  buttonDisabled ||
+                  createMutation.isPending ||
+                  userPayLoad.appState === AppState.Processing
+                }
+                className={`w-full text-white text-base font-bold h-14 mt-2 rounded-2xl ${
+                  buttonDisabled
+                    ? "!bg-[#232323] !hover:bg-[#2a2a2a] cursor-not-allowed"
+                    : "!bg-[#2563eb] !hover:bg-[#1d4ed8]"
+                }`}
+              >
+                {createMutation.isPending ? (
+                  <Loader className="size-4 animate-spin" />
+                ) : (
+                  buttonText
+                )}
+              </SubmitButton>
 
-          {/* Show wallet requirement message if needed */}
-          {!hasRequiredWallet() && isConnected && (
-            <div className="text-center mt-2 text-xs text-amber-400 font-medium">
-              &quot;EVM wallet required for this network&quot;
+              {/* Show wallet requirement message if needed */}
+              {!hasRequiredWallet() && isConnected && (
+                <div className="text-center mt-2 text-xs text-amber-400 font-medium">
+                  &quot;EVM wallet required for this network&quot;
+                </div>
+              )}
             </div>
           )}
-        </div>
+        </>
       )}
 
       <KYCVerificationModal

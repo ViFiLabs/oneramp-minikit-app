@@ -262,7 +262,7 @@ export const countries: Country[] = [
     phoneCode: "+255",
     exchangeRate: 2_941.0,
     institutions: countryInstitutions.Tanzania,
-    fiatMinMax: { min: 2_800.0, max: 13_475_000 },
+    fiatMinMax: { min: 1_800.0, max: 13_475_000 },
     cryptoMinMax: { min: 1, max: 2_500 },
     accountNumberLength: {
       bankLength: 12,
