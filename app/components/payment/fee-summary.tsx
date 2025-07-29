@@ -63,10 +63,10 @@ const FeeSummary = ({
   exchangeRateData,
 }: FeeSummaryProps) => {
   // Calculate fees from the exchange rate data
-  const totalFees = exchangeRateData?.conversionResponse
-    ? exchangeRateData.conversionResponse.chargeFeeInFiat +
-      exchangeRateData.conversionResponse.gasFeeInFiat
-    : 2.5;
+  // const totalFees = exchangeRateData?.conversionResponse
+  //   ? exchangeRateData.conversionResponse.chargeFeeInFiat +
+  //     exchangeRateData.conversionResponse.gasFeeInFiat
+  //   : 2.5;
 
   // Use the user's input amount as the total (fees are already calculated based on this amount)
   const userInputAmount = parseFloat(fiatAmount || "0");
@@ -94,12 +94,12 @@ const FeeSummary = ({
               {formatNumber(userInputAmount)} {fiatCurrency}
             </span>
           </div>
-          <div className="flex justify-between items-center">
+          {/* <div className="flex justify-between items-center">
             <span className="text-gray-300 text-sm">Fees</span>
             <span className="text-white text-sm font-medium">
               {formatNumber(totalFees)} {fiatCurrency}
             </span>
-          </div>
+          </div> */}
           <div className="flex justify-between items-center">
             <span className="text-gray-300 text-sm">
               Amount in {cryptoCurrency}
