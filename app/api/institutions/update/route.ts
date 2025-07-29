@@ -54,19 +54,11 @@ export async function POST(request: NextRequest) {
 
       for (const method of methods) {
         try {
-          console.log(`Fetching institutions for ${country} - ${method}...`);
           const response = await oneRampApi.get(
             `/institutions/${country}/${method}`
           );
           updatedInstitutions[country][method] = response.data;
-          console.log(
-            `✅ Fetched ${response.data.length} institutions for ${country} - ${method}`
-          );
-        } catch (error) {
-          console.error(
-            `❌ Failed to fetch institutions for ${country} - ${method}:`,
-            error
-          );
+        } catch {
           // Continue with other countries even if one fails
           updatedInstitutions[country][method] = [];
         }
@@ -86,8 +78,6 @@ export async function POST(request: NextRequest) {
       "utf-8"
     );
 
-    console.log("✅ Institutions data updated successfully");
-
     return NextResponse.json({
       success: true,
       message: "Institutions data updated successfully",
@@ -104,7 +94,6 @@ export async function POST(request: NextRequest) {
       ),
     });
   } catch (error) {
-    console.error("❌ Error updating institutions:", error);
     return NextResponse.json(
       {
         error: "Failed to update institutions",
@@ -135,8 +124,7 @@ export async function GET() {
         0
       ),
     });
-  } catch (error) {
-    console.error("❌ Error reading institutions file:", error);
+  } catch {
     return NextResponse.json(
       { error: "Failed to read institutions file" },
       { status: 500 }

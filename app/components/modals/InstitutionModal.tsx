@@ -27,8 +27,7 @@ import {
 } from "@/components/ui/dialog";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 
-import { getInstitutionsSync } from "@/actions/institutions";
-import { Skeleton } from "@/components/ui/skeleton";
+import { getInstitutionsClient } from "@/lib/institutions-data";
 
 interface InstitutionModalProps {
   open: boolean;
@@ -48,16 +47,12 @@ export function InstitutionModal({
 }: InstitutionModalProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [institutions, setInstitutions] = useState<Institution[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
 
-  // Fast cache access with loading state
+  // Instant client-side data access - no loading needed
   useEffect(() => {
     if (country) {
-      setIsLoading(true);
-      getInstitutionsSync(country, buy ? "buy" : "sell").then((data) => {
-        setInstitutions(data as Institution[]);
-        setIsLoading(false);
-      });
+      const data = getInstitutionsClient(country, buy ? "buy" : "sell");
+      setInstitutions(data as Institution[]);
     }
   }, [country, buy]);
 
@@ -126,20 +121,7 @@ export function InstitutionModal({
 
           {/* Institutions List */}
           <div className="flex-1 overflow-y-auto p-6 pt-4">
-            {isLoading ? (
-              // Skeleton loaders for better UX
-              <div className="space-y-3">
-                {Array.from({ length: 8 }).map((_, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center gap-3 p-3 rounded-lg"
-                  >
-                    <Skeleton className="w-8 h-8 rounded-md" />
-                    <Skeleton className="flex-1 h-4" />
-                  </div>
-                ))}
-              </div>
-            ) : institutions.length === 0 ? (
+            {institutions.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-neutral-400 text-sm">
                   No institutions available for this country.

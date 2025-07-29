@@ -1,5 +1,6 @@
-{
-  "lastUpdated": "2025-07-29T15:43:17.681Z",
+// Client-side institutions data for instant access
+export const institutionsData = {
+  "lastUpdated": "2025-07-29T14:56:55.725Z",
   "institutions": {
     "NG": {
       "buy": [
@@ -6356,4 +6357,16 @@
       ]
     }
   }
+};
+
+// Instant client-side institutions getter
+export function getInstitutionsClient(country, method = "buy") {
+  if (!country) return [];
+  
+  const countryInstitutions = institutionsData.institutions[country];
+  if (countryInstitutions && countryInstitutions[method]) {
+    return countryInstitutions[method];
+  }
+  
+  return [];
 }
