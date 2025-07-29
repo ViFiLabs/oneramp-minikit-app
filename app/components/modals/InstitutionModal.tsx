@@ -82,9 +82,14 @@ export function InstitutionModal({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogPortal>
-        <DialogOverlay className="bg-black/60 backdrop-blur-lg" />
+        <DialogOverlay className="bg-black/60 backdrop-blur-lg fixed inset-0 z-40" />
         <DialogPrimitive.Content
-          className="fixed bottom-0 left-0 right-0 z-50 bg-[#181818] border-none text-white p-0 m-0 w-full max-w-none rounded-t-2xl shadow-2xl animate-slide-up-smooth overflow-hidden"
+          className="fixed z-50 bg-[#181818] border-none text-white p-0 m-0 shadow-2xl overflow-hidden
+          /* Mobile: bottom sheet behavior */
+          bottom-0 left-0 right-0 w-full rounded-t-2xl animate-slide-up-smooth
+          /* Desktop: centered modal */
+          md:bottom-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:max-w-md md:w-full md:rounded-2xl md:animate-in md:fade-in md:duration-200 md:transform
+          desktop-modal-center"
           style={{
             padding: 0,
             height: "65vh",
@@ -96,7 +101,7 @@ export function InstitutionModal({
             <DialogPrimitive.Title>Select Institution</DialogPrimitive.Title>
           </VisuallyHidden>
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-3 border-b border-[#232323] rounded-t-2xl">
+          <div className="flex items-center justify-between px-6 py-3 border-b border-[#232323] rounded-t-2xl lg:rounded-t-2xl">
             <div className="text-xl font-bold">Select institution</div>
             <button
               className="p-3 hover:bg-[#23232f] rounded-full transition-colors"

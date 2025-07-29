@@ -23,7 +23,12 @@ export function NetworkSelectModal({
 
   return (
     <div className="min-h-screen fixed inset-0 z-40 flex items-center justify-center backdrop-blur-xs">
-      <div className="bg-[#232323] rounded-2xl p-5 min-w-[350px] shadow-2xl relative">
+      <div
+        className="bg-[#232323] rounded-2xl p-5 min-w-[350px] shadow-2xl relative
+      /* Mobile: full screen */
+      /* Desktop: centered modal */
+      md:min-w-0 md:w-full md:max-w-md md:mx-4"
+      >
         <Button
           variant="ghost"
           className="absolute top-2 right-2 text-neutral-400 hover:text-white"

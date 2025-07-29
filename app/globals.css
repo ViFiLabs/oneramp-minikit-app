@@ -8,6 +8,21 @@
   }
 }
 
+/* Desktop modal centering with high specificity */
+@layer components {
+  .desktop-modal-center {
+    @media (min-width: 768px) {
+      bottom: auto !important;
+      left: 50% !important;
+      top: 50% !important;
+      transform: translate(-50%, -50%) !important;
+      max-width: 28rem !important;
+      width: 100% !important;
+      border-radius: 1rem !important;
+    }
+  }
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

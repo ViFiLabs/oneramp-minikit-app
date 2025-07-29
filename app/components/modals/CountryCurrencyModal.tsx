@@ -63,7 +63,12 @@ export function CountryCurrencyModal({
       <DialogPortal>
         <DialogOverlay className="bg-black/60 backdrop-blur-lg" />
         <DialogPrimitive.Content
-          className="fixed bottom-0 left-0 right-0 z-50 bg-[#181818] border-none text-white p-0 m-0 w-full max-w-none rounded-t-2xl shadow-2xl animate-slide-up-smooth overflow-hidden"
+          className="fixed z-50 bg-[#181818] border-none text-white p-0 m-0 w-full max-w-none shadow-2xl overflow-hidden
+          /* Mobile: bottom sheet behavior */
+          bottom-0 left-0 right-0 rounded-t-2xl animate-slide-up-smooth
+          /* Desktop: centered modal */
+          md:bottom-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:max-w-lg md:w-full md:rounded-2xl md:animate-in md:fade-in md:duration-200
+          desktop-modal-center"
           style={{
             padding: 0,
             height: "65vh",
