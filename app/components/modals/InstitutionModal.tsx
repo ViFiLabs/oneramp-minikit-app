@@ -1,8 +1,7 @@
 "use client";
 import { Input } from "@/components/ui/input";
 import { Institution } from "@/types";
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogPortal,
@@ -10,8 +9,9 @@ import {
   VisuallyHidden,
 } from "@/components/ui/dialog";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
+
+import { getInstitutionsSync } from "@/actions/institutions";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getInstitutions } from "@/actions/institutions";
 
 interface InstitutionModalProps {
   open: boolean;
@@ -30,28 +30,19 @@ export function InstitutionModal({
   buy,
 }: InstitutionModalProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [institutions, setInstitutions] = useState<Institution[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch institutions only when modal is open and country is available
-  // This will use cached data if available (from pre-fetching) or fetch fresh data
-  const {
-    data: institutions = [],
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["institutions", country, buy ? "buy" : "sell"],
-    queryFn: async () => {
-      if (!country) return [];
-      return await getInstitutions(country, buy ? "buy" : "sell");
-    },
-    enabled: open && !!country, // Only fetch when modal is open
-    staleTime: 10 * 60 * 1000, // 10 minutes - institutions don't change often
-    gcTime: 30 * 60 * 1000, // 30 minutes cache
-    retry: 2,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
-    // Use cached data if available, but refetch in background if stale
-    refetchOnWindowFocus: false,
-    refetchOnMount: false, // Don't refetch if we have cached data
-  });
+  // Fast cache access with loading state
+  useEffect(() => {
+    if (country) {
+      setIsLoading(true);
+      getInstitutionsSync(country, buy ? "buy" : "sell").then((data) => {
+        setInstitutions(data as Institution[]);
+        setIsLoading(false);
+      });
+    }
+  }, [country, buy]);
 
   if (!open) return null;
 
@@ -126,22 +117,16 @@ export function InstitutionModal({
                     key={index}
                     className="flex items-center gap-3 p-3 rounded-lg"
                   >
-                    <Skeleton className="w-8 h-8 rounded-full" />
+                    <Skeleton className="w-8 h-8 rounded-md" />
                     <Skeleton className="flex-1 h-4" />
                   </div>
                 ))}
               </div>
-            ) : error ? (
+            ) : institutions.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-red-400 text-sm">
-                  Failed to load institutions. Please try again.
+                <p className="text-neutral-400 text-sm">
+                  No institutions available for this country.
                 </p>
-                <button
-                  onClick={() => window.location.reload()}
-                  className="mt-2 text-blue-400 hover:text-blue-300 text-sm"
-                >
-                  Retry
-                </button>
               </div>
             ) : filteredInstitutions.length === 0 ? (
               <div className="text-center py-8">
