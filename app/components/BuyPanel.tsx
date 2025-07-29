@@ -17,6 +17,7 @@ import { TokenSelectModal } from "./modals/TokenSelectModal";
 import SelectInstitution from "./select-institution";
 import { countries } from "@/data/countries";
 import { useAllCountryExchangeRates } from "@/hooks/useExchangeRate";
+import { usePreFetchInstitutions } from "@/hooks/useExchangeRate";
 
 // Reuse the same country list from SwapPanel
 export const countryCurrencies = [
@@ -57,6 +58,12 @@ export function BuyPanel() {
     orderType: "buying",
     providerType: "momo",
   });
+
+  // Pre-fetch institutions for Kenya and Uganda on initial load for better UX
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { data: kenyaInstitutions } = usePreFetchInstitutions("KE", "buy");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { data: ugandaInstitutions } = usePreFetchInstitutions("UG", "buy");
 
   // New states for recipient details
   const [accountNumber] = useState("");

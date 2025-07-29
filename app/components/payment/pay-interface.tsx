@@ -36,6 +36,7 @@ import { useTransferStore } from "@/store/transfer-store";
 import { useKYCStore } from "@/store/kyc-store";
 import { Institution, AppState } from "@/types";
 import { useAllCountryExchangeRates } from "@/hooks/useExchangeRate";
+import { usePreFetchInstitutions } from "@/hooks/useExchangeRate";
 import { useAssetBalance } from "@/hooks/useAssetBalance";
 import useWalletGetInfo from "@/hooks/useWalletGetInfo";
 import { useBillPayment, PaymentStep } from "@/hooks/useBillPayment";
@@ -184,6 +185,12 @@ export function PaymentInterface() {
     // This will trigger the useAllCountryExchangeRates hook to fetch rates
     // even before a country is selected, improving the user experience
   }, []);
+
+  // Pre-fetch institutions for Kenya and Uganda on initial load for better UX
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { data: kenyaInstitutions } = usePreFetchInstitutions("KE", "sell");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { data: ugandaInstitutions } = usePreFetchInstitutions("UG", "sell");
 
   // Get available assets for the current network
   const availableAssets = useMemo(() => {

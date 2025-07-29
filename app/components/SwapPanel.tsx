@@ -20,6 +20,7 @@ import {
   Transfer,
 } from "@/types";
 import { useAllCountryExchangeRates } from "@/hooks/useExchangeRate";
+import { usePreFetchInstitutions } from "@/hooks/useExchangeRate";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useMutation } from "@tanstack/react-query";
@@ -97,6 +98,12 @@ export function SwapPanel() {
     orderType: "selling", // Using selling endpoint for better performance
     providerType: "momo", // Default provider type
   });
+
+  // Pre-fetch institutions for Kenya and Uganda on initial load for better UX
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { data: kenyaInstitutions } = usePreFetchInstitutions("KE", "buy");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { data: ugandaInstitutions } = usePreFetchInstitutions("UG", "buy");
 
   // Used to show wallet requirement in the network modal
   const canSwitchNetwork = () => {

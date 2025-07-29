@@ -60,6 +60,75 @@ export function useAllCountryExchangeRates({
   });
 }
 
+// New hook for pre-fetching institutions for specific countries
+export function usePreFetchInstitutions(
+  countryCode: string,
+  method: "buy" | "sell" = "buy"
+) {
+  return useQuery({
+    queryKey: ["prefetchInstitutions", countryCode, method],
+    queryFn: async () => {
+      if (!countryCode) return [];
+      return await getInstitutions(countryCode, method);
+    },
+    enabled: !!countryCode, // Fetch whenever a country is provided
+    staleTime: 10 * 60 * 1000, // 10 minutes - institutions don't change often
+    gcTime: 30 * 60 * 1000, // 30 minutes cache
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
+    // Background fetch - don't show loading states
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: true,
+  });
+}
+
+// Hook for pre-fetching institutions for multiple countries
+export function usePreFetchMultipleInstitutions(
+  countryCodes: string[],
+  method: "buy" | "sell" = "buy"
+) {
+  return useQuery({
+    queryKey: ["prefetchMultipleInstitutions", countryCodes, method],
+    queryFn: async () => {
+      if (!countryCodes.length) return {};
+
+      const institutionPromises = countryCodes.map(async (countryCode) => {
+        try {
+          const institutions = await getInstitutions(countryCode, method);
+          return { countryCode, institutions };
+        } catch (error) {
+          console.error(
+            `Failed to pre-fetch institutions for ${countryCode}:`,
+            error
+          );
+          return { countryCode, institutions: [] };
+        }
+      });
+
+      const results = await Promise.all(institutionPromises);
+
+      // Convert to a map for easy lookup
+      const institutionsMap = results.reduce(
+        (acc, { countryCode, institutions }) => {
+          acc[countryCode] = institutions;
+          return acc;
+        },
+        {} as Record<string, Institution[]>
+      );
+
+      return institutionsMap;
+    },
+    enabled: countryCodes.length > 0,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes cache
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
+    // Background fetch - don't show loading states
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: true,
+  });
+}
+
 // Optimized hook for pre-fetching institutions for all countries
 export function useAllCountryInstitutions(method: "buy" | "sell" = "buy") {
   return useQuery({

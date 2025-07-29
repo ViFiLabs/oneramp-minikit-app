@@ -32,6 +32,7 @@ export function InstitutionModal({
   const [searchQuery, setSearchQuery] = useState("");
 
   // Fetch institutions only when modal is open and country is available
+  // This will use cached data if available (from pre-fetching) or fetch fresh data
   const {
     data: institutions = [],
     isLoading,
@@ -44,9 +45,12 @@ export function InstitutionModal({
     },
     enabled: open && !!country, // Only fetch when modal is open
     staleTime: 10 * 60 * 1000, // 10 minutes - institutions don't change often
-    gcTime: 30 * 60 * 1000, // 30 minutes cache (replaces cacheTime)
+    gcTime: 30 * 60 * 1000, // 30 minutes cache
     retry: 2,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
+    // Use cached data if available, but refetch in background if stale
+    refetchOnWindowFocus: false,
+    refetchOnMount: false, // Don't refetch if we have cached data
   });
 
   if (!open) return null;

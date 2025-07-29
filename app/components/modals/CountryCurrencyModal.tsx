@@ -12,6 +12,9 @@ import { useUserSelectionStore } from "@/store/user-selection";
 import { Button } from "@/components/ui/button";
 import { useUserLocation } from "@/hooks/useUserLocation";
 import { useMemo } from "react";
+import { usePreFetchInstitutions } from "@/hooks/useExchangeRate";
+import { useQueryClient } from "@tanstack/react-query";
+import { getInstitutions } from "@/actions/institutions";
 
 interface CountryCurrencyModalProps {
   open: boolean;
@@ -29,9 +32,16 @@ export function CountryCurrencyModal({
   const { country } = useUserSelectionStore();
   const { countryCode: userCountryCode, isLoading: isLocationLoading } =
     useUserLocation();
+  const queryClient = useQueryClient();
 
   const selectedCurrency = country;
   const baseCountries = filteredCountries || countries;
+
+  // Pre-fetch institutions for Kenya and Uganda on initial load
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { data: kenyaInstitutions } = usePreFetchInstitutions("KE", "buy");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { data: ugandaInstitutions } = usePreFetchInstitutions("UG", "buy");
 
   // Sort countries to show user's country first (if it's in the list)
   const sortedCountries = useMemo(() => {
@@ -57,6 +67,26 @@ export function CountryCurrencyModal({
 
     return [userCountry, ...otherCountries];
   }, [baseCountries, userCountryCode, isLocationLoading]);
+
+  // Enhanced country selection handler that triggers pre-fetching
+  const handleCountrySelect = (selectedCountry: Country) => {
+    // Pre-fetch institutions for the selected country in the background
+    // This will cache the institutions for when the user opens the institution modal
+    queryClient.prefetchQuery({
+      queryKey: ["institutions", selectedCountry.countryCode, "buy"],
+      queryFn: () => getInstitutions(selectedCountry.countryCode, "buy"),
+      staleTime: 10 * 60 * 1000, // 10 minutes
+    });
+
+    queryClient.prefetchQuery({
+      queryKey: ["institutions", selectedCountry.countryCode, "sell"],
+      queryFn: () => getInstitutions(selectedCountry.countryCode, "sell"),
+      staleTime: 10 * 60 * 1000, // 10 minutes
+    });
+
+    // Call the original onSelect handler
+    onSelect(selectedCountry);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -130,7 +160,7 @@ export function CountryCurrencyModal({
                           ? "bg-[#353545] border border-[#4a4a5a] scale-[0.98]"
                           : "hover:bg-[#23232f] border border-transparent hover:scale-[0.99]"
                       }`}
-                      onClick={() => onSelect(country)}
+                      onClick={() => handleCountrySelect(country)}
                       style={{ minHeight: 60 }}
                     >
                       <span className="flex items-center gap-4">
