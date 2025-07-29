@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getCountryExchangeRate } from "@/actions/rates";
 import { getInstitutions } from "@/actions/institutions";
 import { ExchangeRateResponse, Institution } from "@/types";
+import { getExchangeRateClient } from "@/lib/exchange-rates-data";
 
 interface UseExchangeRateParams {
   countryCode?: string;
@@ -21,42 +22,32 @@ export function useAllCountryExchangeRates({
         throw new Error("Provider type and order type are required");
       }
 
-      // Fetch rates for all supported countries
+      // Use client-side data for instant access
       const countries = ["NG", "KE", "GHA", "ZM", "UG", "TZ", "ZA"];
-      const ratePromises = countries.map(async (countryCode) => {
-        try {
-          const rate = await getCountryExchangeRate({
-            country: countryCode,
-            orderType,
-            providerType,
-          });
-          return { countryCode, rate };
-        } catch (error) {
-          console.error(`Failed to fetch rate for ${countryCode}:`, error);
-          return { countryCode, rate: null };
+      const ratesMap: Record<string, ExchangeRateResponse> = {};
+
+      // Get rates from client-side cache
+      countries.forEach((countryCode) => {
+        const rate = getExchangeRateClient(
+          countryCode,
+          orderType,
+          providerType as "momo" | "bank"
+        );
+        if (rate) {
+          ratesMap[countryCode] = rate;
         }
       });
-
-      const results = await Promise.all(ratePromises);
-
-      // Convert to a map for easy lookup
-      const ratesMap = results.reduce((acc, { countryCode, rate }) => {
-        if (rate) {
-          acc[countryCode] = rate;
-        }
-        return acc;
-      }, {} as Record<string, ExchangeRateResponse>);
 
       return ratesMap;
     },
     enabled: !!(providerType && orderType),
-    staleTime: 30 * 1000, // 30 seconds - shorter for more responsive updates
-    refetchInterval: 2 * 60 * 1000, // 2 minutes - more frequent for better UX
-    retry: 2, // Fewer retries to avoid overwhelming the API
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
-    // Enable background refetching for real-time updates
-    refetchOnWindowFocus: true,
-    refetchOnReconnect: true,
+    staleTime: Infinity, // Never consider data stale - use cache forever
+    gcTime: Infinity, // Keep in cache forever
+    retry: 1,
+    retryDelay: 1000,
+    // No background refetching since we're using client-side data
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 }
 

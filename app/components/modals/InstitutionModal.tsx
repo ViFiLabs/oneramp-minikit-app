@@ -107,14 +107,14 @@ export function InstitutionModal({
           </div>
 
           {/* Search Input */}
-          <div className="p-6 pb-0">
+          <div className="px-6 pb-0">
             <div className="relative">
               <Input
                 type="text"
                 placeholder="Search institutions..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-[#232323] border-neutral-600 text-white placeholder:text-neutral-400"
+                className="bg-[#232323] border-neutral-600 p-6 rounded-full text-white placeholder:text-neutral-400"
               />
             </div>
           </div>
