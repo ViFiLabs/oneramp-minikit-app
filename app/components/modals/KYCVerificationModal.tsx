@@ -27,6 +27,13 @@ export function KYCVerificationModal({
   const [fullKycUrl, setFullKycUrl] = useState("");
 
   useEffect(() => {
+    if (kycData && kycData.kycStatus === "VERIFIED") {
+      onClose();
+      setIsCheckingKyc(false);
+    }
+  }, [kycData]);
+
+  useEffect(() => {
     if (address) {
       (async () => {
         try {
@@ -67,13 +74,6 @@ export function KYCVerificationModal({
       })();
     }
   }, [address]);
-
-  useEffect(() => {
-    if (kycData && kycData.kycStatus === "VERIFIED") {
-      onClose();
-      setIsCheckingKyc(false);
-    }
-  }, [kycData]);
 
   if (!open) return null;
 
