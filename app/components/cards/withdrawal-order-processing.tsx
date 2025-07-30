@@ -158,15 +158,13 @@ const WithdrawalOrderProcessing = () => {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-center bg-black">
-      <WithdrawalStatusCard
-        quote={quote}
-        transfer={transfer || undefined}
-        isProcessing={isProcessing}
-        isFailed={isFailed}
-        onDone={handleDone}
-      />
-    </div>
+    <WithdrawalStatusCard
+      quote={quote}
+      transfer={transfer || undefined}
+      isProcessing={isProcessing}
+      isFailed={isFailed}
+      onDone={handleDone}
+    />
   );
 };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FiCheck, FiX } from "react-icons/fi";
 import { TransferType, Quote, Transfer, TransferStatusEnum } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ interface WithdrawalStatusCardProps {
   isProcessing: boolean;
   isFailed?: boolean;
   onDone: () => void;
+  onClose?: () => void;
 }
 
 const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
@@ -21,8 +22,72 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
   isProcessing,
   isFailed = false,
   onDone,
+  onClose,
 }) => {
   const { updateSelection, resetToDefault } = useUserSelectionStore();
+  const [isVisible, setIsVisible] = useState(false);
+  const [dragStartY, setDragStartY] = useState(0);
+  const [dragCurrentY, setDragCurrentY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  // Show modal with animation and prevent body scroll
+  useEffect(() => {
+    setIsVisible(true);
+    
+    // Prevent body scroll when modal is open
+    document.body.style.overflow = 'hidden';
+    
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
+
+  // Global mouse event listeners for smooth dragging
+  useEffect(() => {
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      if (!isDragging) return;
+      
+      const currentY = e.clientY;
+      setDragCurrentY(currentY);
+      
+      // Only allow downward dragging
+      const deltaY = Math.max(0, currentY - dragStartY);
+      if (modalRef.current) {
+        modalRef.current.style.transform = `translateY(${deltaY}px)`;
+      }
+    };
+
+    const handleGlobalMouseUp = () => {
+      if (!isDragging) return;
+      
+      const deltaY = dragCurrentY - dragStartY;
+      
+      // If dragged down more than 100px, close the modal
+      if (deltaY > 100) {
+        handleClose();
+      } else {
+        // Snap back to original position
+        if (modalRef.current) {
+          modalRef.current.style.transform = 'translateY(0px)';
+        }
+      }
+      
+      setIsDragging(false);
+      setDragStartY(0);
+      setDragCurrentY(0);
+    };
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleGlobalMouseMove);
+      document.addEventListener('mouseup', handleGlobalMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleGlobalMouseMove);
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
+  }, [isDragging, dragStartY, dragCurrentY]);
 
   // Calculate amounts based on country
   let totalAmount = 0;
@@ -45,10 +110,117 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
     onDone();
   };
 
+  const handleClose = () => {
+    setIsVisible(false);
+    setTimeout(() => {
+      if (onClose) {
+        onClose();
+      } else {
+        handleDone();
+      }
+    }, 300); // Wait for animation to complete
+  };
+
+  // Touch/drag handlers for mobile
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setDragStartY(e.touches[0].clientY);
+    setDragCurrentY(e.touches[0].clientY);
+    setIsDragging(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging) return;
+    
+    const currentY = e.touches[0].clientY;
+    setDragCurrentY(currentY);
+    
+    // Only allow downward dragging
+    const deltaY = Math.max(0, currentY - dragStartY);
+    if (modalRef.current) {
+      modalRef.current.style.transform = `translateY(${deltaY}px)`;
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (!isDragging) return;
+    
+    const deltaY = dragCurrentY - dragStartY;
+    
+    // If dragged down more than 100px, close the modal
+    if (deltaY > 100) {
+      handleClose();
+    } else {
+      // Snap back to original position
+      if (modalRef.current) {
+        modalRef.current.style.transform = 'translateY(0px)';
+      }
+    }
+    
+    setIsDragging(false);
+    setDragStartY(0);
+    setDragCurrentY(0);
+  };
+
+  // Mouse handlers for desktop
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setDragStartY(e.clientY);
+    setDragCurrentY(e.clientY);
+    setIsDragging(true);
+  };
+
   return (
-    <div className="min-h-screen w-full bg-black text-white flex items-center justify-center">
-      <div className="w-full h-full max-w-sm flex flex-col items-center justify-center px-6 space-y-6">
-        {/* Status Icon */}
+    <>
+      {/* Backdrop */}
+      <div 
+        className={`fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300 ${
+          isVisible ? 'opacity-100' : 'opacity-0'
+        }`}
+        onClick={handleClose}
+      />
+      
+      {/* Modal */}
+      <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4">
+        <div
+          ref={modalRef}
+          className={`bg-gray-900 rounded-t-3xl md:rounded-3xl w-full md:max-w-sm max-h-[85vh] md:max-h-[70vh] overflow-hidden transition-all duration-300 ease-out shadow-2xl ${
+            isVisible ? 'translate-y-0 md:scale-100' : 'translate-y-full md:translate-y-0 md:scale-95'
+          }`}
+          style={{
+            transition: isDragging ? 'none' : 'transform 300ms ease-out',
+          }}
+        >
+          {/* Drag Handle for mobile */}
+          <div 
+            className="flex justify-center pt-3 pb-2 md:hidden cursor-grab active:cursor-grabbing"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onMouseDown={handleMouseDown}
+          >
+            <div className="w-12 h-1 bg-gray-500 rounded-full"></div>
+          </div>
+
+          {/* Header with Close Button */}
+          <div 
+            className="flex justify-end p-4 pb-2 cursor-grab active:cursor-grabbing md:cursor-default"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onMouseDown={handleMouseDown}
+          >
+            <button
+              onClick={handleClose}
+              className="w-8 h-8 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-colors z-10"
+              onTouchStart={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
+            >
+              <FiX size={16} color="#ffffff" />
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="px-6 pb-6 flex flex-col items-center space-y-6">{/* Status Icon */}
         <div className="flex items-center justify-center">
           {isProcessing ? (
             // Three bouncing dots
@@ -109,8 +281,10 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
             {isFailed ? "Try Again" : "Done"}
           </Button>
         )}
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

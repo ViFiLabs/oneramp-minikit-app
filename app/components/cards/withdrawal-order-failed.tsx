@@ -27,14 +27,12 @@ const WithdrawalOrderFailed = () => {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-center bg-black">
-      <WithdrawalStatusCard
-        quote={quote}
-        isProcessing={false}
-        isFailed={true}
-        onDone={handleTryAgain}
-      />
-    </div>
+    <WithdrawalStatusCard
+      quote={quote}
+      isProcessing={false}
+      isFailed={true}
+      onDone={handleTryAgain}
+    />
   );
 };
 
