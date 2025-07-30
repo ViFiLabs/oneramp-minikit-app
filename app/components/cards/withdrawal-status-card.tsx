@@ -14,6 +14,7 @@ interface WithdrawalStatusCardProps {
   isFailed?: boolean;
   onDone: () => void;
   onClose?: () => void;
+  animationPhase?: 'initial' | 'transition' | 'final';
 }
 
 const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
@@ -23,6 +24,7 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
   isFailed = false,
   onDone,
   onClose,
+  animationPhase = 'initial',
 }) => {
   const { updateSelection, resetToDefault } = useUserSelectionStore();
   const [isVisible, setIsVisible] = useState(false);
@@ -180,11 +182,11 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
       />
       
       {/* Modal */}
-      <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4">
+      <div className="fixed inset-0 z-50 flex items-end justify-center p-0">
         <div
           ref={modalRef}
-          className={`bg-gray-900 rounded-t-3xl md:rounded-3xl w-full md:max-w-sm max-h-[85vh] md:max-h-[70vh] overflow-hidden transition-all duration-300 ease-out shadow-2xl ${
-            isVisible ? 'translate-y-0 md:scale-100' : 'translate-y-full md:translate-y-0 md:scale-95'
+          className={`bg-gray-900 rounded-t-3xl w-full h-[60vh] overflow-hidden transition-all duration-300 ease-out shadow-2xl ${
+            isVisible ? 'translate-y-0' : 'translate-y-full'
           }`}
           style={{
             transition: isDragging ? 'none' : 'transform 300ms ease-out',
@@ -192,7 +194,7 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
         >
           {/* Drag Handle for mobile */}
           <div 
-            className="flex justify-center pt-3 pb-2 md:hidden cursor-grab active:cursor-grabbing"
+            className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
@@ -203,7 +205,7 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
 
           {/* Header with Close Button */}
           <div 
-            className="flex justify-end p-4 pb-2 cursor-grab active:cursor-grabbing md:cursor-default"
+            className="flex justify-end p-4 pb-2 cursor-grab active:cursor-grabbing"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
@@ -220,11 +222,12 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
           </div>
 
           {/* Content */}
-          <div className="px-6 pb-6 flex flex-col items-center space-y-6">{/* Status Icon */}
-        <div className="flex items-center justify-center">
+          <div className="px-6 pb-6 flex flex-col items-center space-y-6 flex-1 justify-center">
+        {/* Status Icon */}
+        <div className="flex items-center justify-center min-h-[80px]">
           {isProcessing ? (
-            // Three bouncing dots
-            <div className="flex space-x-2">
+            // Three bouncing dots with transition effects
+            <div className={`flex space-x-2 transition-all duration-500 ${animationPhase === 'transition' ? 'opacity-50 scale-90' : 'opacity-100 scale-100'}`}>
               <div 
                 className="w-4 h-4 bg-blue-500 rounded-full animate-bounce"
                 style={{ animationDelay: '0ms' }}
@@ -239,47 +242,59 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
               ></div>
             </div>
           ) : isFailed ? (
-            // Red circle with X for failure
-            <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center">
+            // Red circle with X for failure with entrance animation
+            <div className={`w-16 h-16 bg-red-500 rounded-full flex items-center justify-center transform transition-all duration-500 ${
+              animationPhase === 'final' ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
+            }`}>
               <FiX size={24} color="#ffffff" />
             </div>
           ) : (
-            // Circle with checkmark for success
-            <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center">
+            // Circle with checkmark for success with entrance animation
+            <div className={`w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center transform transition-all duration-500 ${
+              animationPhase === 'final' ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
+            }`}>
               <FiCheck size={24} color="#ffffff" />
             </div>
           )}
         </div>
 
         {/* Status Text */}
-        <h1 className="text-xl font-semibold text-center text-white">
-          {isProcessing ? "" : isFailed ? "Transaction Failed" : "Successfully swapped"}
+        <h1 className={`text-xl font-semibold text-center text-white transition-all duration-300 ${
+          isProcessing ? 'opacity-70' : 'opacity-100'
+        }`}>
+          {isProcessing ? "Processing withdrawal..." : isFailed ? "Transaction Failed" : "Successfully swapped"}
         </h1>
 
-        {/* Amount Display - Show for both states */}
+        {/* Amount Display - Show for all states */}
         <div className="text-center">
-          <h2 className={`text-4xl font-bold mb-2 ${isFailed ? 'text-red-500' : 'text-blue-500'}`}>
+          <h2 className={`text-4xl font-bold mb-2 transition-colors duration-300 ${
+            isProcessing ? 'text-blue-400' : isFailed ? 'text-red-500' : 'text-blue-500'
+          }`}>
             ${fiatAmount.toFixed(2)}
           </h2>
           
-          {/* Transaction Description - Show for both states */}
-          <p className="text-white text-center text-base">
+          {/* Transaction Description - Show for all states */}
+          <p className="text-white text-center text-base opacity-80">
             {`${cryptoAmount.toFixed(1)} ${quote.cryptoType} for ${fiatAmount.toFixed(0)} ${quote.fiatType} on ${quote.network.charAt(0).toUpperCase() + quote.network.slice(1)}`}
           </p>
         </div>
 
         {/* Action Button - Only show when completed or failed */}
         {!isProcessing && (
-          <Button
-            onClick={handleDone}
-            className={`w-full text-white text-lg font-semibold h-14 rounded-full transition-all duration-300 ${
-              isFailed 
-                ? 'bg-red-500 hover:bg-red-600' 
-                : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600'
-            }`}
-          >
-            {isFailed ? "Try Again" : "Done"}
-          </Button>
+          <div className={`w-full transform transition-all duration-500 ${
+            animationPhase === 'final' ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+          }`}>
+            <Button
+              onClick={handleDone}
+              className={`w-full text-white text-lg font-semibold h-14 rounded-full transition-all duration-300 ${
+                isFailed 
+                  ? 'bg-red-500 hover:bg-red-600' 
+                  : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600'
+              }`}
+            >
+              {isFailed ? "Try Again" : "Done"}
+            </Button>
+          </div>
         )}
           </div>
         </div>

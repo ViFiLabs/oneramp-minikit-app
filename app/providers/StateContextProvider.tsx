@@ -5,9 +5,7 @@ import { OrderStep, TransferType } from "@/types";
 import OrderProcessing from "../components/cards/order-processing";
 import OrderSuccessful from "../components/cards/order-successful";
 import PayOrderProcessing from "../components/cards/pay-order-processing";
-import WithdrawalOrderProcessing from "../components/cards/withdrawal-order-processing";
-import WithdrawalOrderSuccessful from "../components/cards/withdrawal-order-successful";
-import WithdrawalOrderFailed from "../components/cards/withdrawal-order-failed";
+import WithdrawalUnified from "../components/cards/withdrawal-unified";
 import { TransactionReviewModal } from "../components/modals/TransactionReviewModal";
 import { useQuery } from "@tanstack/react-query";
 import useWalletGetInfo from "@/hooks/useWalletGetInfo";
@@ -58,33 +56,33 @@ const StateContextProvider = () => {
   }
 
   if (orderStep === OrderStep.ProcessingPayment) {
-    // For withdrawals, use our custom component that handles hash submission
+    // For withdrawals, use our unified component that handles all states
     if (quote?.transferType === TransferType.TransferOut) {
-      return <WithdrawalOrderProcessing />;
+      return <WithdrawalUnified />;
     }
     return <PayOrderProcessing />;
   }
 
   if (orderStep === OrderStep.GotTransfer) {
-    // For withdrawals, continue using our custom component for status polling
+    // For withdrawals, continue using our unified component for status polling
     if (quote?.transferType === TransferType.TransferOut) {
-      return <WithdrawalOrderProcessing />;
+      return <WithdrawalUnified />;
     }
     return <OrderProcessing />;
   }
 
   if (orderStep === OrderStep.PaymentCompleted) {
-    // Use withdrawal-specific component for TransferOut transactions
+    // Use unified withdrawal component for TransferOut transactions
     if (quote?.transferType === TransferType.TransferOut) {
-      return <WithdrawalOrderSuccessful />;
+      return <WithdrawalUnified />;
     }
     return <OrderSuccessful />;
   }
 
   if (orderStep === OrderStep.PaymentFailed) {
-    // Use withdrawal-specific component for TransferOut transactions
+    // Use unified withdrawal component for TransferOut transactions
     if (quote?.transferType === TransferType.TransferOut) {
-      return <WithdrawalOrderFailed />;
+      return <WithdrawalUnified />;
     }
     return <OrderFailed />;
   }
