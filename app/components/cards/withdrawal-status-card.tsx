@@ -267,14 +267,8 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
 
         {/* Amount Display - Show for all states */}
         <div className="text-center">
-          <h2 className={`text-4xl font-bold mb-2 transition-colors duration-300 ${
-            isProcessing ? 'text-blue-400' : isFailed ? 'text-red-500' : 'text-blue-500'
-          }`}>
-            ${fiatAmount.toFixed(2)}
-          </h2>
-          
           {/* Transaction Description - Show for all states */}
-          <p className="text-white text-center text-base opacity-80">
+          <p className="text-white text-center text-lg font-medium">
             {`${cryptoAmount.toFixed(1)} ${quote.cryptoType} for ${fiatAmount.toFixed(0)} ${quote.fiatType} on ${quote.network.charAt(0).toUpperCase() + quote.network.slice(1)}`}
           </p>
         </div>
