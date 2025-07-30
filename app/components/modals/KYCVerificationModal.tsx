@@ -47,7 +47,8 @@ export function KYCVerificationModal({
   };
 
   // const fullKycUrl = `${kycLink}&metadata={"address":"${address}"}&redirect=https://mini.oneramp.io`;
-  const fullKycUrl = `https://signup.metamap.com/?clientId=671a3cf5673134001da20657&flowId=671a3cf5673134001da20656&metadata={"address":"${address}"}&redirect=https://mini.oneramp.io`;
+  // const fullKycUrl = `https://signup.metamap.com/?clientId=671a3cf5673134001da20657&flowId=671a3cf5673134001da20656&metadata={"address":"${address}"}&redirect=https://mini.oneramp.io`;
+  const fullKycUrl = `https://signup.metamap.com/?clientId=671a3cf5673134001da20657&flowId=671a3cf5673134001da20656&metadata={"address":"${address}"}&redirect=https://farcaster.xyz/miniapps/IFyB1NW3qMPb/oneramp`;
   // https://signup.getmati.com/?merchantToken=your_client_id&flowId=your_flow_id&redirect=redirection_url&target=_blank
 
   // Show KYC status based on current status

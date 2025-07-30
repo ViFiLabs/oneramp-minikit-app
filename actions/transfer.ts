@@ -3,6 +3,7 @@
 import { oneRampApi, oneRampApiWithCustomHeaders } from "@/constants";
 import {
   BillTillRequest,
+  GetBusinessAccountNameRequest,
   SubmitTransactionHashRequest,
   Transaction,
   TransactionStatus,
@@ -212,5 +213,17 @@ export const createPayoutTransfer = async (payload: BillTillRequest) => {
     }
   } catch (error) {
     throw new Error("Failed to create till transfer", { cause: error });
+  }
+};
+
+export const getBusinessAccountName = async (
+  payload: GetBusinessAccountNameRequest
+) => {
+  try {
+    const response = await oneRampApi.post(`/account-details`, payload);
+
+    return response.data;
+  } catch (error) {
+    throw new Error("Failed to get business account name", { cause: error });
   }
 };
