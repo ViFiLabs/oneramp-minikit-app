@@ -8,6 +8,7 @@ import { useKYCStore } from "@/store/kyc-store";
 import { X, AlertCircle, CheckCircle, Clock } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { sdk } from "@farcaster/miniapp-sdk";
 
 interface KYCVerificationModalProps {
   open: boolean;
@@ -23,6 +24,49 @@ export function KYCVerificationModal({
   const { address } = useWalletGetInfo();
   const [accepted, setAccepted] = useState(false);
   const [showQR, setShowQR] = useState(false);
+  const [fullKycUrl, setFullKycUrl] = useState("");
+
+  useEffect(() => {
+    if (address) {
+      (async () => {
+        try {
+          const inMini = await sdk.isInMiniApp();
+          const context = await sdk.context;
+          const platform = context.client.platformType;
+
+          const destination =
+            inMini && platform === "mobile"
+              ? "https://mini.oneramp.io"
+              : "https://farcaster.xyz/miniapps/IFyB1NW3qMPb/oneramp";
+
+          // Construct URL without double-encoding
+          const metadata = JSON.stringify({ address });
+          const baseUrl = "https://signup.metamap.com/";
+          const params = new URLSearchParams({
+            clientId: "671a3cf5673134001da20657",
+            flowId: "671a3cf5673134001da20656",
+            metadata: metadata,
+            redirect: destination,
+          });
+
+          setFullKycUrl(`${baseUrl}?${params.toString()}`);
+        } catch (error) {
+          console.error("Error determining redirect URL:", error);
+          // Fallback to web app URL if detection fails
+          const metadata = JSON.stringify({ address });
+          const baseUrl = "https://signup.metamap.com/";
+          const params = new URLSearchParams({
+            clientId: "671a3cf5673134001da20657",
+            flowId: "671a3cf5673134001da20656",
+            metadata: metadata,
+            redirect: "https://farcaster.xyz/miniapps/IFyB1NW3qMPb/oneramp",
+          });
+
+          setFullKycUrl(`${baseUrl}?${params.toString()}`);
+        }
+      })();
+    }
+  }, [address]);
 
   useEffect(() => {
     if (kycData && kycData.kycStatus === "VERIFIED") {
@@ -48,7 +92,7 @@ export function KYCVerificationModal({
 
   // const fullKycUrl = `${kycLink}&metadata={"address":"${address}"}&redirect=https://mini.oneramp.io`;
   // const fullKycUrl = `https://signup.metamap.com/?clientId=671a3cf5673134001da20657&flowId=671a3cf5673134001da20656&metadata={"address":"${address}"}&redirect=https://mini.oneramp.io`;
-  const fullKycUrl = `https://signup.metamap.com/?clientId=671a3cf5673134001da20657&flowId=671a3cf5673134001da20656&metadata={"address":"${address}"}&redirect=https://farcaster.xyz/miniapps/IFyB1NW3qMPb/oneramp`;
+  // const fullKycUrl = `https://signup.metamap.com/?clientId=671a3cf5673134001da20657&flowId=671a3cf5673134001da20656&metadata={"address":"${address}"}&redirect=https://farcaster.xyz/miniapps/IFyB1NW3qMPb/oneramp`;
   // https://signup.getmati.com/?merchantToken=your_client_id&flowId=your_flow_id&redirect=redirection_url&target=_blank
 
   // Show KYC status based on current status
