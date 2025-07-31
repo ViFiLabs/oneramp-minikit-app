@@ -1001,6 +1001,11 @@ export const institutionsData = {
       ],
       "sell": [
         {
+          "code": "OPAYNGPC",
+          "name": "OPay",
+          "type": "bank"
+        },
+        {
           "code": "ABNGNGLA",
           "name": "Access Bank",
           "type": "bank"
@@ -1133,11 +1138,6 @@ export const institutionsData = {
         {
           "code": "KUDANGPC",
           "name": "Kuda Microfinance Bank",
-          "type": "bank"
-        },
-        {
-          "code": "OPAYNGPC",
-          "name": "OPay",
           "type": "bank"
         },
         {

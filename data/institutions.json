@@ -1000,6 +1000,11 @@
       ],
       "sell": [
         {
+          "code": "OPAYNGPC",
+          "name": "OPay",
+          "type": "bank"
+        },
+        {
           "code": "ABNGNGLA",
           "name": "Access Bank",
           "type": "bank"
@@ -1132,11 +1137,6 @@
         {
           "code": "KUDANGPC",
           "name": "Kuda Microfinance Bank",
-          "type": "bank"
-        },
-        {
-          "code": "OPAYNGPC",
-          "name": "OPay",
           "type": "bank"
         },
         {

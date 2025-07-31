@@ -73,7 +73,7 @@ export function TokenSelectModal({ open, onClose }: TokenSelectModalProps) {
           desktop-modal-center"
           style={{
             padding: 0,
-            maxHeight: "65vh",
+            maxHeight: "60vh",
             minHeight: "auto",
             height: "auto",
             display: "flex",
