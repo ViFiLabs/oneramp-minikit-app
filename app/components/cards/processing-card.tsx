@@ -51,7 +51,8 @@ const ProcessingCard: React.FC<ProcessingCardProps> = ({
   const sourceAmount =
     quote.transferType === TransferType.TransferIn
       ? totalAmount
-      : Number(quote.amountPaid);
+      : Number(quote.cryptoAmount);
+  // : Number(quote.amountPaid);
 
   const destinationAmount =
     quote.transferType === TransferType.TransferIn
