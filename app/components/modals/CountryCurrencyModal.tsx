@@ -143,7 +143,7 @@ export function CountryCurrencyModal({
                 WebkitOverflowScrolling: "touch",
                 scrollbarWidth: "thin",
                 scrollbarColor: "#525252 transparent",
-                height: "calc(65vh - 120px)",
+                maxHeight: "calc(60vh - 120px)",
               }}
             >
               <div className="flex flex-col gap-3 pb-4">
