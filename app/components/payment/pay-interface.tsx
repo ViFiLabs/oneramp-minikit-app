@@ -40,7 +40,15 @@ import { usePreFetchInstitutions } from "@/hooks/useExchangeRate";
 import { useAssetBalance } from "@/hooks/useAssetBalance";
 import useWalletGetInfo from "@/hooks/useWalletGetInfo";
 import { useBillPayment, PaymentStep } from "@/hooks/useBillPayment";
-import { OrderStep, ChainTypes, Transfer, Quote, Country } from "@/types";
+import {
+  OrderStep,
+  ChainTypes,
+  Transfer,
+  Quote,
+  Country,
+  GetBusinessAccountNameRequest,
+  GetBusinessAccountNameResponse,
+} from "@/types";
 import useEVMPay from "@/onchain/useEVMPay";
 import Image from "next/image";
 import {
@@ -50,6 +58,9 @@ import {
 import FeeSummary, { FeeSummarySkeleton } from "./fee-summary";
 import { KYCVerificationModal } from "../modals/KYCVerificationModal";
 import { toast } from "sonner";
+import { getBusinessAccountName } from "@/actions/transfer";
+import { useQuery } from "@tanstack/react-query";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export function PaymentInterface() {
   const {
@@ -128,12 +139,69 @@ export function PaymentInterface() {
     }
   };
 
-  const [selectedPaymentType, setSelectedPaymentType] = useState("Buy Goods");
+  const [selectedPaymentType, setSelectedPaymentType] = useState("Paybill");
   const [showCountryModal, setShowCountryModal] = useState(false);
   const [showInstitutionModal, setShowInstitutionModal] = useState(false);
   const [showKYCModal, setShowKYCModal] = useState(false);
   const [kycTriggered, setKycTriggered] = useState(false);
   const [swipeButtonReset, setSwipeButtonReset] = useState(false);
+
+  // Account details fetching
+  const getAccountNumberForFetching = () => {
+    switch (selectedPaymentType) {
+      case "Buy Goods":
+        return billTillPayout?.tillNumber;
+      case "Paybill":
+        return billTillPayout?.billNumber;
+      default:
+        return null;
+    }
+  };
+
+  const accountNumber = getAccountNumberForFetching();
+
+  // Debounce the account number to avoid API calls while user is typing
+  const debouncedAccountNumber = useDebounce(accountNumber, 800); // 800ms delay
+
+  // Only fetch if account number is valid and user has stopped typing
+  const shouldFetchAccountDetails = Boolean(
+    debouncedAccountNumber &&
+      debouncedAccountNumber.length >= 5 && // Increased minimum length for better validation
+      debouncedAccountNumber === accountNumber && // Ensure user has stopped typing
+      /^\d+$/.test(debouncedAccountNumber) // Ensure it's only digits
+  );
+
+  const {
+    data: accountDetails,
+    isLoading: isLoadingAccountDetails,
+    error: accountDetailsError,
+    refetch: refetchAccountDetails,
+  } = useQuery({
+    queryKey: [
+      "business-account-details",
+      debouncedAccountNumber,
+      selectedPaymentType,
+    ],
+    queryFn: async () => {
+      if (!debouncedAccountNumber || !selectedPaymentType) return null;
+
+      const payload: GetBusinessAccountNameRequest = {
+        accountNumber: debouncedAccountNumber,
+        accountType: selectedPaymentType === "Buy Goods" ? "till" : "paybill",
+      };
+
+      const response = await getBusinessAccountName({
+        accountNumber: debouncedAccountNumber,
+        accountType: payload.accountType,
+      });
+      return response.data as GetBusinessAccountNameResponse;
+    },
+    enabled: shouldFetchAccountDetails,
+    retry: 1,
+    retryDelay: 1000,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
+  });
 
   const isProcessing = appState === AppState.Processing;
 
@@ -278,14 +346,14 @@ export function PaymentInterface() {
       case "Buy Goods":
         return {
           requestType: "till" as const,
-          accountName: "OneRamp", // Default name for till payments
+          accountName: accountDetails?.accountName || "OneRamp", // Use fetched account name or fallback
           accountNumber: billTillPayout?.tillNumber || "",
           businessNumber: undefined,
         };
       case "Paybill":
         return {
           requestType: "bill" as const,
-          accountName: "OneRamp", // Default name for bill payments
+          accountName: accountDetails?.accountName || "OneRamp", // Use fetched account name or fallback
           accountNumber: billTillPayout?.billNumber || "",
           businessNumber: billTillPayout?.accountNumber || "",
         };
@@ -649,6 +717,19 @@ export function PaymentInterface() {
                 placeholder="Enter till number"
                 disabled={isProcessing}
               />
+              {isLoadingAccountDetails &&
+                debouncedAccountNumber === billTillPayout?.tillNumber && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <div className="w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                )}
+              {!isLoadingAccountDetails &&
+                accountDetails &&
+                debouncedAccountNumber === billTillPayout?.tillNumber && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <div className="w-4 h-4 text-green-400">✓</div>
+                  </div>
+                )}
             </div>
           </div>
         );
@@ -671,6 +752,19 @@ export function PaymentInterface() {
                   placeholder="Enter paybill number"
                   disabled={isProcessing}
                 />
+                {isLoadingAccountDetails &&
+                  debouncedAccountNumber === billTillPayout?.billNumber && (
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                      <div className="w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                  )}
+                {!isLoadingAccountDetails &&
+                  accountDetails &&
+                  debouncedAccountNumber === billTillPayout?.billNumber && (
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                      <div className="w-4 h-4 text-green-400">✓</div>
+                    </div>
+                  )}
               </div>
             </div>
 
@@ -842,7 +936,7 @@ export function PaymentInterface() {
             ) {
               return (
                 <div className="grid grid-cols-3 gap-3">
-                  {["Buy Goods", "Paybill", "Send Money"].map((type) => {
+                  {["Paybill", "Buy Goods", "Send Money"].map((type) => {
                     const isSupported = isPaymentTypeSupportedForCountry(type);
                     const isSelected = selectedPaymentType === type;
 
@@ -1037,6 +1131,27 @@ export function PaymentInterface() {
             </div>
           )}
 
+          {/* Account Details Error Display */}
+          {accountDetailsError && (
+            <div className="bg-yellow-900/20 border border-yellow-600/50 rounded-lg p-3">
+              <div className="flex items-center justify-between">
+                <p className="text-yellow-400 text-xs">
+                  ⚠️ Unable to fetch account details. <br />
+                  Please verify the account number.
+                </p>
+                <Button
+                  onClick={() => refetchAccountDetails()}
+                  variant="ghost"
+                  size="sm"
+                  className="text-yellow-400 hover:text-yellow-300 p-1 h-auto"
+                  disabled={isLoadingAccountDetails}
+                >
+                  {isLoadingAccountDetails ? "Retrying..." : "Retry"}
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* Payment Error Display */}
           {billPaymentMutation.isError && (
             <div className="bg-red-900/20 border border-red-600/50 rounded-lg p-3">
@@ -1084,6 +1199,8 @@ export function PaymentInterface() {
               cryptoAmount={calculatedCryptoAmount}
               cryptoCurrency={asset?.symbol || "USDC"}
               exchangeRateData={exchangeRate}
+              accountDetails={accountDetails || undefined}
+              isLoadingAccountDetails={isLoadingAccountDetails}
             />
           )}
 
@@ -1095,7 +1212,22 @@ export function PaymentInterface() {
             isLoading={
               billPaymentMutation.isPending || blockchainLoading || isEVMLoading
             }
-            stepMessage={getStepMessage(billPaymentMutation.currentStep)}
+            stepMessage={
+              // Show specific message when account details are being fetched
+              (selectedPaymentType === "Buy Goods" ||
+                selectedPaymentType === "Paybill") &&
+              isLoadingAccountDetails
+                ? "Verifying account details..."
+                : getStepMessage(billPaymentMutation.currentStep)
+            }
+            disabledMessage={
+              // Show specific message when account details are missing
+              (selectedPaymentType === "Buy Goods" ||
+                selectedPaymentType === "Paybill") &&
+              !accountDetails
+                ? "Verify account details"
+                : "Complete Form"
+            }
             disabled={
               !country ||
               !asset ||
@@ -1107,7 +1239,11 @@ export function PaymentInterface() {
               (!!country?.name &&
                 requiresInstitutionSelection(country.name) &&
                 !institution) ||
-              isProcessing
+              isProcessing ||
+              // Prevent activation if account details are still fetching or not fetched for Buy Goods/Paybill
+              ((selectedPaymentType === "Buy Goods" ||
+                selectedPaymentType === "Paybill") &&
+                (isLoadingAccountDetails || !accountDetails))
             }
             reset={swipeButtonReset}
           />

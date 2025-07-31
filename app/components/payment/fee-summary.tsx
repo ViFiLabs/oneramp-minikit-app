@@ -21,6 +21,11 @@ interface FeeSummaryProps {
   cryptoAmount?: string;
   cryptoCurrency?: string;
   exchangeRateData?: ExchangeRateData;
+  accountDetails?: {
+    accountId: string;
+    accountName: string;
+  } | null;
+  isLoadingAccountDetails?: boolean;
 }
 
 const FeeSummarySkeleton = () => {
@@ -61,6 +66,8 @@ const FeeSummary = ({
   cryptoAmount = "0.0077",
   cryptoCurrency = "USDC",
   exchangeRateData,
+  accountDetails,
+  isLoadingAccountDetails = false,
 }: FeeSummaryProps) => {
   // Calculate fees from the exchange rate data
   // const totalFees = exchangeRateData?.conversionResponse
@@ -86,6 +93,8 @@ const FeeSummary = ({
   return (
     <div className="w-full bg-[#202020] shadow-md rounded-lg p-4 text-white">
       <div className="space-y-3">
+        {/* Account Details - Show when available */}
+
         {/* Transaction Details */}
         <div className="space-y-2">
           <div className="flex justify-between items-center">
@@ -109,7 +118,40 @@ const FeeSummary = ({
             </span>
           </div>
         </div>
+        {/* Loading state for account details */}
+        {isLoadingAccountDetails && (
+          <>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-300 text-sm">Account Name</span>
+                <div className="w-32 h-4 bg-gray-600 rounded animate-pulse"></div>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-300 text-sm">Account ID</span>
+                <div className="w-20 h-4 bg-gray-600 rounded animate-pulse"></div>
+              </div>
+            </div>
+          </>
+        )}
 
+        {accountDetails && (
+          <>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-300 text-sm">Account Name</span>
+                <span className="text-white text-sm font-medium line-clamp-1">
+                  {accountDetails.accountName}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-300 text-sm">Account ID</span>
+                <span className="text-white text-sm font-medium line-clamp-1">
+                  {accountDetails.accountId}
+                </span>
+              </div>
+            </div>
+          </>
+        )}
         {/* Separator */}
         <div className="border-t border-gray-600 my-3"></div>
 
