@@ -16,6 +16,7 @@ interface SwipeToPayButtonProps {
   isLoading?: boolean;
   disabled?: boolean;
   stepMessage?: string;
+  disabledMessage?: string; // Add specific disabled message
   reset?: boolean; // Add reset prop to trigger rollback
 }
 
@@ -24,6 +25,7 @@ export function SwipeToPayButton({
   isLoading = false,
   disabled = false,
   stepMessage = "Processing...",
+  disabledMessage = "Complete Form",
   reset = false,
 }: SwipeToPayButtonProps) {
   const [isDragging, setIsDragging] = useState(false);
@@ -33,7 +35,7 @@ export function SwipeToPayButton({
 
   const getButtonText = () => {
     if (isLoading && stepMessage) return stepMessage;
-    if (disabled) return "Complete Form";
+    if (disabled) return disabledMessage;
     return "Swipe to Pay";
   };
 
@@ -224,7 +226,7 @@ export function SwipeToPayButton({
         />
 
         {/* Main text */}
-        <div className="text-white z-10 pointer-events-none flex items-center gap-2 font-medium text-lg">
+        <div className="text-white z-10 pointer-events-none flex items-center gap-2 font-medium text-base">
           {getMainText()}
         </div>
 

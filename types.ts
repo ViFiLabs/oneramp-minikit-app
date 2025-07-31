@@ -413,3 +413,21 @@ export interface BillTillRequest {
   businessNumber?: string;
   requestType: "bill" | "till" | "payout";
 }
+
+export interface GetBusinessAccountNameRequest {
+  accountNumber: string;
+  accountType: "paybill" | "till";
+}
+
+// {
+//   "success": true,
+//   "data": {
+//       "accountId": "400200",
+//       "accountName": "Co-operative Bank Money Transfer"
+//   }
+// }
+
+export interface GetBusinessAccountNameResponse {
+  accountId: string;
+  accountName: string;
+}
