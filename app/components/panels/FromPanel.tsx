@@ -59,7 +59,13 @@ export function FromPanel({
     // Ensure we don't set an amount greater than the balance
     const maxBalanceNumber = parseFloat(maxAmount);
     if (maxBalanceNumber > 0) {
-      setAmount(maxAmount);
+      // Subtract a small buffer (0.01 tokens) for gas fees to prevent transaction failures
+      const gasBuffer = 0.01;
+      const adjustedAmount = Math.max(0, maxBalanceNumber - gasBuffer);
+
+      // Format the adjusted amount to 2 decimal places
+      const formattedAmount = adjustedAmount.toFixed(2);
+      setAmount(formattedAmount);
     }
   };
 
@@ -69,20 +75,41 @@ export function FromPanel({
 
     // Show balance for current network
     const currentChainId = currentNetwork?.chainId;
+    let balance = "0";
+
     if (currentChainId && allNetworkBalances?.[currentChainId]) {
-      return allNetworkBalances[currentChainId].isLoading
-        ? "..."
-        : allNetworkBalances[currentChainId].formatted;
+      if (allNetworkBalances[currentChainId].isLoading) {
+        return "...";
+      }
+      balance = allNetworkBalances[currentChainId].formatted;
+    } else {
+      balance = tokenBalance;
     }
-    return tokenBalance;
+
+    // Subtract a small buffer for gas fees to show the actual usable amount
+    const balanceNumber = parseFloat(balance);
+    const gasBuffer = 0.01;
+    const adjustedBalance = Math.max(0, balanceNumber - gasBuffer);
+
+    return adjustedBalance.toFixed(2);
   };
 
   const getMaxBalance = () => {
     const currentChainId = currentNetwork?.chainId;
+    let balance = "0";
+
     if (currentChainId && allNetworkBalances?.[currentChainId]) {
-      return allNetworkBalances[currentChainId].formatted;
+      balance = allNetworkBalances[currentChainId].formatted;
+    } else {
+      balance = tokenBalance;
     }
-    return tokenBalance;
+
+    // Subtract a small buffer for gas fees to prevent transaction failures
+    const balanceNumber = parseFloat(balance);
+    const gasBuffer = 0.01;
+    const adjustedBalance = Math.max(0, balanceNumber - gasBuffer);
+
+    return adjustedBalance.toFixed(2);
   };
 
   const isBalanceLoading = () => {
