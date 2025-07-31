@@ -76,7 +76,9 @@ export function InstitutionModal({
           desktop-modal-center"
           style={{
             padding: 0,
-            height: "65vh",
+            maxHeight: "65vh",
+            minHeight: "auto",
+            height: "auto",
             display: "flex",
             flexDirection: "column",
           }}
