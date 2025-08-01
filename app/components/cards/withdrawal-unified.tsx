@@ -141,7 +141,7 @@ const WithdrawalUnified = () => {
       return getTransferStatus(transfer.transferId);
     },
     enabled: !!transfer?.transferId && (submitTxHashMutation.isSuccess || orderStep === OrderStep.GotTransfer),
-    refetchInterval: 5000, // Poll every 5 seconds
+    refetchInterval: 3000, // Poll every 3 seconds
   });
 
   // Handle transfer status changes with animations
