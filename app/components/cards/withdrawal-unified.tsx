@@ -16,6 +16,7 @@ const WithdrawalUnified = () => {
   const { quote, resetQuote } = useQuoteStore();
   const router = useRouter();
   const hashSubmittedRef = useRef(false);
+  const transactionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   // Local state for managing animation states
   const [currentState, setCurrentState] = useState<'processing' | 'success' | 'failed'>('processing');
@@ -30,15 +31,56 @@ const WithdrawalUnified = () => {
       transferId: transfer?.transferId,
       currentState,
       animationPhase,
+      isEVMTransactionFailed: orderStep === OrderStep.PaymentFailed,
     });
   }, [orderStep, transactionHash, transfer, currentState, animationPhase]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (transactionTimeoutRef.current) {
+        clearTimeout(transactionTimeoutRef.current);
+        transactionTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   // Reset submitted flag when transaction hash changes
   useEffect(() => {
     if (transactionHash) {
       hashSubmittedRef.current = false;
+      // Clear any existing timeout when transaction hash is received
+      if (transactionTimeoutRef.current) {
+        clearTimeout(transactionTimeoutRef.current);
+        transactionTimeoutRef.current = null;
+      }
     }
   }, [transactionHash]);
+
+  // Add timeout for transaction signing - if user doesn't sign within 2 minutes, show failure
+  useEffect(() => {
+    if (orderStep === OrderStep.ProcessingPayment && !transactionHash && transfer?.transferId) {
+      console.log("Starting transaction timeout timer...");
+      
+      // Set timeout for 2 minutes (120 seconds)
+      transactionTimeoutRef.current = setTimeout(() => {
+        console.log("Transaction timeout - user likely didn't sign the transaction");
+        // Animate to failed state
+        setAnimationPhase('transition');
+        setTimeout(() => {
+          setCurrentState('failed');
+          setAnimationPhase('final');
+        }, 500);
+      }, 120000); // 2 minutes
+
+      return () => {
+        if (transactionTimeoutRef.current) {
+          clearTimeout(transactionTimeoutRef.current);
+          transactionTimeoutRef.current = null;
+        }
+      };
+    }
+  }, [orderStep, transactionHash, transfer?.transferId]);
 
   // Submit transaction hash mutation
   const submitTxHashMutation = useMutation({
@@ -123,6 +165,24 @@ const WithdrawalUnified = () => {
     }
   }, [transferStatus?.status, isLoading]);
 
+  // Handle EVM transaction failures by monitoring orderStep changes
+  useEffect(() => {
+    if (orderStep === OrderStep.PaymentFailed) {
+      console.log("EVM transaction failed - transitioning to failed state");
+      // Clear any existing timeout since the transaction definitively failed
+      if (transactionTimeoutRef.current) {
+        clearTimeout(transactionTimeoutRef.current);
+        transactionTimeoutRef.current = null;
+      }
+      // Animate to failed state
+      setAnimationPhase('transition');
+      setTimeout(() => {
+        setCurrentState('failed');
+        setAnimationPhase('final');
+      }, 500);
+    }
+  }, [orderStep]);
+
   const handleDone = () => {
     resetQuote();
     resetTransfer();
@@ -154,8 +214,8 @@ const WithdrawalUnified = () => {
     );
   }
 
-  // Handle case where quote data is invalid
-  if (!quote.network) {
+  // Handle case where quote data is invalid (but not for PaymentFailed state)
+  if (!quote.network && orderStep !== OrderStep.PaymentFailed) {
     console.error("Invalid quote structure for withdrawal:", { quote });
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black">
@@ -177,6 +237,7 @@ const WithdrawalUnified = () => {
       transfer={transfer || undefined}
       isProcessing={isProcessing}
       isFailed={isFailed}
+      isSuccess={isSuccess}
       onDone={isFailed ? handleTryAgain : handleDone}
       animationPhase={animationPhase}
     />

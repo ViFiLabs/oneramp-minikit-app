@@ -12,6 +12,7 @@ interface WithdrawalStatusCardProps {
   transfer?: Transfer;
   isProcessing: boolean;
   isFailed?: boolean;
+  isSuccess?: boolean;
   onDone: () => void;
   onClose?: () => void;
   animationPhase?: "initial" | "transition" | "final";
@@ -21,6 +22,7 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
   quote,
   isProcessing,
   isFailed = false,
+  isSuccess = false,
   onDone,
   onClose,
   animationPhase = "initial",
@@ -257,8 +259,19 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
                 >
                   <FiX size={24} color="#ffffff" />
                 </div>
+              ) : isSuccess ? (
+                // blue circle with checkmark for success with entrance animation
+                <div
+                  className={`w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center transform transition-all duration-500 ${
+                    animationPhase === "final"
+                      ? "scale-100 opacity-100"
+                      : "scale-0 opacity-0"
+                  }`}
+                >
+                  <FiCheck size={24} color="#ffffff" />
+                </div>
               ) : (
-                // Circle with checkmark for success with entrance animation
+                // Default blue circle with checkmark for other states
                 <div
                   className={`w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center transform transition-all duration-500 ${
                     animationPhase === "final"
@@ -281,6 +294,8 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
                 ? "Processing withdrawal..."
                 : isFailed
                 ? "Transaction Failed"
+                : isSuccess
+                ? "Successfully swapped"
                 : "Successfully swapped"}
             </h1>
 
@@ -310,6 +325,8 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
                   className={`w-full text-white text-lg font-semibold h-14 rounded-full transition-all duration-300 ${
                     isFailed
                       ? "bg-red-500 hover:bg-red-600"
+                      : isSuccess
+                      ? "bg-blue-500 hover:bg-blue-600"
                       : "bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
                   }`}
                 >
