@@ -415,13 +415,51 @@ export function KYCVerificationModal({
               )}
             </div>
 
-            <Button
-              onClick={onClose}
-              variant="ghost"
-              className="w-full py-4 text-neutral-400 hover:text-white hover:bg-neutral-800"
-            >
-              Close
-            </Button>
+            <div className="space-y-3">
+              <Button
+                onClick={() => {
+                  window.open(fullKycUrl, "_blank");
+                }}
+                variant="ghost"
+                className="w-full py-4 !text-blue-600 hover:!text-white hover:!bg-transparent"
+              >
+                <p className="text-blue-600">Open KYC Link</p>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  className="ml-2"
+                >
+                  <path
+                    d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M15 3h6v6"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M10 14L21 3"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </Button>
+              <Button
+                onClick={onClose}
+                variant="ghost"
+                className="w-full py-4 !text-neutral-400 hover:!text-white hover:!bg-neutral-800"
+              >
+                <p className="text-neutral-400">Close</p>
+              </Button>
+            </div>
           </div>
         </div>
       </div>
