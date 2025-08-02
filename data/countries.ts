@@ -229,21 +229,21 @@ export const countries: Country[] = [
       mobileLength: 10,
     },
   },
-  {
-    name: "Zambia",
-    logo: "/logos/zambia.png",
-    currency: "ZMW",
-    countryCode: "ZM",
-    phoneCode: "+260",
-    exchangeRate: 127.38,
-    institutions: [],
-    fiatMinMax: { min: 110.38, max: 100_000 },
-    cryptoMinMax: { min: 5, max: 2_500 },
-    accountNumberLength: {
-      bankLength: 11,
-      mobileLength: 10,
-    },
-  },
+  // {
+  //   name: "Zambia",
+  //   logo: "/logos/zambia.png",
+  //   currency: "ZMW",
+  //   countryCode: "ZM",
+  //   phoneCode: "+260",
+  //   exchangeRate: 127.38,
+  //   institutions: [],
+  //   fiatMinMax: { min: 110.38, max: 100_000 },
+  //   cryptoMinMax: { min: 5, max: 2_500 },
+  //   accountNumberLength: {
+  //     bankLength: 11,
+  //     mobileLength: 10,
+  //   },
+  // },
   {
     name: "Uganda",
     logo: "/logos/uganda.png",
@@ -274,21 +274,21 @@ export const countries: Country[] = [
       mobileLength: 10,
     },
   },
-  {
-    name: "South Africa",
-    logo: "/logos/southafrica.png",
-    currency: "ZAR",
-    countryCode: "ZA",
-    phoneCode: "+27",
-    exchangeRate: 18.57,
-    institutions: [],
-    fiatMinMax: { min: 300, max: 35_000 },
-    cryptoMinMax: { min: 15, max: 2_500 },
-    accountNumberLength: {
-      bankLength: 13,
-      mobileLength: 10,
-    },
-  },
+  // {
+  //   name: "South Africa",
+  //   logo: "/logos/southafrica.png",
+  //   currency: "ZAR",
+  //   countryCode: "ZA",
+  //   phoneCode: "+27",
+  //   exchangeRate: 18.57,
+  //   institutions: [],
+  //   fiatMinMax: { min: 300, max: 35_000 },
+  //   cryptoMinMax: { min: 15, max: 2_500 },
+  //   accountNumberLength: {
+  //     bankLength: 13,
+  //     mobileLength: 10,
+  //   },
+  // },
 ];
 
 export const GLOBAL_MIN_MAX = {
