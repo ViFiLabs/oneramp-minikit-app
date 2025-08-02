@@ -168,8 +168,8 @@ const SelectInstitution = ({
 
         const userDetails = {
           name: fullName,
-          country: nationality,
-          address: country?.countryCode || "",
+          country: country?.countryCode || "",
+          address: nationality || country?.name || "",
           phone: accountNumber,
           dob: dateOfBirth,
           idNumber: documentNumber,
@@ -253,8 +253,8 @@ const SelectInstitution = ({
 
         const userDetails = {
           name: fullName,
-          country: nationality,
-          address: country?.countryCode || "",
+          country: country?.countryCode || "",
+          address: nationality || country?.name || "",
           phone: accountNumber,
           dob: dateOfBirth,
           idNumber: documentNumber,
@@ -293,8 +293,8 @@ const SelectInstitution = ({
             quoteId: data.quote.quoteId,
             userDetails: {
               name: fullName,
-              country: nationality,
-              address: country?.countryCode || "",
+              country: country?.countryCode || "",
+              address: nationality || country?.name || "",
               phone: accountNumber,
               dob: dateOfBirth,
               idNumber: documentNumber,
@@ -409,6 +409,18 @@ const SelectInstitution = ({
     if (kycData && kycData.kycStatus !== "VERIFIED") {
       setShowKYCModal(true);
       toast.error("KYC verification required");
+      return;
+    }
+
+    // Additional check for rejected or in-review KYC
+    if (
+      kycData?.kycStatus === "REJECTED" ||
+      kycData?.kycStatus === "IN_REVIEW"
+    ) {
+      setShowKYCModal(true);
+      toast.error(
+        "KYC verification is not complete. Please wait for verification to finish."
+      );
       return;
     }
 

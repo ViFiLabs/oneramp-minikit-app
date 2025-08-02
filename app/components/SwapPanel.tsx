@@ -46,6 +46,7 @@ export function SwapPanel() {
   const [stepMessage, setStepMessage] = useState("");
   const [showKYCModal, setShowKYCModal] = useState(false);
   const [showWalletModal, setShowWalletModal] = useState(false);
+  const [swipeButtonReset, setSwipeButtonReset] = useState(false);
   const userSelectionStore = useUserSelectionStore();
   const {
     countryPanelOnTop,
@@ -182,8 +183,8 @@ export function SwapPanel() {
 
       const baseUserDetails = {
         name: fullName,
-        country: nationality,
-        address: country.countryCode || "",
+        country: country.countryCode || "",
+        address: nationality || country.name || "",
         dob: dateOfBirth,
         idNumber: documentNumber,
         idType: updatedDocumentType,
@@ -494,6 +495,31 @@ export function SwapPanel() {
       return;
     }
 
+    // Verify KYC before proceeding with withdrawal
+    if (kycData && kycData.kycStatus !== "VERIFIED") {
+      setShowKYCModal(true);
+      toast.error("KYC verification required");
+      // Reset swipe button to initial position
+      setSwipeButtonReset(true);
+      setTimeout(() => setSwipeButtonReset(false), 100);
+      return;
+    }
+
+    // Additional check for rejected or in-review KYC
+    if (
+      kycData?.kycStatus === "REJECTED" ||
+      kycData?.kycStatus === "IN_REVIEW"
+    ) {
+      setShowKYCModal(true);
+      toast.error(
+        "KYC verification is not complete. Please wait for verification to finish."
+      );
+      // Reset swipe button to initial position
+      setSwipeButtonReset(true);
+      setTimeout(() => setSwipeButtonReset(false), 100);
+      return;
+    }
+
     setWithdrawLoading(true);
     setStepMessage("Checking rates...");
     updateSelection({ appState: AppState.Processing });
@@ -532,7 +558,6 @@ export function SwapPanel() {
     !institution ||
     !accountNumber ||
     !evmConnected ||
-    !kycData?.fullKYC ||
     stepMessage === "Transaction Complete!";
 
   return (
@@ -664,6 +689,7 @@ export function SwapPanel() {
                 hasKYC={!!kycData?.fullKYC}
                 onConnectWallet={handleConnectWallet}
                 onStartKYC={handleStartKYC}
+                reset={swipeButtonReset}
               />
             </div>
           </div>
@@ -679,6 +705,9 @@ export function SwapPanel() {
         open={showKYCModal}
         onClose={() => {
           setShowKYCModal(false);
+          // Reset swipe button to initial position
+          setSwipeButtonReset(true);
+          setTimeout(() => setSwipeButtonReset(false), 100);
         }}
         kycLink={kycData?.message?.link || null}
       />

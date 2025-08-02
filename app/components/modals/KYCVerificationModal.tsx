@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import useWalletGetInfo from "@/hooks/useWalletGetInfo";
 import { useKYCStore } from "@/store/kyc-store";
+import { useKYCStatus } from "@/hooks/useKYCStatus";
 // import { KYC_REDIRECT_URL } from "@/constants";
 import { X, AlertCircle, CheckCircle, Clock } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { sdk } from "@farcaster/miniapp-sdk";
 
 interface KYCVerificationModalProps {
@@ -20,18 +21,66 @@ export function KYCVerificationModal({
   open,
   onClose,
 }: KYCVerificationModalProps) {
-  const { setIsCheckingKyc, kycData, clearKycData } = useKYCStore();
+  const { setIsCheckingKyc, clearKycData } = useKYCStore();
   const { address } = useWalletGetInfo();
+  const { kycData, isPolling, isInDelayedPhase } = useKYCStatus();
   const [accepted, setAccepted] = useState(false);
   const [showQR, setShowQR] = useState(false);
   const [fullKycUrl, setFullKycUrl] = useState("");
+  const [countdown, setCountdown] = useState(30);
+  const countdownRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (kycData && kycData.kycStatus === "VERIFIED") {
       onClose();
       setIsCheckingKyc(false);
     }
-  }, [kycData]);
+  }, [kycData, setIsCheckingKyc]);
+
+  // Countdown timer for delayed phase
+  useEffect(() => {
+    if (isInDelayedPhase && showQR) {
+      setCountdown(30);
+      countdownRef.current = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            if (countdownRef.current) {
+              clearInterval(countdownRef.current);
+              countdownRef.current = null;
+            }
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      if (countdownRef.current) {
+        clearInterval(countdownRef.current);
+        countdownRef.current = null;
+      }
+      setCountdown(30);
+    }
+
+    return () => {
+      if (countdownRef.current) {
+        clearInterval(countdownRef.current);
+        countdownRef.current = null;
+      }
+    };
+  }, [isInDelayedPhase, showQR]);
+
+  // Cleanup polling when modal closes
+  useEffect(() => {
+    if (!open) {
+      setIsCheckingKyc(false);
+      // Cleanup countdown
+      if (countdownRef.current) {
+        clearInterval(countdownRef.current);
+        countdownRef.current = null;
+      }
+      setCountdown(30);
+    }
+  }, [open, setIsCheckingKyc]);
 
   useEffect(() => {
     if (address) {
@@ -77,9 +126,81 @@ export function KYCVerificationModal({
 
   if (!open) return null;
 
+  // Prevent new KYC submission if user has REJECTED or IN_REVIEW status
+  if (kycData?.kycStatus === "REJECTED" || kycData?.kycStatus === "IN_REVIEW") {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1c1c1c] md:bg-black/60 md:backdrop-blur-lg">
+        <div
+          className="bg-[#1c1c1c] md:rounded-2xl p-6 max-w-md w-full shadow-2xl relative
+        /* Mobile: full screen */
+        /* Desktop: centered modal */
+        md:max-w-lg md:mx-4"
+        >
+          <Button
+            onClick={onClose}
+            variant="ghost"
+            className="absolute right-4 top-4 !text-white hover:!text-white"
+          >
+            <X size={24} />
+          </Button>
+
+          <div className="text-center">
+            <div className="flex justify-center mb-4">
+              <div className="p-3 bg-orange-900/20 rounded-full">
+                <AlertCircle className="w-8 h-8 text-orange-400" />
+              </div>
+            </div>
+
+            <h2 className="text-xl text-white font-semibold mb-2">
+              KYC Already in Progress
+            </h2>
+            <p className="text-neutral-400 text-sm mb-6">
+              {kycData?.kycStatus === "REJECTED"
+                ? "Your previous KYC verification was rejected. Please wait for the review process to complete before submitting a new verification."
+                : "Your KYC verification is currently under review. Please wait for the review process to complete before submitting a new verification."}
+            </p>
+
+            <div className="bg-[#232323] rounded-xl p-4 mb-6">
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="mt-1">
+                    <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+                  </div>
+                  <p className="text-neutral-400 text-sm">
+                    {kycData?.kycStatus === "REJECTED"
+                      ? "Your verification was not approved and is being reviewed"
+                      : "Your verification is being reviewed by our team"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <Button
+                onClick={() => {
+                  window.open("https://t.me/+Hnr5eySeSoMyOTM0", "_blank");
+                }}
+                className="w-full py-4 !bg-blue-600 text-white hover:!bg-blue-700"
+              >
+                Contact Support
+              </Button>
+            </div>
+
+            <div className="mt-4 text-center">
+              <p className="text-neutral-500 text-xs">
+                Need help? Contact our support team for assistance
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const handleAcceptAndSign = () => {
     setShowQR(true);
     setIsCheckingKyc(true);
+    // The useKYCStatus hook will automatically start polling when isCheckingKyc becomes true
   };
 
   // Handle KYC rejection
@@ -105,12 +226,13 @@ export function KYCVerificationModal({
         /* Desktop: centered modal */
         md:max-w-lg md:mx-4"
         >
-          <button
+          <Button
             onClick={handleKYCRejection}
-            className="absolute right-4 top-4 text-neutral-400 hover:text-white"
+            variant="ghost"
+            className="absolute right-4 top-4 !text-white hover:!text-white"
           >
             <X size={24} />
-          </button>
+          </Button>
 
           <div className="text-center">
             <div className="flex justify-center mb-4">
@@ -153,6 +275,75 @@ export function KYCVerificationModal({
                   </p>
                 </div>
               </div>
+              <div className="mt-4 pt-3 border-t border-neutral-700">
+                <p className="text-red-400 text-xs">
+                  ⚠️ Real-time verification detected rejection
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <Button
+                onClick={() => {
+                  window.open("https://t.me/+Hnr5eySeSoMyOTM0", "_blank");
+                }}
+                className="w-full py-4 !bg-blue-600 text-white hover:!bg-blue-700"
+              >
+                Contact Support
+              </Button>
+            </div>
+
+            <div className="mt-4 text-center">
+              <p className="text-neutral-500 text-xs">
+                Need help? Contact our support team for assistance
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show IN_REVIEW KYC status
+  if (kycData?.kycStatus === "IN_REVIEW") {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1c1c1c] md:bg-black/60 md:backdrop-blur-lg">
+        <div
+          className="bg-[#1c1c1c] md:rounded-2xl p-6 max-w-md w-full shadow-2xl relative
+        /* Mobile: full screen */
+        /* Desktop: centered modal */
+        md:max-w-lg md:mx-4"
+        >
+          <Button
+            onClick={onClose}
+            variant="ghost"
+            className="absolute right-4 top-4 !text-white hover:!text-white"
+          >
+            <X size={24} />
+          </Button>
+
+          <div className="text-center">
+            <div className="flex justify-center mb-4">
+              <div className="p-3 bg-blue-900/20 rounded-full">
+                <Clock className="w-8 h-8 text-blue-400" />
+              </div>
+            </div>
+
+            <h2 className="text-xl text-white font-semibold mb-2">
+              Verification Under Review
+            </h2>
+            <p className="text-neutral-400 text-sm mb-6">
+              Your identity verification is currently being reviewed by our
+              team. This process typically takes a few minutes.
+            </p>
+
+            <div className="bg-[#232323] rounded-xl p-4 mb-6">
+              <div className="flex items-center justify-center mb-4"></div>
+              {isPolling && (
+                <p className="text-blue-400 text-xs animate-pulse">
+                  Monitoring....
+                </p>
+              )}
             </div>
 
             <div className="space-y-3">
@@ -187,12 +378,13 @@ export function KYCVerificationModal({
         /* Desktop: centered modal */
         md:max-w-lg md:mx-4"
         >
-          <button
+          <Button
             onClick={onClose}
-            className="absolute right-4 top-4 text-neutral-400 hover:text-white"
+            variant="ghost"
+            className="absolute right-4 top-4 !text-white hover:!text-white"
           >
             <X size={24} />
-          </button>
+          </Button>
 
           <div className="text-center">
             <div className="flex justify-center mb-4">
@@ -213,9 +405,14 @@ export function KYCVerificationModal({
               <div className="flex items-center justify-center mb-4">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
               </div>
-              <p className="text-neutral-400 text-sm">
+              <p className="text-neutral-400 text-sm mb-2">
                 Please wait while we verify your documents...
               </p>
+              {isPolling && (
+                <p className="text-blue-400 text-xs">
+                  ✓ Actively checking for updates...
+                </p>
+              )}
             </div>
 
             <Button
@@ -241,12 +438,13 @@ export function KYCVerificationModal({
         /* Desktop: centered modal */
         md:max-w-lg md:mx-4"
         >
-          <button
+          <Button
             onClick={onClose}
-            className="absolute right-4 top-4 text-neutral-400 hover:text-white"
+            variant="ghost"
+            className="absolute right-4 top-4 !text-white hover:!text-white"
           >
             <X size={24} />
-          </button>
+          </Button>
 
           <div className="text-center">
             <div className="flex justify-center mb-4">
@@ -262,6 +460,12 @@ export function KYCVerificationModal({
               Your identity has been verified successfully. You can now proceed
               with your transaction.
             </p>
+
+            <div className="bg-[#232323] rounded-xl p-4 mb-6">
+              <p className="text-green-400 text-sm">
+                ✓ Real-time verification completed
+              </p>
+            </div>
 
             <Button
               onClick={onClose}
@@ -284,12 +488,13 @@ export function KYCVerificationModal({
         /* Desktop: centered modal */
         md:max-w-lg md:mx-4"
         >
-          <button
+          <Button
             onClick={onClose}
-            className="absolute right-4 top-4 text-neutral-400 hover:text-white"
+            variant="ghost"
+            className="absolute right-4 top-4 !text-white hover:!text-white"
           >
             <X size={24} />
-          </button>
+          </Button>
 
           <div className="text-center">
             <h2 className="text-xl text-white font-semibold mb-2">
@@ -350,6 +555,22 @@ export function KYCVerificationModal({
                 />
               </svg>
             </Button>
+
+            {isInDelayedPhase && (
+              <div className="mt-4 p-3 bg-yellow-900/20 rounded-xl">
+                <p className="text-yellow-400 text-xs">
+                  ⏳ Please complete your verification. We&apos;ll start
+                  monitoring in {countdown} seconds...
+                </p>
+              </div>
+            )}
+            {isPolling && !isInDelayedPhase && (
+              <div className="mt-4 p-3 bg-blue-900/20 rounded-xl">
+                <p className="text-blue-400 text-xs">
+                  🔄 Monitoring verification status in real-time...
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -28,14 +28,16 @@ const StateContextProvider = () => {
     }
   }, [address, clearKycData]);
 
-  // Fetch KYC data only when we have an address
+  const { isCheckingKyc } = useKYCStore();
+
+  // Fetch KYC data only when we have an address and not actively checking KYC
   const getKYCQuery = useQuery({
     queryKey: ["kyc", address], // Add address to query key to refetch on address change
     queryFn: async () => {
       if (!address) return null;
       return await getKYC(address);
     },
-    enabled: !!address,
+    enabled: !!address && !isCheckingKyc, // Disable query when actively checking KYC
     refetchOnWindowFocus: true,
   });
 

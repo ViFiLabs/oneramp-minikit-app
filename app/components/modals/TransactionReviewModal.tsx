@@ -241,6 +241,21 @@ export function TransactionReviewModal() {
   const handleSubmitTransferIn = async () => {
     if (!quote) return;
 
+    // Verify KYC status before proceeding
+    if (kycData && kycData.kycStatus !== "VERIFIED") {
+      console.error("KYC verification required");
+      return;
+    }
+
+    // Additional check for rejected or in-review KYC
+    if (
+      kycData?.kycStatus === "REJECTED" ||
+      kycData?.kycStatus === "IN_REVIEW"
+    ) {
+      console.error("KYC verification is not complete");
+      return;
+    }
+
     if (userPayLoad.paymentMethod === "momo") {
       const { institution, country } = userPayLoad;
       const { fullKYC } = kycData || {};
@@ -278,8 +293,8 @@ export function TransactionReviewModal() {
 
       const userDetails = {
         name: fullName,
-        country: nationality,
-        address: country.countryCode || "",
+        country: country.countryCode || "",
+        address: nationality || country.name || "",
         phone: accountNumber,
         dob: dateOfBirth,
         idNumber: documentNumber,
@@ -371,8 +386,8 @@ export function TransactionReviewModal() {
 
       const userDetails = {
         name: fullName,
-        country: nationality,
-        address: country.countryCode || "",
+        country: country.countryCode || "",
+        address: nationality || country.name || "",
         phone: accountNumber,
         dob: dateOfBirth,
         idNumber: documentNumber,
@@ -410,8 +425,8 @@ export function TransactionReviewModal() {
           quoteId: quote.quoteId,
           userDetails: {
             name: fullName,
-            country: nationality,
-            address: country.countryCode || "",
+            country: country.countryCode || "",
+            address: nationality || country.name || "",
             phone: phoneNumber || accountNumber,
             // phone: MOCK_NIGERIAN_PHONE_NUMBER_SUCCESS,
             dob: dateOfBirth,

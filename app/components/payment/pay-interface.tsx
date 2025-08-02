@@ -498,6 +498,31 @@ export function PaymentInterface() {
       return;
     }
 
+    // Additional check for rejected or in-review KYC
+    if (
+      kycData?.kycStatus === "REJECTED" ||
+      kycData?.kycStatus === "IN_REVIEW"
+    ) {
+      // Reset transaction state immediately
+      updateSelection({
+        appState: AppState.Idle,
+        orderStep: OrderStep.Initial,
+      });
+      billPaymentMutation.reset();
+      setBlockchainLoading(false);
+
+      // Reset swipe button to roll back to initial position
+      setSwipeButtonReset(true);
+      setTimeout(() => setSwipeButtonReset(false), 100);
+
+      setKycTriggered(true);
+      setShowKYCModal(true);
+      toast.error(
+        "KYC verification is not complete. Please wait for verification to finish."
+      );
+      return;
+    }
+
     // If KYC was previously triggered and now completed, proceed with payment
     if (kycTriggered) {
       setKycTriggered(false); // Reset the flag
@@ -1218,13 +1243,31 @@ export function PaymentInterface() {
                 selectedPaymentType === "Paybill") &&
               isLoadingAccountDetails
                 ? "Verifying account details..."
+                : (selectedPaymentType === "Buy Goods" ||
+                    selectedPaymentType === "Paybill") &&
+                  Boolean(debouncedAccountNumber) &&
+                  debouncedAccountNumber!.length >= 5 &&
+                  !accountDetails &&
+                  !isLoadingAccountDetails
+                ? "Account verification failed"
                 : getStepMessage(billPaymentMutation.currentStep)
             }
             disabledMessage={
               // Show specific message when account details are missing
               (selectedPaymentType === "Buy Goods" ||
                 selectedPaymentType === "Paybill") &&
-              !accountDetails
+              isLoadingAccountDetails
+                ? "Verifying account..."
+                : (selectedPaymentType === "Buy Goods" ||
+                    selectedPaymentType === "Paybill") &&
+                  Boolean(debouncedAccountNumber) &&
+                  debouncedAccountNumber!.length >= 5 &&
+                  !accountDetails &&
+                  !isLoadingAccountDetails
+                ? "Account verification failed"
+                : (selectedPaymentType === "Buy Goods" ||
+                    selectedPaymentType === "Paybill") &&
+                  !accountDetails
                 ? "Verify account details"
                 : "Complete Form"
             }
@@ -1240,10 +1283,17 @@ export function PaymentInterface() {
                 requiresInstitutionSelection(country.name) &&
                 !institution) ||
               isProcessing ||
-              // Prevent activation if account details are still fetching or not fetched for Buy Goods/Paybill
+              // Prevent activation if account details are still fetching for Buy Goods/Paybill
               ((selectedPaymentType === "Buy Goods" ||
                 selectedPaymentType === "Paybill") &&
-                (isLoadingAccountDetails || !accountDetails))
+                isLoadingAccountDetails) ||
+              // Prevent activation if account details are required but not fetched for Buy Goods/Paybill
+              ((selectedPaymentType === "Buy Goods" ||
+                selectedPaymentType === "Paybill") &&
+                Boolean(debouncedAccountNumber) &&
+                debouncedAccountNumber!.length >= 5 &&
+                !accountDetails &&
+                !isLoadingAccountDetails)
             }
             reset={swipeButtonReset}
           />
