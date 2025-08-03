@@ -1,6 +1,20 @@
-// Client-side exchange rates data for instant access
-export const exchangeRatesData = {
-  "lastUpdated": "2025-07-29T16:37:22.780Z",
+// Auto-generated file - do not edit manually
+// Generated on: 2025-08-03T18:32:20.936Z
+
+export interface ExchangeRateResponse {
+  exchange: number;
+  fee: number;
+  fiatAmount: number;
+  cryptoAmount: number;
+  fiatType: string;
+  cryptoType: string;
+  country: string;
+  orderType: string;
+  providerType: string;
+}
+
+const EXCHANGE_RATES_DATA = {
+  "lastUpdated": "2025-08-03T18:32:20.933Z",
   "exchangeRates": {
     "NG": {
       "buying": {
@@ -423,18 +437,29 @@ export const exchangeRatesData = {
   }
 };
 
-// Instant client-side exchange rate getter
 export function getExchangeRateClient(
   country: string,
-  orderType: "buying" | "selling" = "selling",
-  providerType: "momo" | "bank" = "momo"
-) {
-  if (!country) return null;
-  
-  const countryRates = exchangeRatesData.exchangeRates[country];
-  if (countryRates && countryRates[orderType] && countryRates[orderType][providerType]) {
-    return countryRates[orderType][providerType];
+  orderType: string,
+  providerType: string
+): ExchangeRateResponse | null {
+  try {
+    const countryRates = EXCHANGE_RATES_DATA.exchangeRates[country];
+    if (!countryRates) return null;
+
+    const orderTypeRates = countryRates[orderType];
+    if (!orderTypeRates) return null;
+
+    const rate = orderTypeRates[providerType];
+    return rate || null;
+  } catch {
+    return null;
   }
-  
-  return null;
+}
+
+export function getAllExchangeRatesClient(): Record<string, Record<string, Record<string, ExchangeRateResponse>>> {
+  return EXCHANGE_RATES_DATA.exchangeRates;
+}
+
+export function getLastUpdated(): string {
+  return EXCHANGE_RATES_DATA.lastUpdated;
 }
