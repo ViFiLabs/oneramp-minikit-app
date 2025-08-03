@@ -74,9 +74,14 @@ export async function updateExchangeRatesCache() {
             };
             const response = await oneRampApi.post("/exchange", payload);
             exchangeRates[country][orderType][providerType] = response.data;
-            console.log(`✅ Fetched exchange rate for ${country}/${orderType}/${providerType}`);
+            console.log(
+              `✅ Fetched exchange rate for ${country}/${orderType}/${providerType}`
+            );
           } catch (error) {
-            console.error(`❌ Failed to fetch exchange rate for ${country}/${orderType}/${providerType}:`, error);
+            console.error(
+              `❌ Failed to fetch exchange rate for ${country}/${orderType}/${providerType}:`,
+              error
+            );
             // Don't fail the entire update if one rate fails
           }
         }
@@ -100,9 +105,12 @@ export async function updateExchangeRatesCache() {
       lastUpdated: data.lastUpdated,
       countries: Object.keys(exchangeRates),
       totalRates: Object.values(exchangeRates).reduce((acc, country) => {
-        return acc + Object.values(country).reduce((sum, orderType) => {
-          return sum + Object.keys(orderType).length;
-        }, 0);
+        return (
+          acc +
+          Object.values(country).reduce((sum, orderType) => {
+            return sum + Object.keys(orderType).length;
+          }, 0)
+        );
       }, 0),
     };
   } catch (error) {
@@ -113,22 +121,20 @@ export async function updateExchangeRatesCache() {
 
 async function generateClientSideData(data: ExchangeRatesData) {
   try {
-    const clientDataPath = path.join(process.cwd(), "lib", "exchange-rates-data.ts");
-    
+    const clientDataPath = path.join(
+      process.cwd(),
+      "lib",
+      "exchange-rates-data.ts"
+    );
+
     const clientDataContent = `// Auto-generated file - do not edit manually
 // Generated on: ${new Date().toISOString()}
 
-export interface ExchangeRateResponse {
-  exchange: number;
-  fee: number;
-  fiatAmount: number;
-  cryptoAmount: number;
-  fiatType: string;
-  cryptoType: string;
-  country: string;
-  orderType: string;
-  providerType: string;
-}
+// Import the correct type from types.ts
+import type { ExchangeRateResponse } from "@/types";
+
+// Re-export for convenience
+export type { ExchangeRateResponse };
 
 const EXCHANGE_RATES_DATA = ${JSON.stringify(data, null, 2)};
 

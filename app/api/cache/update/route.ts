@@ -71,7 +71,10 @@ export async function GET() {
     const fs = await import("fs/promises");
     const path = await import("path");
 
-    const results = {
+    const results: {
+      institutions: any;
+      exchangeRates: any;
+    } = {
       institutions: null,
       exchangeRates: null,
     };

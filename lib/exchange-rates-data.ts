@@ -1,16 +1,20 @@
 // Auto-generated file - do not edit manually
-// Generated on: 2025-08-03T18:32:20.936Z
+// Generated on: 2025-08-03T19:53:14.844Z
 
+// Define a more flexible interface that matches the actual data structure
 export interface ExchangeRateResponse {
-  exchange: number;
-  fee: number;
-  fiatAmount: number;
-  cryptoAmount: number;
-  fiatType: string;
-  cryptoType: string;
   country: string;
-  orderType: string;
-  providerType: string;
+  exchange: number;
+  conversionResponse: {
+    success: boolean;
+    chargeFeeInFiat: number;
+    chargeFeeInUsd: number;
+    exchangeRate: number;
+    fiatAmount: number;
+    gasFeeInFiat: number;
+    cryptoAmount?: number;
+    providerPayoutAmount?: number;
+  };
 }
 
 const EXCHANGE_RATES_DATA = {

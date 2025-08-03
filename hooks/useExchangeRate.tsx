@@ -1,8 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { getCountryExchangeRate } from "@/actions/rates";
 import { getInstitutions } from "@/actions/institutions";
-import { ExchangeRateResponse, Institution } from "@/types";
-import { getExchangeRateClient } from "@/lib/exchange-rates-data";
+import { Institution } from "@/types";
+import {
+  getExchangeRateClient,
+  ExchangeRateResponse,
+} from "@/lib/exchange-rates-data";
 
 interface UseExchangeRateParams {
   countryCode?: string;
