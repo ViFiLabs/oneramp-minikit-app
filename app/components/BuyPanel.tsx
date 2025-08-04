@@ -217,7 +217,13 @@ export function BuyPanel() {
       {country && asset && (
         <>
           {/* Exchange Rate Info */}
-          {country && currentNetwork && <ExchangeRateComponent default />}
+          {country && currentNetwork && (
+            <ExchangeRateComponent 
+              default 
+              orderType="buying" 
+              showAmountConversion={true} 
+            />
+          )}
 
           <SelectInstitution buy />
         </>

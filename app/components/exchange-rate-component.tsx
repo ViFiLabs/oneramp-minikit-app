@@ -1,20 +1,26 @@
 import React, { useMemo } from "react";
 import { useUserSelectionStore } from "@/store/user-selection";
 import { useAllCountryExchangeRates } from "@/hooks/useExchangeRate";
+import { useAmountStore } from "@/store/amount-store";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const ExchangeRateComponent = ({
   default: isDefault,
+  orderType = "selling",
+  showAmountConversion = false,
 }: {
   default?: boolean;
+  orderType?: "buying" | "selling";
+  showAmountConversion?: boolean;
 }) => {
   const { country, asset } = useUserSelectionStore();
+  const { amount } = useAmountStore();
 
   // Get all country exchange rates using optimized hook
   const { data: allExchangeRates, isLoading: isExchangeRateLoading } =
     useAllCountryExchangeRates({
-      orderType: "selling", // Using selling endpoint for better performance
+      orderType, // Use the passed orderType or default to "selling"
       providerType: "momo", // Default provider type
     });
 
@@ -23,6 +29,13 @@ const ExchangeRateComponent = ({
     if (!country?.countryCode || !allExchangeRates) return undefined;
     return allExchangeRates[country.countryCode];
   }, [country?.countryCode, allExchangeRates]);
+
+  // Calculate the equivalent amount in local currency
+  const localCurrencyAmount = useMemo(() => {
+    if (!exchangeRate || !amount) return 0;
+    const numericAmount = parseFloat(amount) || 0;
+    return numericAmount * exchangeRate.exchange;
+  }, [exchangeRate, amount]);
 
   return (
     <div
@@ -40,13 +53,34 @@ const ExchangeRateComponent = ({
           ) : (
             <>
               <span className="text-neutral-400 flex items-center gap-2">
-                1 {asset?.symbol ? asset.symbol : "USD"} ~{" "}
-                {exchangeRate ? (
+                {showAmountConversion && amount && parseFloat(amount) > 0 ? (
+                  // Show current amount conversion: "2 USD = 258.4 KES" (only for buy panel)
                   <>
-                    {exchangeRate.exchange.toLocaleString()} {country.currency}
+                    {amount} {asset?.symbol ? asset.symbol : "USD"} ={" "}
+                    {exchangeRate ? (
+                      <>
+                        {localCurrencyAmount.toLocaleString(undefined, {
+                          minimumFractionDigits: 1,
+                          maximumFractionDigits: 2,
+                        })}{" "}
+                        {country.currency}
+                      </>
+                    ) : (
+                      <>-- {country.currency}</>
+                    )}
                   </>
                 ) : (
-                  <>-- {country.currency}</>
+                  // Standard rate display: "1 USD ~ 129.2 KES" (for all other components)
+                  <>
+                    1 {asset?.symbol ? asset.symbol : "USD"} ~{" "}
+                    {exchangeRate ? (
+                      <>
+                        {exchangeRate.exchange.toLocaleString()} {country.currency}
+                      </>
+                    ) : (
+                      <>-- {country.currency}</>
+                    )}
+                  </>
                 )}
               </span>
               {!isDefault && (
