@@ -961,7 +961,7 @@ export function PaymentInterface() {
             ) {
               return (
                 <div className="grid grid-cols-3 gap-3">
-                  {["Paybill", "Buy Goods", "Send Money"].map((type) => {
+                  {["Send Money", "Paybill", "Buy Goods"].map((type) => {
                     const isSupported = isPaymentTypeSupportedForCountry(type);
                     const isSelected = selectedPaymentType === type;
 
