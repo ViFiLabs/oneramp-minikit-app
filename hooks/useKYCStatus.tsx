@@ -89,10 +89,34 @@ export const useKYCStatus = () => {
     return cleanupPolling;
   }, []);
 
+  // Manual refetch function for immediate status check
+  const refetchKYC = async () => {
+    if (!address) return;
+
+    try {
+      const response = await getKYC(address);
+      if (response) {
+        setKycData(response);
+
+        // If verification is complete, stop polling
+        if (
+          response.kycStatus === "VERIFIED" ||
+          response.kycStatus === "REJECTED" ||
+          response.kycStatus === "IN_REVIEW"
+        ) {
+          cleanupPolling();
+        }
+      }
+    } catch (error) {
+      console.error("Error refetching KYC status:", error);
+    }
+  };
+
   return {
     kycData,
     isPolling,
     isCheckingKyc,
     isInDelayedPhase,
+    refetchKYC,
   };
 };

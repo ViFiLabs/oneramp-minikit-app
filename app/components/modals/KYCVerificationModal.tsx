@@ -23,12 +23,13 @@ export function KYCVerificationModal({
 }: KYCVerificationModalProps) {
   const { setIsCheckingKyc, clearKycData } = useKYCStore();
   const { address } = useWalletGetInfo();
-  const { kycData, isPolling, isInDelayedPhase } = useKYCStatus();
+  const { kycData, isPolling, isInDelayedPhase, refetchKYC } = useKYCStatus();
   const [accepted, setAccepted] = useState(false);
   const [showQR, setShowQR] = useState(false);
   const [fullKycUrl, setFullKycUrl] = useState("");
   const [countdown, setCountdown] = useState(30);
   const countdownRef = useRef<NodeJS.Timeout | null>(null);
+  const { isCheckingKyc } = useKYCStore();
 
   useEffect(() => {
     if (kycData && kycData.kycStatus === "VERIFIED") {
@@ -126,6 +127,174 @@ export function KYCVerificationModal({
 
   if (!open) return null;
 
+  const handleAcceptAndSign = () => {
+    setShowQR(true);
+    setIsCheckingKyc(true);
+    // The useKYCStatus hook will automatically start polling when isCheckingKyc becomes true
+  };
+
+  // Handle KYC rejection
+  const handleKYCRejection = () => {
+    // Reset KYC state and close modal
+    setIsCheckingKyc(false);
+    clearKycData(); // Clear rejected KYC data
+    onClose();
+  };
+
+  // Show initial acceptance screen for new users or when KYC hasn't been started
+  // Only show status screens if user has explicitly started KYC process
+  if (!isCheckingKyc) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1c1c1c]   md:bg-black/60 md:backdrop-blur-lg">
+        <div
+          className="bg-[#1c1c1c]  md:rounded-2xl p-6 max-w-md w-full shadow-2xl
+        /* Mobile: full screen */
+        /* Desktop: centered modal */
+        md:max-w-lg md:mx-4"
+        >
+          <div className="flex items-start gap-4">
+            <div className="p-2 bg-[#232323] rounded-xl">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                className="text-white"
+              >
+                <path
+                  d="M4 4v16a2 2 0 002 2h12a2 2 0 002-2V8.342a2 2 0 00-.602-1.43l-4.44-4.342A2 2 0 0013.56 2H6a2 2 0 00-2 2z"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+
+            <div>
+              <h2 className="text-xl text-white font-semibold mb-1">
+                Verify your identity in just{" "}
+                <span className="text-orange-500">2 minutes</span>
+              </h2>
+            </div>
+          </div>
+
+          <div className="mt-6 bg-[#232323] rounded-xl p-4">
+            <h3 className="text-white font-medium mb-4">
+              Accept terms to get started
+            </h3>
+
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="mt-1">
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    className="text-white"
+                  >
+                    <path
+                      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+                <p className="text-neutral-400 text-sm">
+                  We do not store any personal information. All personal data is
+                  handled exclusively by our third-party KYC provider.
+                </p>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="mt-1">
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    className="text-white"
+                  >
+                    <path
+                      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+                <p className="text-neutral-400 text-sm">
+                  We only store the KYC reference code and signing wallet
+                  address for verification and audit purposes.
+                </p>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="mt-1">
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    className="text-white"
+                  >
+                    <path
+                      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+                <p className="text-neutral-400 text-sm">
+                  We rely on the third-party provider&apos;s rigorous data
+                  protection measures to ensure that your personal information
+                  is secure.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 flex items-start gap-2">
+            <Checkbox
+              id="terms"
+              checked={accepted}
+              onCheckedChange={(checked) => setAccepted(checked as boolean)}
+              className="mt-1 !text-white"
+            />
+            <label htmlFor="terms" className="text-neutral-400 text-sm">
+              By clicking &quot;Accept&quot; below, you are agreeing to the KYC
+              Policy and hereby request an identity verification check for your
+              wallet address.
+            </label>
+          </div>
+
+          <div className="mt-6 flex gap-3">
+            <Button
+              variant="ghost"
+              onClick={onClose}
+              className="flex-1 py-6 !text-neutral-400 hover:text-white hover:bg-neutral-800"
+            >
+              No, thanks
+            </Button>
+            <Button
+              disabled={!accepted}
+              onClick={handleAcceptAndSign}
+              className="flex-1 py-6 !bg-neutral-700 !text-white hover:!bg-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Accept
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Prevent new KYC submission if user has REJECTED or IN_REVIEW status
   if (kycData?.kycStatus === "REJECTED" || kycData?.kycStatus === "IN_REVIEW") {
     return (
@@ -196,25 +365,6 @@ export function KYCVerificationModal({
       </div>
     );
   }
-
-  const handleAcceptAndSign = () => {
-    setShowQR(true);
-    setIsCheckingKyc(true);
-    // The useKYCStatus hook will automatically start polling when isCheckingKyc becomes true
-  };
-
-  // Handle KYC rejection
-  const handleKYCRejection = () => {
-    // Reset KYC state and close modal
-    setIsCheckingKyc(false);
-    clearKycData(); // Clear rejected KYC data
-    onClose();
-  };
-
-  // const fullKycUrl = `${kycLink}&metadata={"address":"${address}"}&redirect=https://mini.oneramp.io`;
-  // const fullKycUrl = `https://signup.metamap.com/?clientId=671a3cf5673134001da20657&flowId=671a3cf5673134001da20656&metadata={"address":"${address}"}&redirect=https://mini.oneramp.io`;
-  // const fullKycUrl = `https://signup.metamap.com/?clientId=671a3cf5673134001da20657&flowId=671a3cf5673134001da20656&metadata={"address":"${address}"}&redirect=https://farcaster.xyz/miniapps/IFyB1NW3qMPb/oneramp`;
-  // https://signup.getmati.com/?merchantToken=your_client_id&flowId=your_flow_id&redirect=redirection_url&target=_blank
 
   // Show KYC status based on current status
   if (kycData?.kycStatus === "REJECTED") {
@@ -355,6 +505,29 @@ export function KYCVerificationModal({
               >
                 Contact Support
               </Button>
+              <Button
+                onClick={() => {
+                  refetchKYC();
+                }}
+                className="w-full py-4 !bg-green-600 !text-white hover:!bg-green-700"
+              >
+                <p className="text-white">Finished KYC</p>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  className="ml-2"
+                >
+                  <path
+                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </Button>
             </div>
 
             <div className="mt-4 text-center">
@@ -446,6 +619,29 @@ export function KYCVerificationModal({
                   />
                   <path
                     d="M10 14L21 3"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </Button>
+              <Button
+                onClick={() => {
+                  refetchKYC();
+                }}
+                className="w-full py-4 !bg-green-600 !text-white hover:!bg-green-700"
+              >
+                <p className="text-white">Finished KYC</p>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  className="ml-2"
+                >
+                  <path
+                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -587,6 +783,30 @@ export function KYCVerificationModal({
                 />
                 <path
                   d="M10 14L21 3"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </Button>
+
+            <Button
+              onClick={() => {
+                refetchKYC();
+              }}
+              className="w-full py-4 !bg-green-600 !text-white hover:!bg-green-700"
+            >
+              <p className="text-white">Finished KYC</p>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                className="ml-2"
+              >
+                <path
+                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
