@@ -299,7 +299,7 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
                 : "Transaction Successful"}
             </h1>
 
-            {/* Amount Display - Show for all states */}
+            {/* Amount Display - Show for all states in full */}
             <div className="text-center">
               {/* Transaction Description - Show for all states */}
               <p className="text-white text-center text-lg font-medium">
