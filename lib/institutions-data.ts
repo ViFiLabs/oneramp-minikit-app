@@ -1247,276 +1247,276 @@ const INSTITUTIONS_DATA = {
           type: "mobile",
           code: "halotel",
         },
-        {
-          code: "TIGOTZPC",
-          name: "Tigo Pesa",
-          type: "mobile_money",
-        },
-        {
-          code: "AIRTTZPC",
-          name: "Airtel Money",
-          type: "mobile_money",
-        },
-        {
-          code: "ACTZTZTZ",
-          name: "Access Bank Tanzania Ltd",
-          type: "bank",
-        },
-        {
-          code: "AKCOTZTZ",
-          name: "Akiba Commercial Bank PLC",
-          type: "bank",
-        },
-        {
-          code: "AMNNTZTZ",
-          name: "Amana Bank Limited",
-          type: "bank",
-        },
-        {
-          code: "AZANTZTZ",
-          name: "Azania bank Limited",
-          type: "bank",
-        },
-        {
-          code: "BNKMTZPC",
-          name: "bank M Tanzania Public Limited Company",
-          type: "bank",
-        },
-        {
-          code: "EUAFTZTZ",
-          name: "Bank of Africa Tanzania Limited",
-          type: "bank",
-        },
-        {
-          code: "BARBTZTZ",
-          name: "Bank of Baroda (Tanzania) Ltd",
-          type: "bank",
-        },
-        {
-          code: "BKIDTZTZ",
-          name: "Bank Of India (Tanzania) Limited",
-          type: "bank",
-        },
-        {
-          code: "TANZTZTX",
-          name: "Bank of Tanzania",
-          type: "bank",
-        },
-        {
-          code: "BARCTZTZ",
-          name: "Barclays Bank (Tanzania) Ltd.",
-          type: "bank",
-        },
-        {
-          code: "CNRBTZTZ",
-          name: "Canara Bank (Tanzania) Limited",
-          type: "bank",
-        },
-        {
-          code: "CHLMTZTZ",
-          name: "China Commercial Bank Limited",
-          type: "bank",
-        },
-        {
-          code: "CITITZTZ",
-          name: "Citibank Tanzania Ltd.",
-          type: "bank",
-        },
-        {
-          code: "CBAFTZTZ",
-          name: "Commercial Bank of Africa (Tanzania) Limited",
-          type: "bank",
-        },
-        {
-          code: "CBFWTZTZ",
-          name: "Covenant Bank For Women (Tanzania) Limited",
-          type: "bank",
-        },
-        {
-          code: "CORUTZTZ",
-          name: "CRDB Bank PLC",
-          type: "bank",
-        },
-        {
-          code: "DASUTZTZ",
-          name: "DCB Commercial Bank Plc",
-          type: "bank",
-        },
-        {
-          code: "DTKETZTZ",
-          name: "Diamond Trust Bank Tanzania Limited",
-          type: "bank",
-        },
-        {
-          code: "ECOCTZTZ",
-          name: "Ecobank Tanzania",
-          type: "bank",
-        },
-        {
-          code: "EQBLTZTZ",
-          name: "Equity Bank Tanzania Limited",
-          type: "bank",
-        },
-        {
-          code: "EXTNTZTZ",
-          name: "Exim Bank (Tanzania) Limited",
-          type: "bank",
-        },
-        {
-          code: "FNMITZTZ",
-          name: "FINCA Microfinance Bank Ltd",
-          type: "bank",
-        },
-        {
-          code: "FHTLTZPC",
-          name: "First Housing Finance Tanzania Limited",
-          type: "bank",
-        },
-        {
-          code: "FIRNTZTX",
-          name: "First National Bank Tanzania Limited",
-          type: "bank",
-        },
-        {
-          code: "GTBITZTZ",
-          name: "Guaranty Trust Bank (Tanzania) Limited",
-          type: "bank",
-        },
-        {
-          code: "HABLTZTZ",
-          name: "Habib African Bank Ltd.",
-          type: "bank",
-        },
-        {
-          code: "HALOTZPC",
-          name: "Halopesa",
-          type: "mobile_money",
-        },
-        {
-          code: "IMBLTZTZ",
-          name: "I and M Bank Tanzania Limited",
-          type: "bank",
-        },
-        {
-          code: "BKMYTZTZ",
-          name: "International Commercial Bank (Tanzania) Ltd",
-          type: "bank",
-        },
-        {
-          code: "KCBLTZTZ",
-          name: "KCB Bank Tanzania Ltd",
-          type: "bank",
-        },
-        {
-          code: "KLMJTZTZ",
-          name: "Kilimanjaro Cooperative Bank Limited",
-          type: "bank",
-        },
-        {
-          code: "ADVBTZTZ",
-          name: "Letshego Bank (T) Limited",
-          type: "bank",
-        },
-        {
-          code: "MBTLTZTZ",
-          name: "Maendeleo Bank Ltd",
-          type: "bank",
-        },
-        {
-          code: "MKCBTZTZ",
-          name: "Mkombozi Commercial Bank Ltd",
-          type: "bank",
-        },
-        {
-          code: "MUOBTZTZ",
-          name: "Mucoba Bank Plc",
-          type: "bank",
-        },
-        {
-          code: "MWCOTZTZ",
-          name: "Mwalimu Commercial Bank Plc",
-          type: "bank",
-        },
-        {
-          code: "MWCBTZTZ",
-          name: "Mwanga Community Bank Ltd",
-          type: "bank",
-        },
-        {
-          code: "NLCBTZTX",
-          name: "National Bank of Commerce Ltd.",
-          type: "bank",
-        },
-        {
-          code: "NMIBTZTZ",
-          name: "National Microfinance Bank Ltd.",
-          type: "bank",
-        },
-        {
-          code: "SFICTZTZ",
-          name: "NIC Bank Tanzania Limited",
-          type: "bank",
-        },
-        {
-          code: "SBICTZTX",
-          name: "Stanbic Bank Tanzania Ltd",
-          type: "bank",
-        },
-        {
-          code: "SCBLTZTX",
-          name: "Standard Chartered Bank Tanzania Ltd.",
-          type: "bank",
-        },
-        {
-          code: "TZADTZTZ",
-          name: "Tanzania Agricultural Development Bank",
-          type: "bank",
-        },
-        {
-          code: "PBZATZTZ",
-          name: "The People's Bank of Zanzibar Ltd.",
-          type: "bank",
-        },
-        {
-          code: "TAINTZTZ",
-          name: "TIB Corporate Bank Limited",
-          type: "bank",
-        },
-        {
-          code: "TIBDTZPC",
-          name: "TIB Development Bank Ltd",
-          type: "bank",
-        },
-        {
-          code: "TAPBTZTZ",
-          name: "TPB Bank Company Ltd",
-          type: "bank",
-        },
-        {
-          code: "TRBATZT1",
-          name: "Trust Bank (Tanzania) Limited",
-          type: "bank",
-        },
-        {
-          code: "UNILTZTZ",
-          name: "UBL Bank (Tanzania) Limited",
-          type: "bank",
-        },
-        {
-          code: "UCCTTZTZ",
-          name: "Uchumi Commercial Bank",
-          type: "bank",
-        },
-        {
-          code: "UNAFTZTZ",
-          name: "United Bank For Africa (Tanzania) Limited",
-          type: "bank",
-        },
-        {
-          code: "YETMTZTZ",
-          name: "Yetu Microfinance Bank PLC",
-          type: "bank",
-        },
+        // {
+        //   code: "TIGOTZPC",
+        //   name: "Tigo Pesa",
+        //   type: "mobile_money",
+        // },
+        // {
+        //   code: "AIRTTZPC",
+        //   name: "Airtel Money",
+        //   type: "mobile_money",
+        // },
+        // {
+        //   code: "ACTZTZTZ",
+        //   name: "Access Bank Tanzania Ltd",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "AKCOTZTZ",
+        //   name: "Akiba Commercial Bank PLC",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "AMNNTZTZ",
+        //   name: "Amana Bank Limited",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "AZANTZTZ",
+        //   name: "Azania bank Limited",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "BNKMTZPC",
+        //   name: "bank M Tanzania Public Limited Company",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "EUAFTZTZ",
+        //   name: "Bank of Africa Tanzania Limited",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "BARBTZTZ",
+        //   name: "Bank of Baroda (Tanzania) Ltd",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "BKIDTZTZ",
+        //   name: "Bank Of India (Tanzania) Limited",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "TANZTZTX",
+        //   name: "Bank of Tanzania",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "BARCTZTZ",
+        //   name: "Barclays Bank (Tanzania) Ltd.",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "CNRBTZTZ",
+        //   name: "Canara Bank (Tanzania) Limited",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "CHLMTZTZ",
+        //   name: "China Commercial Bank Limited",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "CITITZTZ",
+        //   name: "Citibank Tanzania Ltd.",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "CBAFTZTZ",
+        //   name: "Commercial Bank of Africa (Tanzania) Limited",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "CBFWTZTZ",
+        //   name: "Covenant Bank For Women (Tanzania) Limited",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "CORUTZTZ",
+        //   name: "CRDB Bank PLC",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "DASUTZTZ",
+        //   name: "DCB Commercial Bank Plc",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "DTKETZTZ",
+        //   name: "Diamond Trust Bank Tanzania Limited",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "ECOCTZTZ",
+        //   name: "Ecobank Tanzania",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "EQBLTZTZ",
+        //   name: "Equity Bank Tanzania Limited",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "EXTNTZTZ",
+        //   name: "Exim Bank (Tanzania) Limited",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "FNMITZTZ",
+        //   name: "FINCA Microfinance Bank Ltd",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "FHTLTZPC",
+        //   name: "First Housing Finance Tanzania Limited",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "FIRNTZTX",
+        //   name: "First National Bank Tanzania Limited",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "GTBITZTZ",
+        //   name: "Guaranty Trust Bank (Tanzania) Limited",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "HABLTZTZ",
+        //   name: "Habib African Bank Ltd.",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "HALOTZPC",
+        //   name: "Halopesa",
+        //   type: "mobile_money",
+        // },
+        // {
+        //   code: "IMBLTZTZ",
+        //   name: "I and M Bank Tanzania Limited",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "BKMYTZTZ",
+        //   name: "International Commercial Bank (Tanzania) Ltd",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "KCBLTZTZ",
+        //   name: "KCB Bank Tanzania Ltd",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "KLMJTZTZ",
+        //   name: "Kilimanjaro Cooperative Bank Limited",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "ADVBTZTZ",
+        //   name: "Letshego Bank (T) Limited",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "MBTLTZTZ",
+        //   name: "Maendeleo Bank Ltd",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "MKCBTZTZ",
+        //   name: "Mkombozi Commercial Bank Ltd",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "MUOBTZTZ",
+        //   name: "Mucoba Bank Plc",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "MWCOTZTZ",
+        //   name: "Mwalimu Commercial Bank Plc",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "MWCBTZTZ",
+        //   name: "Mwanga Community Bank Ltd",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "NLCBTZTX",
+        //   name: "National Bank of Commerce Ltd.",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "NMIBTZTZ",
+        //   name: "National Microfinance Bank Ltd.",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "SFICTZTZ",
+        //   name: "NIC Bank Tanzania Limited",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "SBICTZTX",
+        //   name: "Stanbic Bank Tanzania Ltd",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "SCBLTZTX",
+        //   name: "Standard Chartered Bank Tanzania Ltd.",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "TZADTZTZ",
+        //   name: "Tanzania Agricultural Development Bank",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "PBZATZTZ",
+        //   name: "The People's Bank of Zanzibar Ltd.",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "TAINTZTZ",
+        //   name: "TIB Corporate Bank Limited",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "TIBDTZPC",
+        //   name: "TIB Development Bank Ltd",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "TAPBTZTZ",
+        //   name: "TPB Bank Company Ltd",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "TRBATZT1",
+        //   name: "Trust Bank (Tanzania) Limited",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "UNILTZTZ",
+        //   name: "UBL Bank (Tanzania) Limited",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "UCCTTZTZ",
+        //   name: "Uchumi Commercial Bank",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "UNAFTZTZ",
+        //   name: "United Bank For Africa (Tanzania) Limited",
+        //   type: "bank",
+        // },
+        // {
+        //   code: "YETMTZTZ",
+        //   name: "Yetu Microfinance Bank PLC",
+        //   type: "bank",
+        // },
       ],
     },
     ZA: {
