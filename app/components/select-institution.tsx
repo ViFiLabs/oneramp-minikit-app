@@ -58,6 +58,7 @@ const SelectInstitution = ({
     userPayLoad.country?.countryCode === "NG" ||
       userPayLoad.country?.countryCode === "ZA"
   );
+  const [isEditingAddress, setIsEditingAddress] = useState(false);
 
   const {
     register,
@@ -71,18 +72,22 @@ const SelectInstitution = ({
     mode: "onBlur",
     defaultValues: {
       accountNumber: "",
-      walletAddress: userPayLoad.pastedAddress || "",
+      walletAddress: userPayLoad.pastedAddress || address || "",
     },
   });
 
   const accountNumber = watch("accountNumber");
+  const walletAddress = watch("walletAddress");
 
   // Update form values when external state changes
   useEffect(() => {
     if (userPayLoad.pastedAddress) {
       setValue("walletAddress", userPayLoad.pastedAddress);
+    } else if (address && !userPayLoad.pastedAddress) {
+      setValue("walletAddress", address);
+      updateSelection({ pastedAddress: address });
     }
-  }, [userPayLoad.pastedAddress, setValue]);
+  }, [userPayLoad.pastedAddress, address, setValue, updateSelection]);
 
   // Save account number to global state when it changes
   useEffect(() => {
@@ -316,6 +321,7 @@ const SelectInstitution = ({
             accountNumber: "",
             walletAddress: "",
           });
+          setIsEditingAddress(false);
 
           return;
         }
@@ -326,6 +332,7 @@ const SelectInstitution = ({
         accountNumber: "",
         walletAddress: "",
       });
+      setIsEditingAddress(false);
     },
     onError: () => {},
   });
@@ -487,6 +494,27 @@ const SelectInstitution = ({
     return false;
   };
 
+  const isValidEVMAddress = (address: string) => {
+    return /^0x[a-fA-F0-9]{40}$/.test(address);
+  };
+
+  const handleEditAddress = () => {
+    setIsEditingAddress(true);
+  };
+
+  const handleSaveAddress = () => {
+    if (walletAddress && isValidEVMAddress(walletAddress)) {
+      setIsEditingAddress(false);
+      updateSelection({ pastedAddress: walletAddress });
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingAddress(false);
+    // Reset to the saved address
+    setValue("walletAddress", userPayLoad.pastedAddress || address || "");
+  };
+
   return (
     <form onSubmit={onSubmit}>
       {(!buy || (buy && !isNigeriaOrSouthAfrican)) && (
@@ -588,11 +616,11 @@ const SelectInstitution = ({
       {/* Address form input */}
       {buy && (
         <>
-          <div className="flex items-center border border-[#444] rounded-full px-9 py-3 my-4">
+          <div className="flex items-center border border-[#444] rounded-full px-6 py-3 my-4">
             <svg
               width="24"
               height="24"
-              className="mr-2 text-neutral-400"
+              className="mr-3 text-neutral-400"
               fill="none"
               viewBox="0 0 24 24"
             >
@@ -604,21 +632,111 @@ const SelectInstitution = ({
                 d="M11 4H4v14a2 2 0 002 2h12a2 2 0 002-2v-5M9 15H4M15 1v6m-3-3h6"
               />
             </svg>
-            <Input
-              type="text"
-              placeholder="Paste your wallet address here..."
-              {...register("walletAddress", {
-                // required: buy ? "Wallet address is required" : false,
-                required: false,
-                pattern: {
-                  value: /^0x[a-fA-F0-9]{40}$|^0x[a-fA-F0-9]{64}$/,
-                  message: "Invalid wallet address format",
-                },
-              })}
-              className={`bg-transparent text-white w-full focus:outline-none p-3 outline-none !border-none ${
-                errors.walletAddress ? "border-red-500" : ""
-              }`}
-            />
+            
+            {!isEditingAddress ? (
+              <>
+                <div className="flex-1 text-white text-sm font-mono truncate pr-2">
+                  {walletAddress ? (
+                    <span title={walletAddress}>
+                      {walletAddress.length > 20 
+                        ? `${walletAddress.slice(0, 10)}...${walletAddress.slice(-8)}`
+                        : walletAddress
+                      }
+                    </span>
+                  ) : (
+                    "No wallet connected"
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={handleEditAddress}
+                  className="ml-3 p-1 text-white hover:text-gray-200 transition-colors flex-shrink-0"
+                  title="Edit address"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                    />
+                  </svg>
+                </button>
+              </>
+            ) : (
+              <>
+                <Input
+                  type="text"
+                  placeholder="Paste your wallet address here..."
+                  {...register("walletAddress", {
+                    required: false,
+                    pattern: {
+                      value: /^0x[a-fA-F0-9]{40}$/,
+                      message: "Invalid EVM address format (must be 42 characters: 0x + 40 hex characters)",
+                    },
+                  })}
+                  className={`bg-transparent text-white flex-1 focus:outline-none p-0 outline-none !border-none text-sm font-mono ${
+                    errors.walletAddress ? "text-red-400" : ""
+                  }`}
+                  autoFocus
+                />
+                <div className="flex ml-2 gap-1 flex-shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleSaveAddress}
+                    className={`p-1 transition-colors ${
+                      walletAddress && isValidEVMAddress(walletAddress)
+                        ? "text-white hover:text-gray-200"
+                        : "text-gray-500 cursor-not-allowed"
+                    }`}
+                    title="Save address"
+                    disabled={!walletAddress || !isValidEVMAddress(walletAddress)}
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCancelEdit}
+                    className="p-1 text-white hover:text-gray-200 transition-colors"
+                    title="Cancel edit"
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </>
+            )}
           </div>
           {errors.walletAddress && (
             <p className="mt-1 text-xs text-red-500">
