@@ -554,11 +554,15 @@ const SelectInstitution = ({
                     },
                   },
                 })}
-                className={`bg-transparent border !border-neutral-600 text-lg text-white font-medium rounded-full h-14 pl-6 w-full focus:outline-none ${
+                className={`bg-transparent border !border-neutral-600 text-lg text-white font-medium rounded-full h-14 pl-6 w-full focus:outline-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-inner-spin-button]:m-0 [&]:appearance-none ${
                   touchedFields.accountNumber && errors.accountNumber
                     ? "border-red-500 focus:border-red-500"
                     : "focus:border-purple-400"
                 }`}
+                style={{
+                  WebkitAppearance: "none",
+                  MozAppearance: "textfield",
+                }}
               />
             </div>
           </div>
