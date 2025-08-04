@@ -229,7 +229,7 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
               {isProcessing ? (
                 // Three bouncing dots with transition effects
                 <div
-                  className={`flex space-x-2 transition-all duration-500 ${
+                  className={`flex justify-center items-center gap-4 transition-all duration-500 ${
                     animationPhase === "transition"
                       ? "opacity-50 scale-90"
                       : "opacity-100 scale-100"
