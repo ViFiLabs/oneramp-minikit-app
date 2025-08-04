@@ -295,8 +295,8 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
                 : isFailed
                 ? "Transaction Failed"
                 : isSuccess
-                ? "Transaction Successfull"
-                : "Transaction Successfull"}
+                ? "Transaction Successful"
+                : "Transaction Successful"}
             </h1>
 
             {/* Amount Display - Show for all states */}
