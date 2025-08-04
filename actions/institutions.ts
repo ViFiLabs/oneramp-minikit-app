@@ -102,8 +102,6 @@ export async function verifyAccountDetails(
 
 export async function updateInstitutionsCache() {
   try {
-    console.log("🔄 Updating institutions cache...");
-
     const countries = ["NG", "KE", "UG", "GHA", "ZM", "TZ", "ZA"];
     const methods = ["buy", "sell"];
     const institutions: Record<string, Record<string, Institution[]>> = {};
@@ -137,7 +135,6 @@ export async function updateInstitutionsCache() {
     };
 
     await fs.writeFile(INSTITUTIONS_FILE_PATH, JSON.stringify(data, null, 2));
-    console.log("✅ Institutions cache updated successfully");
 
     // Generate client-side data file
     await generateClientSideData(data);
@@ -215,9 +212,7 @@ export function getLastUpdated(): string {
 `;
 
     await fs.writeFile(clientDataPath, clientDataContent);
-    console.log("✅ Client-side institutions data generated");
   } catch (error) {
-    console.error("❌ Error generating client-side data:", error);
     throw error;
   }
 }
