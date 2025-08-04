@@ -291,7 +291,7 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
               }`}
             >
               {isProcessing
-                ? "Processing withdrawal..."
+                ? "Processing..."
                 : isFailed
                 ? "Transaction Failed"
                 : isSuccess
