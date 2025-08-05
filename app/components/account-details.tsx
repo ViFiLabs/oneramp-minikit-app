@@ -63,7 +63,7 @@ const AccountDetails = ({ accountNumber }: { accountNumber: string }) => {
       return (
         <div
           className={cn(
-            "absolute right-4  top-1/2 -translate-y-1/2 mt-1 pointer-events-none z-10 flex items-center justify-center ",
+            "absolute right-4  top-1/2 -translate-y-1/2 mt-1 h-1/2 pointer-events-none z-10 flex items-center justify-center ",
             paymentMethod === "bank" && "h-1/2 mt-0 "
           )}
         >
