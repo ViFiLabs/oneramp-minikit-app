@@ -19,7 +19,7 @@ import { Loader } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import AccountDetails from "./account-details";
+import { AccountStatusIndicator, AccountNameDisplay } from "./account-details";
 import SubmitButton from "./buttons/submit-button";
 import { InstitutionModal } from "./modals/InstitutionModal";
 import { KYCVerificationModal } from "./modals/KYCVerificationModal";
@@ -594,9 +594,14 @@ const SelectInstitution = ({
               />
               {/* Status indicator inside input */}
               {accountNumber && isAccountNumberValid() && (
-                <AccountDetails accountNumber={accountNumber} />
+                <AccountStatusIndicator accountNumber={accountNumber} />
               )}
             </div>
+
+            {/* Account name display below input */}
+            {accountNumber && isAccountNumberValid() && (
+              <AccountNameDisplay accountNumber={accountNumber} />
+            )}
           </div>
         </div>
       )}
