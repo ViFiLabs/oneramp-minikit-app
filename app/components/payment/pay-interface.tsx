@@ -153,6 +153,7 @@ export function PaymentInterface() {
         return billTillPayout?.tillNumber;
       case "Paybill":
         return billTillPayout?.billNumber;
+      // Send Money doesn't support account name lookup via API
       default:
         return null;
     }
@@ -185,9 +186,22 @@ export function PaymentInterface() {
     queryFn: async () => {
       if (!debouncedAccountNumber || !selectedPaymentType) return null;
 
+      let accountType: "till" | "paybill";
+
+      switch (selectedPaymentType) {
+        case "Buy Goods":
+          accountType = "till";
+          break;
+        case "Paybill":
+          accountType = "paybill";
+          break;
+        default:
+          return null; // Send Money doesn't support API lookup
+      }
+
       const payload: GetBusinessAccountNameRequest = {
         accountNumber: debouncedAccountNumber,
-        accountType: selectedPaymentType === "Buy Goods" ? "till" : "paybill",
+        accountType: accountType,
       };
 
       const response = await getBusinessAccountName({
@@ -365,6 +379,15 @@ export function PaymentInterface() {
           ? `${country.phoneCode}${phoneNumberWithoutLeadingZero}`
           : phoneNumber;
 
+        // return {
+        //   requestType: "payout" as const,
+        //   accountName:
+        //     billTillPayout?.accountName || // Use manually entered account name
+        //     institution?.name?.toLowerCase() ||
+        //     "mtn", // Fallback to institution name, then default
+        //   accountNumber: fullPhoneNumber,
+        //   businessNumber: undefined,
+        // };
         return {
           requestType: "payout" as const,
           accountName: institution?.name?.toLowerCase() || "mtn", // Use selected institution name
@@ -857,8 +880,27 @@ export function PaymentInterface() {
                   onChange={(e) =>
                     updateBillTillPayout({ phoneNumber: e.target.value })
                   }
-                  className="!bg-neutral-800 !border-neutral-600 text-sm sm:text-base text-white h-12 rounded-lg px-4 pr-12"
+                  className="!bg-neutral-800 !border-neutral-600 text-sm sm:text-base text-white h-12 rounded-lg px-4"
                   placeholder=" 0700 000 000"
+                  disabled={isProcessing}
+                />
+              </div>
+            </div>
+
+            {/* Account Name Input for Send Money */}
+            <div className="space-y-3">
+              <div className="text-gray-400 text-sm sm:text-base">
+                <h3>Enter Account Name</h3>
+              </div>
+              <div className="relative">
+                <Input
+                  value={billTillPayout?.accountName || ""}
+                  type="text"
+                  onChange={(e) =>
+                    updateBillTillPayout({ accountName: e.target.value })
+                  }
+                  className="!bg-neutral-800 !border-neutral-600 text-sm sm:text-base text-white h-12 rounded-lg px-4"
+                  placeholder="Enter account holder name"
                   disabled={isProcessing}
                 />
               </div>

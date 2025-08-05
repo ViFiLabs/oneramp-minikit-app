@@ -125,6 +125,7 @@ export interface UserBillTillPayout {
   billNumber?: string;
   accountNumber?: string;
   phoneNumber?: string;
+  accountName?: string;
 }
 
 export interface MINMAX {
@@ -416,7 +417,7 @@ export interface BillTillRequest {
 
 export interface GetBusinessAccountNameRequest {
   accountNumber: string;
-  accountType: "paybill" | "till";
+  accountType: "paybill" | "till" | "phone";
 }
 
 // {
