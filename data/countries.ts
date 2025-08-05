@@ -252,7 +252,7 @@ export const countries: Country[] = [
     phoneCode: "+256",
     exchangeRate: 3_804.44,
     institutions: [],
-    fiatMinMax: { min: 1_500.44, max: 4_556_194 },
+    fiatMinMax: { min: 2_500, max: 4_556_194 },
     cryptoMinMax: { min: 1, max: 2_500 },
     accountNumberLength: {
       bankLength: 10,
