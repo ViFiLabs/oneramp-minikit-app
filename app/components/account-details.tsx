@@ -61,7 +61,12 @@ const AccountDetails = ({ accountNumber }: { accountNumber: string }) => {
   const getStatusIndicator = () => {
     if (isLoading && kycData && !kycData?.message?.link) {
       return (
-        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none z-10 h-1/2">
+        <div
+          className={cn(
+            "absolute right-4  top-1/2 -translate-y-1/2 mt-1 pointer-events-none z-10 flex items-center justify-center ",
+            paymentMethod === "bank" && "h-1/2 mt-0 "
+          )}
+        >
           <Loader className="size-4 animate-spin text-neutral-400 flex items-center justify-center" />
         </div>
       );
