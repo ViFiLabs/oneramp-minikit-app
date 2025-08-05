@@ -552,7 +552,7 @@ const SelectInstitution = ({
             </Button>
 
             {/* Account Number */}
-            <div className="flex-1 h-full w-full">
+            <div className="flex-1 h-full w-full relative">
               <Input
                 type="number"
                 placeholder="Account number"
@@ -582,7 +582,7 @@ const SelectInstitution = ({
                     },
                   },
                 })}
-                className={`bg-transparent border !border-neutral-600 text-lg text-white font-medium rounded-full h-14 pl-6 w-full focus:outline-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-inner-spin-button]:m-0 [&]:appearance-none ${
+                className={`bg-transparent border !border-neutral-600 text-lg text-white font-medium rounded-full h-14 pl-6 pr-12 w-full focus:outline-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-inner-spin-button]:m-0 [&]:appearance-none ${
                   touchedFields.accountNumber && errors.accountNumber
                     ? "border-red-500 focus:border-red-500"
                     : "focus:border-purple-400"
@@ -592,13 +592,12 @@ const SelectInstitution = ({
                   MozAppearance: "textfield",
                 }}
               />
+              {/* Status indicator inside input */}
+              {accountNumber && isAccountNumberValid() && (
+                <AccountDetails accountNumber={accountNumber} />
+              )}
             </div>
           </div>
-
-          {/* Show account details only when account number is entered */}
-          {accountNumber && isAccountNumberValid() && (
-            <AccountDetails accountNumber={accountNumber} />
-          )}
         </div>
       )}
 
@@ -632,16 +631,18 @@ const SelectInstitution = ({
                 d="M11 4H4v14a2 2 0 002 2h12a2 2 0 002-2v-5M9 15H4M15 1v6m-3-3h6"
               />
             </svg>
-            
+
             {!isEditingAddress ? (
               <>
                 <div className="flex-1 text-white text-sm font-mono truncate pr-2">
                   {walletAddress ? (
                     <span title={walletAddress}>
-                      {walletAddress.length > 20 
-                        ? `${walletAddress.slice(0, 10)}...${walletAddress.slice(-8)}`
-                        : walletAddress
-                      }
+                      {walletAddress.length > 20
+                        ? `${walletAddress.slice(
+                            0,
+                            10
+                          )}...${walletAddress.slice(-8)}`
+                        : walletAddress}
                     </span>
                   ) : (
                     "No wallet connected"
@@ -678,7 +679,8 @@ const SelectInstitution = ({
                     required: false,
                     pattern: {
                       value: /^0x[a-fA-F0-9]{40}$/,
-                      message: "Invalid EVM address format (must be 42 characters: 0x + 40 hex characters)",
+                      message:
+                        "Invalid EVM address format (must be 42 characters: 0x + 40 hex characters)",
                     },
                   })}
                   className={`bg-transparent text-white flex-1 focus:outline-none p-0 outline-none !border-none text-sm font-mono ${
@@ -696,7 +698,9 @@ const SelectInstitution = ({
                         : "text-gray-500 cursor-not-allowed"
                     }`}
                     title="Save address"
-                    disabled={!walletAddress || !isValidEVMAddress(walletAddress)}
+                    disabled={
+                      !walletAddress || !isValidEVMAddress(walletAddress)
+                    }
                   >
                     <svg
                       width="16"
