@@ -390,7 +390,11 @@ export function PaymentInterface() {
         // };
         return {
           requestType: "payout" as const,
-          accountName: institution?.name?.toLowerCase() || "mtn", // Use selected institution name
+          // accountName: institution?.name?.toLowerCase() || "mtn", // Use selected institution name
+          accountName:
+            billTillPayout?.accountName || // Use manually entered account name
+            institution?.name?.toLowerCase() ||
+            "mtn", // Fallback to institution name, then default
           accountNumber: fullPhoneNumber,
           businessNumber: undefined,
         };
