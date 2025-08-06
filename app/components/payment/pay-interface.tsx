@@ -768,6 +768,10 @@ export function PaymentInterface() {
                 className="!bg-neutral-800 !border-neutral-600 text-base text-white h-12 rounded-lg px-4 pr-12"
                 placeholder="Enter till number"
                 disabled={isProcessing}
+                style={{
+                  WebkitAppearance: "none",
+                  MozAppearance: "textfield",
+                }}
               />
               {isLoadingAccountDetails &&
                 debouncedAccountNumber === billTillPayout?.tillNumber && (
@@ -803,6 +807,10 @@ export function PaymentInterface() {
                   className="!bg-neutral-800 !border-neutral-600 text-sm sm:text-base text-white h-12 rounded-lg px-4 pr-12"
                   placeholder="Enter paybill number"
                   disabled={isProcessing}
+                  style={{
+                    WebkitAppearance: "none",
+                    MozAppearance: "textfield",
+                  }}
                 />
                 {isLoadingAccountDetails &&
                   debouncedAccountNumber === billTillPayout?.billNumber && (
@@ -834,6 +842,10 @@ export function PaymentInterface() {
                   className="!bg-neutral-800 !border-neutral-600 text-sm sm:text-base text-white h-12 rounded-lg px-4 pr-12"
                   placeholder="Enter account number"
                   disabled={isProcessing}
+                  style={{
+                    WebkitAppearance: "none",
+                    MozAppearance: "textfield",
+                  }}
                 />
               </div>
             </div>
@@ -887,6 +899,10 @@ export function PaymentInterface() {
                   className="!bg-neutral-800 !border-neutral-600 text-sm sm:text-base text-white h-12 rounded-lg px-4"
                   placeholder=" 0700 000 000"
                   disabled={isProcessing}
+                  style={{
+                    WebkitAppearance: "none",
+                    MozAppearance: "textfield",
+                  }}
                 />
               </div>
             </div>
@@ -1086,6 +1102,10 @@ export function PaymentInterface() {
                 className="text-right bg-transparent !font-extrabold border-none text-2xl sm:text-3xl text-white p-0 h-auto"
                 placeholder="0"
                 disabled={isProcessing}
+                style={{
+                  WebkitAppearance: "none",
+                  MozAppearance: "textfield",
+                }}
               />
             </div>
             <div className="h-px bg-gray-700"></div>
