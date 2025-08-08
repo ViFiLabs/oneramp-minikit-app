@@ -742,3 +742,5 @@ export function SwapPanel() {
     </div>
   );
 }
+
+// Swipe to buy button
