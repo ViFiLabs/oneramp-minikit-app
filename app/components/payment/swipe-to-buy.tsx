@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { ChevronRight, Loader2, ShoppingCart, Check } from "lucide-react";
+import { ChevronRight, Loader2, Check, CreditCard } from "lucide-react";
 
 interface SwipeToBuyButtonProps {
   onBuyComplete: () => void;
@@ -47,8 +47,8 @@ export function SwipeToBuyButton({
     }
     return (
       <div className="flex items-center gap-2 text-sm">
-        <ShoppingCart className="w-5 h-5" />
-        <span>Swipe to Buy</span>
+        <CreditCard className="w-5 h-5" />
+        <span>Swipe to Deposit</span>
       </div>
     );
   };

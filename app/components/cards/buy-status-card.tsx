@@ -288,6 +288,13 @@ const BuyStatusCard: React.FC<BuyStatusCardProps> = ({
                 </Button>
               </div>
             )}
+
+            <Button
+              onClick={handleClose}
+              className="w-full text-white text-lg font-semibold h-14 rounded-full transition-all duration-300"
+            >
+              Back
+            </Button>
           </div>
         </div>
       </div>
