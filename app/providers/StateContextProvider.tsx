@@ -6,6 +6,7 @@ import OrderProcessing from "../components/cards/order-processing";
 import OrderSuccessful from "../components/cards/order-successful";
 import PayOrderProcessing from "../components/cards/pay-order-processing";
 import WithdrawalUnified from "../components/cards/withdrawal-unified";
+import BuyUnified from "@/app/components/cards/buy-unified";
 import { TransactionReviewModal } from "../components/modals/TransactionReviewModal";
 import { useQuery } from "@tanstack/react-query";
 import useWalletGetInfo from "@/hooks/useWalletGetInfo";
@@ -62,6 +63,10 @@ const StateContextProvider = () => {
     if (quote?.transferType === TransferType.TransferOut) {
       return <WithdrawalUnified />;
     }
+    // For buy transactions, use our unified component that handles all states
+    if (quote?.transferType === TransferType.TransferIn) {
+      return <BuyUnified />;
+    }
     return <PayOrderProcessing />;
   }
 
@@ -69,6 +74,10 @@ const StateContextProvider = () => {
     // For withdrawals, continue using our unified component for status polling
     if (quote?.transferType === TransferType.TransferOut) {
       return <WithdrawalUnified />;
+    }
+    // For buy transactions, continue using our unified component for status polling
+    if (quote?.transferType === TransferType.TransferIn) {
+      return <BuyUnified />;
     }
     return <OrderProcessing />;
   }
@@ -78,6 +87,10 @@ const StateContextProvider = () => {
     if (quote?.transferType === TransferType.TransferOut) {
       return <WithdrawalUnified />;
     }
+    // Use unified buy component for TransferIn transactions
+    if (quote?.transferType === TransferType.TransferIn) {
+      return <BuyUnified />;
+    }
     return <OrderSuccessful />;
   }
 
@@ -85,6 +98,10 @@ const StateContextProvider = () => {
     // Use unified withdrawal component for TransferOut transactions
     if (quote?.transferType === TransferType.TransferOut) {
       return <WithdrawalUnified />;
+    }
+    // Use unified buy component for TransferIn transactions
+    if (quote?.transferType === TransferType.TransferIn) {
+      return <BuyUnified />;
     }
     return <OrderFailed />;
   }
