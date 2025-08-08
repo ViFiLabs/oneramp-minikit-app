@@ -186,7 +186,7 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
       <div className="fixed inset-0 z-50 flex items-end justify-center p-0">
         <div
           ref={modalRef}
-          className={`bg-gray-900 rounded-t-3xl w-full h-[60vh] overflow-hidden transition-all duration-300 ease-out shadow-2xl ${
+          className={`bg-gray-900 rounded-t-3xl w-full h-[70vh] overflow-hidden transition-all duration-300 ease-out shadow-2xl ${
             isVisible ? "translate-y-0" : "translate-y-full"
           }`}
           style={{
