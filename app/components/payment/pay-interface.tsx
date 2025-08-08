@@ -396,7 +396,7 @@ export function PaymentInterface() {
             institution?.name?.toLowerCase() ||
             "mtn", // Fallback to institution name, then default
           accountNumber: fullPhoneNumber,
-          businessNumber: undefined,
+          businessNumber: institution?.name?.toLowerCase() || "mtn",
         };
       default:
         return null;
@@ -557,6 +557,10 @@ export function PaymentInterface() {
 
     // Validate payment-specific details
     const transferDetails = getTransferDetails();
+
+    console.log("====================================");
+    console.log("transferDetails", transferDetails);
+    console.log("====================================");
 
     if (!transferDetails) {
       return;
