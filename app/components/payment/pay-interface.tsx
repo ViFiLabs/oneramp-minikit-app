@@ -558,10 +558,6 @@ export function PaymentInterface() {
     // Validate payment-specific details
     const transferDetails = getTransferDetails();
 
-    console.log("====================================");
-    console.log("transferDetails", transferDetails);
-    console.log("====================================");
-
     if (!transferDetails) {
       return;
     }
