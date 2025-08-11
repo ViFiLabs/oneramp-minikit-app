@@ -58,7 +58,10 @@ const StateContextProvider = () => {
     return <TransactionReviewModal />;
   }
 
-  if (orderStep === OrderStep.ProcessingPayment) {
+  if (
+    orderStep === OrderStep.ProcessingPayment ||
+    orderStep === OrderStep.WaitingForPayment
+  ) {
     // For withdrawals, use our unified component that handles all states
     if (quote?.transferType === TransferType.TransferOut) {
       return <WithdrawalUnified />;

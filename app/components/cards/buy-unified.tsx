@@ -12,7 +12,7 @@ import BuyStatusCard from "@/app/components/cards/buy-status-card";
 
 const BuyUnified = () => {
   const { resetToDefault, orderStep } = useUserSelectionStore();
-  const { transfer, resetTransfer } = useTransferStore();
+  const { transfer, resetTransfer, setTransfer } = useTransferStore();
   const { quote, resetQuote } = useQuoteStore();
   const router = useRouter();
 
@@ -35,33 +35,48 @@ const BuyUnified = () => {
     enabled:
       !!transfer?.transferId &&
       (orderStep === OrderStep.ProcessingPayment ||
-        orderStep === OrderStep.GotTransfer),
+        orderStep === OrderStep.GotTransfer ||
+        orderStep === OrderStep.WaitingForPayment),
     refetchInterval: 3000,
   });
 
   useEffect(() => {
-    if (
-      transferStatus?.status === TransferStatusEnum.TransferComplete &&
-      !isLoading
-    ) {
-      setAnimationPhase("transition");
-      setTimeout(() => {
-        setCurrentState("success");
-        setAnimationPhase("final");
-      }, 500);
-    }
+    if (!isLoading && transferStatus?.status) {
+      // Keep the latest polled transfer fields in store so UI has fresh details
+      try {
+        setTransfer({
+          transferId: transfer?.transferId || "",
+          transferStatus: transferStatus.status,
+          transferAddress: transferStatus.transferAddress,
+          userActionDetails: transferStatus.userActionDetails,
+        });
+      } catch {}
 
-    if (
-      transferStatus?.status === TransferStatusEnum.TransferFailed &&
-      !isLoading
-    ) {
-      setAnimationPhase("transition");
-      setTimeout(() => {
-        setCurrentState("failed");
-        setAnimationPhase("final");
-      }, 500);
+      if (transferStatus.status === TransferStatusEnum.TransferComplete) {
+        setAnimationPhase("transition");
+        setTimeout(() => {
+          setCurrentState("success");
+          setAnimationPhase("final");
+        }, 500);
+      }
+      // Mark as failed when backend reports TransferFailed
+      if (transferStatus.status === TransferStatusEnum.TransferFailed) {
+        setAnimationPhase("transition");
+        setTimeout(() => {
+          setCurrentState("failed");
+          setAnimationPhase("final");
+        }, 500);
+      }
     }
-  }, [transferStatus?.status, isLoading]);
+  }, [
+    transferStatus?.status,
+    transferStatus?.transferAddress,
+    transferStatus?.userActionDetails,
+    isLoading,
+    quote?.country,
+    setTransfer,
+    transfer?.transferId,
+  ]);
 
   useEffect(() => {
     if (orderStep === OrderStep.PaymentFailed) {
@@ -115,6 +130,14 @@ const BuyUnified = () => {
       isSuccess={isSuccess}
       onDone={isFailed ? handleTryAgain : handleDone}
       animationPhase={animationPhase}
+      onConfirmPaid={() => {
+        // For Nigeria manual bank payment, let user declare they've paid
+        // Advance to WaitingForPayment so polling continues while UI updates
+        useUserSelectionStore.getState().updateSelection({
+          orderStep: OrderStep.WaitingForPayment,
+        });
+        // Keep the modal open: do not reset quote/transfer here
+      }}
     />
   );
 };

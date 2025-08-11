@@ -71,7 +71,7 @@ export function BuyPanel() {
 
   // Countries disabled for BuyPanel testing
   const DISABLED_COUNTRIES_FOR_BUY = useMemo(
-    () => ["Nigeria", "Zambia", "South Africa"],
+    () => ["Zambia", "South Africa"],
     []
   );
 
@@ -362,7 +362,7 @@ export function BuyPanel() {
         </div>
       </div>
 
-      {/* Recipient Details - Only show when both country and token are selected */}
+      {/* Recipient Details - Exchange rate + swipe shown when both country and token are selected */}
       {country && asset && (
         <>
           {/* Exchange Rate Info */}
@@ -373,20 +373,24 @@ export function BuyPanel() {
               showAmountConversion={true}
             />
           )}
-
-          <SelectInstitution buy disableSubmit={true} />
-
-          <div className="mt-4">
-            <SwipeToBuyButton
-              onBuyComplete={() => createBuyFlow.mutate()}
-              isLoading={createBuyFlow.isPending}
-              disabled={isBuyDisabled}
-              stepMessage={
-                createBuyFlow.isPending ? "Setting up purchase..." : undefined
-              }
-            />
-          </div>
         </>
+      )}
+
+      {/* Always allow selecting institution once a country is chosen */}
+      {country && <SelectInstitution buy disableSubmit={true} />}
+
+      {/* Show swipe button as soon as a country is picked; stays disabled until all requirements are met */}
+      {country && (
+        <div className="mt-4">
+          <SwipeToBuyButton
+            onBuyComplete={() => createBuyFlow.mutate()}
+            isLoading={createBuyFlow.isPending}
+            disabled={isBuyDisabled}
+            stepMessage={
+              createBuyFlow.isPending ? "Setting up purchase..." : undefined
+            }
+          />
+        </div>
       )}
 
       {!country && !asset && (

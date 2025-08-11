@@ -15,22 +15,26 @@ interface BuyStatusCardProps {
   onDone: () => void;
   onClose?: () => void;
   animationPhase?: "initial" | "transition" | "final";
+  onConfirmPaid?: () => void;
 }
 
 const BuyStatusCard: React.FC<BuyStatusCardProps> = ({
   quote,
+  transfer,
   isProcessing,
   isFailed = false,
   isSuccess = false,
   onDone,
   onClose,
   animationPhase = "initial",
+  onConfirmPaid,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [dragStartY, setDragStartY] = useState(0);
   const [dragCurrentY, setDragCurrentY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
+  const [hasConfirmedPaid, setHasConfirmedPaid] = useState(false);
 
   useEffect(() => {
     setIsVisible(true);
@@ -94,9 +98,12 @@ const BuyStatusCard: React.FC<BuyStatusCardProps> = ({
   const isPaySupportedCountry = PAY_SUPPORTED_COUNTRIES.some(
     (c) => c.countryCode === quote.country
   );
-  const totalAmount = isPaySupportedCountry
-    ? Number(quote.fiatAmount)
-    : Number(quote.fiatAmount) + Number(quote.feeInFiat);
+  const totalAmount =
+    quote.country === "NG"
+      ? Number(quote.fiatAmount)
+      : isPaySupportedCountry
+      ? Number(quote.fiatAmount)
+      : Number(quote.fiatAmount) + Number(quote.feeInFiat);
 
   const cryptoAmount = Number(quote.cryptoAmount);
   const fiatAmount = totalAmount;
@@ -139,6 +146,81 @@ const BuyStatusCard: React.FC<BuyStatusCardProps> = ({
     setDragStartY(e.clientY);
     setDragCurrentY(e.clientY);
     setIsDragging(true);
+  };
+
+  const showNigeriaInstructions =
+    quote.country === "NG" &&
+    transfer?.userActionDetails?.userActionType === "AccountNumberUserAction" &&
+    !hasConfirmedPaid;
+
+  const NigeriaInstructions = () => {
+    if (!transfer) return null;
+    const {
+      accountName,
+      accountNumber,
+      // transactionReference,
+      institutionName,
+    } = transfer.userActionDetails || {
+      accountName: "",
+      accountNumber: "",
+      transactionReference: "",
+      institutionName: "",
+    };
+    return (
+      <div className="w-full  border !border-neutral-800 rounded-2xl p-4 text-white space-y-3">
+        <div className="text-left">
+          <p className="text-sm text-neutral-400">Make a bank transfer to</p>
+          <p className="text-base font-semibold">
+            {institutionName || accountName}
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <CopyRow label="Account Name" value={accountName} />
+          <CopyRow label="Account Number" value={accountNumber} />
+          <CopyRow label="Amount" value={fiatAmount.toFixed(0)} />
+          {/* <CopyRow label="Reference" value={transactionReference} /> */}
+        </div>
+        {/* <p className="text-xs text-amber-400 my-4">
+          Use the exact reference when making the transfer so we can match your
+          payment.
+        </p> */}
+        <Button
+          className="w-full !text-white  text-sm h-12 font-semibold my-4 rounded-lg "
+          style={{
+            background: "linear-gradient(135deg, #7B68EE, #6A5ACD)",
+          }}
+          onClick={() => {
+            setHasConfirmedPaid(true);
+            if (onConfirmPaid) {
+              onConfirmPaid();
+            }
+          }}
+        >
+          I have made the transfer
+        </Button>
+      </div>
+    );
+  };
+
+  const CopyRow = ({ label, value }: { label: string; value?: string }) => {
+    const onCopy = () => {
+      if (value) navigator.clipboard.writeText(value);
+    };
+    return (
+      <div className="flex items-center justify-between bg-[#181818] rounded-xl px-3 py-2 border !border-[#2a2a2a]">
+        <div>
+          <p className="text-xs text-neutral-400">{label}</p>
+          <p className="text-sm font-medium">{value || "-"}</p>
+        </div>
+        <button
+          type="button"
+          onClick={onCopy}
+          className="text-xs text-blue-400 hover:text-blue-300"
+        >
+          Copy
+        </button>
+      </div>
+    );
   };
 
   return (
@@ -248,7 +330,9 @@ const BuyStatusCard: React.FC<BuyStatusCardProps> = ({
               }`}
             >
               {isProcessing
-                ? "Processing..."
+                ? showNigeriaInstructions
+                  ? "Awaiting your transfer"
+                  : "Processing..."
                 : isFailed
                 ? "Transaction Failed"
                 : isSuccess
@@ -258,13 +342,17 @@ const BuyStatusCard: React.FC<BuyStatusCardProps> = ({
 
             <div className="text-center">
               <p className="text-white text-center text-lg font-medium">
-                {`${cryptoAmount.toFixed(1)} ${
-                  quote.cryptoType
-                } for ${fiatAmount.toFixed(0)} ${quote.fiatType} on ${
+                {`${cryptoAmount.toFixed(1)} ${quote.cryptoType} for ${
+                  quote.country === "NG"
+                    ? fiatAmount.toFixed(0)
+                    : fiatAmount.toFixed(0)
+                } ${quote.fiatType} on ${
                   quote.network.charAt(0).toUpperCase() + quote.network.slice(1)
                 }`}
               </p>
             </div>
+
+            {showNigeriaInstructions && <NigeriaInstructions />}
 
             {!isProcessing && (
               <div
@@ -289,12 +377,12 @@ const BuyStatusCard: React.FC<BuyStatusCardProps> = ({
               </div>
             )}
 
-            <Button
+            {/* <Button
               onClick={handleClose}
               className="w-full text-white text-lg font-semibold h-14 rounded-full transition-all duration-300"
             >
               Back
-            </Button>
+            </Button> */}
           </div>
         </div>
       </div>

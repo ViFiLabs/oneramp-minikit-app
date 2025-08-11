@@ -11,16 +11,21 @@ import { useEffect, useRef, useState } from "react";
 import WithdrawalStatusCard from "./withdrawal-status-card";
 
 const WithdrawalUnified = () => {
-  const { resetToDefault, updateSelection, orderStep } = useUserSelectionStore();
+  const { resetToDefault, updateSelection, orderStep } =
+    useUserSelectionStore();
   const { transfer, resetTransfer, transactionHash } = useTransferStore();
   const { quote, resetQuote } = useQuoteStore();
   const router = useRouter();
   const hashSubmittedRef = useRef(false);
   const transactionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
+
   // Local state for managing animation states
-  const [currentState, setCurrentState] = useState<'processing' | 'success' | 'failed'>('processing');
-  const [animationPhase, setAnimationPhase] = useState<'initial' | 'transition' | 'final'>('initial');
+  const [currentState, setCurrentState] = useState<
+    "processing" | "success" | "failed"
+  >("processing");
+  const [animationPhase, setAnimationPhase] = useState<
+    "initial" | "transition" | "final"
+  >("initial");
 
   // Debug logs
   useEffect(() => {
@@ -59,17 +64,23 @@ const WithdrawalUnified = () => {
 
   // Add timeout for transaction signing - if user doesn't sign within 2 minutes, show failure
   useEffect(() => {
-    if (orderStep === OrderStep.ProcessingPayment && !transactionHash && transfer?.transferId) {
+    if (
+      orderStep === OrderStep.ProcessingPayment &&
+      !transactionHash &&
+      transfer?.transferId
+    ) {
       console.log("Starting transaction timeout timer...");
-      
+
       // Set timeout for 2 minutes (120 seconds)
       transactionTimeoutRef.current = setTimeout(() => {
-        console.log("Transaction timeout - user likely didn't sign the transaction");
+        console.log(
+          "Transaction timeout - user likely didn't sign the transaction"
+        );
         // Animate to failed state
-        setAnimationPhase('transition');
+        setAnimationPhase("transition");
         setTimeout(() => {
-          setCurrentState('failed');
-          setAnimationPhase('final');
+          setCurrentState("failed");
+          setAnimationPhase("final");
         }, 500);
       }, 120000); // 2 minutes
 
@@ -95,10 +106,10 @@ const WithdrawalUnified = () => {
     onError: (error) => {
       console.error("Error submitting withdrawal transaction hash:", error);
       // Animate to failed state
-      setAnimationPhase('transition');
+      setAnimationPhase("transition");
       setTimeout(() => {
-        setCurrentState('failed');
-        setAnimationPhase('final');
+        setCurrentState("failed");
+        setAnimationPhase("final");
       }, 500);
     },
   });
@@ -116,10 +127,14 @@ const WithdrawalUnified = () => {
         transferId: transfer.transferId,
         txHash: transactionHash,
       });
-      
+
       // Wait 2 seconds before submitting
       const timer = setTimeout(() => {
-        if (!hashSubmittedRef.current && transfer?.transferId && transactionHash) {
+        if (
+          !hashSubmittedRef.current &&
+          transfer?.transferId &&
+          transactionHash
+        ) {
           submitTxHashMutation.mutate({
             transferId: transfer.transferId,
             txHash: transactionHash,
@@ -129,7 +144,12 @@ const WithdrawalUnified = () => {
 
       return () => clearTimeout(timer);
     }
-  }, [orderStep, transfer?.transferId, transactionHash, submitTxHashMutation.isPending]);
+  }, [
+    orderStep,
+    transfer?.transferId,
+    transactionHash,
+    submitTxHashMutation.isPending,
+  ]);
 
   // Monitor transfer status - only start polling after hash submission OR if we're already in GotTransfer step
   const { data: transferStatus, isLoading } = useQuery({
@@ -140,27 +160,35 @@ const WithdrawalUnified = () => {
       }
       return getTransferStatus(transfer.transferId);
     },
-    enabled: !!transfer?.transferId && (submitTxHashMutation.isSuccess || orderStep === OrderStep.GotTransfer),
+    enabled:
+      !!transfer?.transferId &&
+      (submitTxHashMutation.isSuccess || orderStep === OrderStep.GotTransfer),
     refetchInterval: 3000, // Poll every 3 seconds
   });
 
   // Handle transfer status changes with animations
   useEffect(() => {
-    if (transferStatus?.status === TransferStatusEnum.TransferComplete && !isLoading) {
+    if (
+      transferStatus?.status === TransferStatusEnum.TransferComplete &&
+      !isLoading
+    ) {
       // Animate to success state
-      setAnimationPhase('transition');
+      setAnimationPhase("transition");
       setTimeout(() => {
-        setCurrentState('success');
-        setAnimationPhase('final');
+        setCurrentState("success");
+        setAnimationPhase("final");
       }, 500);
     }
 
-    if (transferStatus?.status === TransferStatusEnum.TransferFailed && !isLoading) {
+    if (
+      transferStatus?.status === TransferStatusEnum.TransferFailed &&
+      !isLoading
+    ) {
       // Animate to failed state
-      setAnimationPhase('transition');
+      setAnimationPhase("transition");
       setTimeout(() => {
-        setCurrentState('failed');
-        setAnimationPhase('final');
+        setCurrentState("failed");
+        setAnimationPhase("final");
       }, 500);
     }
   }, [transferStatus?.status, isLoading]);
@@ -175,10 +203,10 @@ const WithdrawalUnified = () => {
         transactionTimeoutRef.current = null;
       }
       // Animate to failed state
-      setAnimationPhase('transition');
+      setAnimationPhase("transition");
       setTimeout(() => {
-        setCurrentState('failed');
-        setAnimationPhase('final');
+        setCurrentState("failed");
+        setAnimationPhase("final");
       }, 500);
     }
   }, [orderStep]);
@@ -227,9 +255,10 @@ const WithdrawalUnified = () => {
   }
 
   // Determine the current state for the UI
-  const isProcessing = currentState === 'processing' || animationPhase === 'transition';
-  const isFailed = currentState === 'failed' && animationPhase === 'final';
-  const isSuccess = currentState === 'success' && animationPhase === 'final';
+  const isProcessing =
+    currentState === "processing" || animationPhase === "transition";
+  const isFailed = currentState === "failed" && animationPhase === "final";
+  const isSuccess = currentState === "success" && animationPhase === "final";
 
   return (
     <WithdrawalStatusCard

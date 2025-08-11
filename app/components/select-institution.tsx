@@ -54,10 +54,6 @@ const SelectInstitution = ({
   const { currentNetwork } = useNetworkStore();
   const { isConnected, address } = useWalletGetInfo();
   const { setTransfer } = useTransferStore();
-  const [isNigeriaOrSouthAfrican, setIsNigeriaOrSouthAfrican] = useState(
-    userPayLoad.country?.countryCode === "NG" ||
-      userPayLoad.country?.countryCode === "ZA"
-  );
   const [isEditingAddress, setIsEditingAddress] = useState(false);
 
   const {
@@ -96,16 +92,8 @@ const SelectInstitution = ({
     }
   }, [accountNumber, updateSelection]);
 
-  useEffect(() => {
-    if (
-      userPayLoad.country?.countryCode === "NG" ||
-      userPayLoad.country?.countryCode === "ZA"
-    ) {
-      setIsNigeriaOrSouthAfrican(true);
-    } else {
-      setIsNigeriaOrSouthAfrican(false);
-    }
-  }, [userPayLoad.country?.countryCode]);
+  // Previously toggled a Nigeria/SA flag for conditional rendering. We now
+  // always render the recipient section and rely on runtime branching where needed.
 
   // Watch for wallet address changes and update global state
   useEffect(() => {
@@ -517,94 +505,91 @@ const SelectInstitution = ({
 
   return (
     <form onSubmit={onSubmit}>
-      {(!buy || (buy && !isNigeriaOrSouthAfrican)) && (
-        <div
-          className={`mb-2 bg-[#232323] rounded-t-[2rem] p-5 flex flex-col gap-4 `}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-white text-lg font-medium">Recipient</span>
-          </div>
+      <div
+        className={`mb-2 bg-[#232323] rounded-t-[2rem] p-5 flex flex-col gap-4 `}
+      >
+        <div className="flex items-center justify-between">
+          <span className="text-white text-lg font-medium">Recipient</span>
+        </div>
 
-          <div className="flex gap-3 items-center  flex-col">
-            {/* Institution Selector */}
-            <Button
-              type="button"
-              variant="default"
-              onClick={() => {
-                setShowInstitutionModal(true);
-                setValue("accountNumber", "");
-                updateSelection({ paymentMethod: undefined });
-              }}
-              className="bg-transparent border w-full h-full !border-neutral-600 text-neutral-400 rounded-full p-3 cursor-pointer flex items-center justify-center"
-            >
-              <span className="line-clamp-1 text-white">
-                {institution?.name || "Select institution"}
-              </span>
-              <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
-                <path
-                  d="M7 10l5 5 5-5"
-                  stroke="#fff"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </Button>
-
-            {/* Account Number */}
-            <div className="flex-1 h-full w-full relative">
-              <Input
-                type="number"
-                placeholder="Account number"
-                {...register("accountNumber", {
-                  required: "Account number is required",
-                  validate: {
-                    validLength: (value) => {
-                      if (!userPayLoad?.country?.accountNumberLength)
-                        return true;
-                      if (userPayLoad.paymentMethod === "bank") {
-                        const minLength =
-                          userPayLoad.country.accountNumberLength.bankLength;
-                        return (
-                          value.length >= minLength ||
-                          `Account number must be at least ${minLength} digits`
-                        );
-                      }
-                      if (userPayLoad.paymentMethod === "momo") {
-                        const minLength =
-                          userPayLoad.country.accountNumberLength.mobileLength;
-                        return (
-                          value.length >= minLength ||
-                          `Mobile number must be at least ${minLength} digits`
-                        );
-                      }
-                      return true;
-                    },
-                  },
-                })}
-                className={`bg-transparent border !border-neutral-600 text-lg text-white font-medium rounded-full h-14 pl-6 pr-12 w-full focus:outline-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-inner-spin-button]:m-0 [&]:appearance-none ${
-                  touchedFields.accountNumber && errors.accountNumber
-                    ? "border-red-500 focus:border-red-500"
-                    : "focus:border-purple-400"
-                }`}
-                style={{
-                  WebkitAppearance: "none",
-                  MozAppearance: "textfield",
-                }}
+        <div className="flex gap-3 items-center  flex-col">
+          {/* Institution Selector */}
+          <Button
+            type="button"
+            variant="default"
+            onClick={() => {
+              setShowInstitutionModal(true);
+              setValue("accountNumber", "");
+              updateSelection({ paymentMethod: undefined });
+            }}
+            className="bg-transparent border w-full h-full !border-neutral-600 text-neutral-400 rounded-full p-3 cursor-pointer flex items-center justify-center"
+          >
+            <span className="line-clamp-1 text-white">
+              {institution?.name || "Select institution"}
+            </span>
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
+              <path
+                d="M7 10l5 5 5-5"
+                stroke="#fff"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               />
-              {/* Status indicator inside input */}
-              {accountNumber && isAccountNumberValid() && (
-                <AccountStatusIndicator accountNumber={accountNumber} />
-              )}
-            </div>
+            </svg>
+          </Button>
 
-            {/* Account name display below input */}
+          {/* Account Number */}
+          <div className="flex-1 h-full w-full relative">
+            <Input
+              type="number"
+              placeholder="Account number"
+              {...register("accountNumber", {
+                required: "Account number is required",
+                validate: {
+                  validLength: (value) => {
+                    if (!userPayLoad?.country?.accountNumberLength) return true;
+                    if (userPayLoad.paymentMethod === "bank") {
+                      const minLength =
+                        userPayLoad.country.accountNumberLength.bankLength;
+                      return (
+                        value.length >= minLength ||
+                        `Account number must be at least ${minLength} digits`
+                      );
+                    }
+                    if (userPayLoad.paymentMethod === "momo") {
+                      const minLength =
+                        userPayLoad.country.accountNumberLength.mobileLength;
+                      return (
+                        value.length >= minLength ||
+                        `Mobile number must be at least ${minLength} digits`
+                      );
+                    }
+                    return true;
+                  },
+                },
+              })}
+              className={`bg-transparent border !border-neutral-600 text-lg text-white font-medium rounded-full h-14 pl-6 pr-12 w-full focus:outline-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-inner-spin-button]:m-0 [&]:appearance-none ${
+                touchedFields.accountNumber && errors.accountNumber
+                  ? "border-red-500 focus:border-red-500"
+                  : "focus:border-purple-400"
+              }`}
+              style={{
+                WebkitAppearance: "none",
+                MozAppearance: "textfield",
+              }}
+            />
+            {/* Status indicator inside input */}
             {accountNumber && isAccountNumberValid() && (
-              <AccountNameDisplay accountNumber={accountNumber} />
+              <AccountStatusIndicator accountNumber={accountNumber} />
             )}
           </div>
+
+          {/* Account name display below input */}
+          {accountNumber && isAccountNumberValid() && (
+            <AccountNameDisplay accountNumber={accountNumber} />
+          )}
         </div>
-      )}
+      </div>
 
       {country && (
         <InstitutionModal
