@@ -43,7 +43,7 @@ export function BuyPanel() {
   // Local selection states removed; we route via unified modal flow
   const [showCountryModal, setShowCountryModal] = useState(false);
   const [showTokenModal, setShowTokenModal] = useState(false);
-  const { updateSelection, country, paymentMethod, asset } =
+  const { updateSelection, country, paymentMethod, asset, appState } =
     useUserSelectionStore();
   const { exchangeRate, setExchangeRate, setError } = useExchangeRateStore();
   const { currentNetwork } = useNetworkStore();
@@ -266,8 +266,9 @@ export function BuyPanel() {
   const isBuyDisabled = useMemo(() => {
     if (!country || !asset || !currentNetwork || !amount) return true;
     if (!isConnected || !address) return true;
+    if (appState === AppState.Processing) return true; // block swipe during account verification
     return false;
-  }, [country, asset, currentNetwork, amount, isConnected, address]);
+  }, [country, asset, currentNetwork, amount, isConnected, address, appState]);
 
   const handleCountrySelect = (selectedCountry: Country) => {
     const rate = exchangeRate?.exchange ?? selectedCountry.exchangeRate;
