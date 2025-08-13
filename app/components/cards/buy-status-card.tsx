@@ -167,14 +167,14 @@ const BuyStatusCard: React.FC<BuyStatusCardProps> = ({
       institutionName: "",
     };
     return (
-      <div className="w-full  border !border-neutral-800 rounded-2xl p-4 text-white space-y-3">
+      <div className="w-full max-w-xl mx-auto border !border-neutral-800 rounded-2xl p-4 md:p-6 text-white space-y-3">
         <div className="text-left">
           <p className="text-sm text-neutral-400">Make a bank transfer to</p>
           <p className="text-base font-semibold">
             {institutionName || accountName}
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1  gap-3">
           <CopyRow label="Account Name" value={accountName} />
           <CopyRow label="Account Number" value={accountNumber} />
           <CopyRow label="Amount" value={fiatAmount.toFixed(0)} />
