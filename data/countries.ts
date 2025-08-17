@@ -176,11 +176,11 @@ export const countryInstitutions: Record<string, SimpleInstitution[]> = {
 export const countryCurrencies = [
   { name: "Nigeria", logo: "/logos/nigeria.png" },
   { name: "Kenya", logo: "/logos/kenya.png" },
-  { name: "Ghana", logo: "/logos/ghana.png" },
   { name: "Zambia", logo: "/logos/zambia.png" },
   { name: "Uganda", logo: "/logos/uganda.png" },
   { name: "Tanzania", logo: "/logos/tanzania.png" },
   { name: "South Africa", logo: "/logos/southafrica.png" },
+  { name: "Ghana", logo: "/logos/ghana.png" },
 ];
 
 export const countries: Country[] = [
@@ -208,21 +208,6 @@ export const countries: Country[] = [
     exchangeRate: 130,
     institutions: [],
     fiatMinMax: { min: 120, max: 25_000 },
-    cryptoMinMax: { min: 1, max: 2_500 },
-    accountNumberLength: {
-      bankLength: 13,
-      mobileLength: 10,
-    },
-  },
-  {
-    name: "Ghana",
-    logo: "/logos/ghana.png",
-    currency: "GHS",
-    countryCode: "GHA",
-    phoneCode: "+233",
-    exchangeRate: 15.43,
-    institutions: [],
-    fiatMinMax: { min: 15.43, max: 35_000 },
     cryptoMinMax: { min: 1, max: 2_500 },
     accountNumberLength: {
       bankLength: 13,
@@ -289,6 +274,21 @@ export const countries: Country[] = [
   //     mobileLength: 10,
   //   },
   // },
+  {
+    name: "Ghana",
+    logo: "/logos/ghana.png",
+    currency: "GHS",
+    countryCode: "GHA",
+    phoneCode: "+233",
+    exchangeRate: 15.43,
+    institutions: [],
+    fiatMinMax: { min: 15.43, max: 35_000 },
+    cryptoMinMax: { min: 1, max: 2_500 },
+    accountNumberLength: {
+      bankLength: 13,
+      mobileLength: 10,
+    },
+  },
 ];
 
 export const GLOBAL_MIN_MAX = {
