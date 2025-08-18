@@ -663,14 +663,28 @@ export function PaymentInterface() {
     );
   }, [amount, country]);
 
+  // Validate amount does not exceed user's USDC balance (amount is in local fiat)
+  const exceedsBalance = useMemo(() => {
+    if (!country || !amount) return false;
+    if (isBalanceLoading) return false;
+    const numericAmount = parseFloat(amount);
+    const numericBalance = parseFloat(String(currentBalance || "0"));
+    if (isNaN(numericAmount) || isNaN(numericBalance)) return false;
+    const rate = exchangeRate?.exchange || country.exchangeRate;
+    if (!rate || rate <= 0) return false;
+    const requiredCrypto = numericAmount / rate;
+    return requiredCrypto > numericBalance;
+  }, [country, amount, isBalanceLoading, currentBalance, exchangeRate]);
+
   // Update amount validity
   useEffect(() => {
-    setIsValid(isAmountValidForCountry);
+    setIsValid(isAmountValidForCountry && !exceedsBalance);
     if (calculatedCryptoAmount) {
       setFiatAmount(amount);
     }
   }, [
     isAmountValidForCountry,
+    exceedsBalance,
     calculatedCryptoAmount,
     amount,
     setIsValid,
@@ -1119,6 +1133,11 @@ export function PaymentInterface() {
                 </p>
               </div>
             )}
+            {country && !isBalanceLoading && exceedsBalance && (
+              <div className="text-red-400 text-[10px]">
+                <p>Insufficient balance for this amount</p>
+              </div>
+            )}
           </div>
 
           {/* You'll Pay Section */}
@@ -1319,10 +1338,12 @@ export function PaymentInterface() {
                 : getStepMessage(billPaymentMutation.currentStep)
             }
             disabledMessage={
-              // Show specific message when account details are missing
-              (selectedPaymentType === "Buy Goods" ||
-                selectedPaymentType === "Paybill") &&
-              isLoadingAccountDetails
+              exceedsBalance
+                ? "Insufficient balance"
+                : // Show specific message when account details are missing
+                (selectedPaymentType === "Buy Goods" ||
+                    selectedPaymentType === "Paybill") &&
+                  isLoadingAccountDetails
                 ? "Verifying account..."
                 : (selectedPaymentType === "Buy Goods" ||
                     selectedPaymentType === "Paybill") &&
@@ -1343,6 +1364,7 @@ export function PaymentInterface() {
               !currentNetwork ||
               !amount ||
               !isAmountValidForCountry ||
+              exceedsBalance ||
               !isConnected ||
               !address ||
               (!!country?.name &&
