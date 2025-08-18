@@ -65,7 +65,7 @@ export function InstitutionModal({
 
   const renderMpesa = (name: string) => {
     if (name.includes("SAFARICOM")) {
-      return "M-Pesa";
+      return "M-PESA";
     }
     return name;
   };
