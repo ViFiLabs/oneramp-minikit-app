@@ -1125,7 +1125,7 @@ export function PaymentInterface() {
             <div className="h-px bg-gray-700"></div>
 
             {!isAmountValidForCountry && country && (
-              <div className="text-red-400 text-xs">
+              <div className="text-red-400 text-[10px]">
                 <p>
                   Amount should be between{" "}
                   {country.fiatMinMax.min.toLocaleString()} and{" "}
