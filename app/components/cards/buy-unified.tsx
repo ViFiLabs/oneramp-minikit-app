@@ -41,26 +41,42 @@ const BuyUnified = () => {
   });
 
   useEffect(() => {
-    if (!isLoading && transferStatus?.status) {
-      // Keep the latest polled transfer fields in store so UI has fresh details
+    // Prefer polled status; fall back to stored transfer status if polling unavailable
+    const statusFromPoll = transferStatus?.status as string | undefined;
+    const effectiveStatus =
+      statusFromPoll || (transfer?.transferStatus as string | undefined);
+
+    if (!isLoading && effectiveStatus) {
+      // Keep the latest polled transfer fields in store so UI has fresh details (when available)
       try {
-        setTransfer({
-          transferId: transfer?.transferId || "",
-          transferStatus: transferStatus.status,
-          transferAddress: transferStatus.transferAddress,
-          userActionDetails: transferStatus.userActionDetails,
-        });
+        if (transferStatus) {
+          setTransfer({
+            transferId: transfer?.transferId || "",
+            transferStatus: transferStatus.status,
+            transferAddress: transferStatus.transferAddress,
+            userActionDetails: transferStatus.userActionDetails,
+          });
+        }
       } catch {}
 
-      if (transferStatus.status === TransferStatusEnum.TransferComplete) {
+      const isComplete =
+        effectiveStatus === TransferStatusEnum.TransferComplete ||
+        effectiveStatus === "TransferCompleted" ||
+        effectiveStatus === "TransferComplete";
+
+      const isFailed =
+        effectiveStatus === TransferStatusEnum.TransferFailed ||
+        effectiveStatus === "TransferFailed";
+
+      if (isComplete) {
         setAnimationPhase("transition");
         setTimeout(() => {
           setCurrentState("success");
           setAnimationPhase("final");
         }, 500);
       }
-      // Mark as failed when backend reports TransferFailed
-      if (transferStatus.status === TransferStatusEnum.TransferFailed) {
+
+      if (isFailed) {
         setAnimationPhase("transition");
         setTimeout(() => {
           setCurrentState("failed");
@@ -72,6 +88,7 @@ const BuyUnified = () => {
     transferStatus?.status,
     transferStatus?.transferAddress,
     transferStatus?.userActionDetails,
+    transfer?.transferStatus,
     isLoading,
     quote?.country,
     setTransfer,
