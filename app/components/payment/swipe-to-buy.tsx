@@ -18,6 +18,8 @@ export function SwipeToBuyButton({
   stepMessage = "Processing...",
   reset = false,
 }: SwipeToBuyButtonProps) {
+  // Trigger completion once user drags past ~55% of the track (mobile-friendly)
+  const COMPLETION_THRESHOLD = 0.55;
   const [isDragging, setIsDragging] = useState(false);
   const [dragX, setDragX] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
@@ -75,8 +77,10 @@ export function SwipeToBuyButton({
         Math.min(maxDrag, clientX - rect.left - handleWidth / 2)
       );
       setDragX(newX);
-      if (newX > maxDrag * 0.8) {
+      if (newX >= maxDrag * COMPLETION_THRESHOLD) {
         setIsCompleted(true);
+        // Smoothly assist the handle to the end for better UX
+        setDragX(maxDrag);
         setIsDragging(false);
         setTimeout(() => onBuyComplete(), 300);
       }

@@ -28,6 +28,8 @@ export function SwipeToPayButton({
   disabledMessage = "Complete Form",
   reset = false,
 }: SwipeToPayButtonProps) {
+  // Trigger completion once user drags past 65% of the track
+  const COMPLETION_THRESHOLD = 0.55;
   const [isDragging, setIsDragging] = useState(false);
   const [dragX, setDragX] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
@@ -122,8 +124,10 @@ export function SwipeToPayButton({
       );
       setDragX(newX);
 
-      if (newX > maxDrag * 0.8) {
+      if (newX >= maxDrag * COMPLETION_THRESHOLD) {
         setIsCompleted(true);
+        // Smoothly assist the handle to the end for better UX
+        setDragX(maxDrag);
         setIsDragging(false);
         setTimeout(() => {
           onPaymentComplete();
@@ -144,8 +148,10 @@ export function SwipeToPayButton({
       );
       setDragX(newX);
 
-      if (newX > maxDrag * 0.8) {
+      if (newX >= maxDrag * COMPLETION_THRESHOLD) {
         setIsCompleted(true);
+        // Smoothly assist the handle to the end for better UX
+        setDragX(maxDrag);
         setIsDragging(false);
         setTimeout(() => {
           onPaymentComplete();
