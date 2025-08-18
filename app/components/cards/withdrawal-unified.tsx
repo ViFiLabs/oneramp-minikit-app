@@ -13,7 +13,8 @@ import WithdrawalStatusCard from "./withdrawal-status-card";
 const WithdrawalUnified = () => {
   const { resetToDefault, updateSelection, orderStep } =
     useUserSelectionStore();
-  const { transfer, resetTransfer, transactionHash } = useTransferStore();
+  const { transfer, resetTransfer, transactionHash, setTransfer } =
+    useTransferStore();
   const { quote, resetQuote } = useQuoteStore();
   const router = useRouter();
   const hashSubmittedRef = useRef(false);
@@ -166,32 +167,59 @@ const WithdrawalUnified = () => {
     refetchInterval: 3000, // Poll every 3 seconds
   });
 
-  // Handle transfer status changes with animations
+  // Handle transfer status changes with animations (with fallback to store status and string variants)
   useEffect(() => {
-    if (
-      transferStatus?.status === TransferStatusEnum.TransferComplete &&
-      !isLoading
-    ) {
-      // Animate to success state
-      setAnimationPhase("transition");
-      setTimeout(() => {
-        setCurrentState("success");
-        setAnimationPhase("final");
-      }, 500);
-    }
+    const statusFromPoll = transferStatus?.status as string | undefined;
+    const effectiveStatus =
+      statusFromPoll || (transfer?.transferStatus as string | undefined);
 
-    if (
-      transferStatus?.status === TransferStatusEnum.TransferFailed &&
-      !isLoading
-    ) {
-      // Animate to failed state
-      setAnimationPhase("transition");
-      setTimeout(() => {
-        setCurrentState("failed");
-        setAnimationPhase("final");
-      }, 500);
+    if (!isLoading && effectiveStatus) {
+      // Sync latest polled fields into store when available
+      try {
+        if (transferStatus) {
+          setTransfer({
+            transferId: transfer?.transferId || "",
+            transferStatus: transferStatus.status,
+            transferAddress: transferStatus.transferAddress,
+            userActionDetails: transferStatus.userActionDetails,
+          });
+        }
+      } catch {}
+
+      const isComplete =
+        effectiveStatus === TransferStatusEnum.TransferComplete ||
+        effectiveStatus === "TransferCompleted" ||
+        effectiveStatus === "TransferComplete";
+
+      const isFailed =
+        effectiveStatus === TransferStatusEnum.TransferFailed ||
+        effectiveStatus === "TransferFailed";
+
+      if (isComplete) {
+        setAnimationPhase("transition");
+        setTimeout(() => {
+          setCurrentState("success");
+          setAnimationPhase("final");
+        }, 500);
+      }
+
+      if (isFailed) {
+        setAnimationPhase("transition");
+        setTimeout(() => {
+          setCurrentState("failed");
+          setAnimationPhase("final");
+        }, 500);
+      }
     }
-  }, [transferStatus?.status, isLoading]);
+  }, [
+    transferStatus?.status,
+    transferStatus?.transferAddress,
+    transferStatus?.userActionDetails,
+    transfer?.transferStatus,
+    isLoading,
+    setTransfer,
+    transfer?.transferId,
+  ]);
 
   // Handle EVM transaction failures by monitoring orderStep changes
   useEffect(() => {

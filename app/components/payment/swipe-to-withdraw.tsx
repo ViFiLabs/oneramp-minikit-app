@@ -36,6 +36,8 @@ export function SwipeToWithdrawButton({
   onStartKYC,
   reset = false,
 }: SwipeToWithdrawButtonProps) {
+  // Trigger completion once user drags past ~55% of the track (mobile-friendly)
+  const COMPLETION_THRESHOLD = 0.55;
   const [isDragging, setIsDragging] = useState(false);
   const [dragX, setDragX] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
@@ -194,8 +196,10 @@ export function SwipeToWithdrawButton({
       );
       setDragX(newX);
 
-      if (newX > maxDrag * 0.8) {
+      if (newX >= maxDrag * COMPLETION_THRESHOLD) {
         setIsCompleted(true);
+        // Smoothly assist the handle to the end for better UX
+        setDragX(maxDrag);
         setIsDragging(false);
         setTimeout(() => {
           // Determine which action to take based on current state
@@ -221,8 +225,10 @@ export function SwipeToWithdrawButton({
       );
       setDragX(newX);
 
-      if (newX > maxDrag * 0.8) {
+      if (newX >= maxDrag * COMPLETION_THRESHOLD) {
         setIsCompleted(true);
+        // Smoothly assist the handle to the end for better UX
+        setDragX(maxDrag);
         setIsDragging(false);
         setTimeout(() => {
           // Determine which action to take based on current state
