@@ -538,55 +538,61 @@ const SelectInstitution = ({
             </svg>
           </Button>
 
-          {/* Account Number */}
-          <div className="flex-1 h-full w-full relative">
-            <Input
-              type="number"
-              placeholder="Account number"
-              {...register("accountNumber", {
-                required: "Account number is required",
-                validate: {
-                  validLength: (value) => {
-                    if (!userPayLoad?.country?.accountNumberLength) return true;
-                    if (userPayLoad.paymentMethod === "bank") {
-                      const minLength =
-                        userPayLoad.country.accountNumberLength.bankLength;
-                      return (
-                        value.length >= minLength ||
-                        `Account number must be at least ${minLength} digits`
-                      );
-                    }
-                    if (userPayLoad.paymentMethod === "momo") {
-                      const minLength =
-                        userPayLoad.country.accountNumberLength.mobileLength;
-                      return (
-                        value.length >= minLength ||
-                        `Mobile number must be at least ${minLength} digits`
-                      );
-                    }
-                    return true;
-                  },
-                },
-              })}
-              className={`bg-transparent border !border-neutral-600 text-lg text-white font-medium rounded-full h-14 pl-6 pr-12 w-full focus:outline-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-inner-spin-button]:m-0 [&]:appearance-none ${
-                touchedFields.accountNumber && errors.accountNumber
-                  ? "border-red-500 focus:border-red-500"
-                  : "focus:border-purple-400"
-              }`}
-              style={{
-                WebkitAppearance: "none",
-                MozAppearance: "textfield",
-              }}
-            />
-            {/* Status indicator inside input */}
-            {accountNumber && isAccountNumberValid() && (
-              <AccountStatusIndicator accountNumber={accountNumber} />
-            )}
-          </div>
+          {/* Account Number - only show after institution is selected */}
+          {institution && (
+            <>
+              <div className="flex-1 h-full w-full relative">
+                <Input
+                  type="number"
+                  placeholder="Account number"
+                  {...register("accountNumber", {
+                    required: "Account number is required",
+                    validate: {
+                      validLength: (value) => {
+                        if (!userPayLoad?.country?.accountNumberLength)
+                          return true;
+                        if (userPayLoad.paymentMethod === "bank") {
+                          const minLength =
+                            userPayLoad.country.accountNumberLength.bankLength;
+                          return (
+                            value.length >= minLength ||
+                            `Account number must be at least ${minLength} digits`
+                          );
+                        }
+                        if (userPayLoad.paymentMethod === "momo") {
+                          const minLength =
+                            userPayLoad.country.accountNumberLength
+                              .mobileLength;
+                          return (
+                            value.length >= minLength ||
+                            `Mobile number must be at least ${minLength} digits`
+                          );
+                        }
+                        return true;
+                      },
+                    },
+                  })}
+                  className={`bg-transparent border !border-neutral-600 text-lg text-white font-medium rounded-full h-14 pl-6 pr-12 w-full focus:outline-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-inner-spin-button]:m-0 [&]:appearance-none ${
+                    touchedFields.accountNumber && errors.accountNumber
+                      ? "border-red-500 focus:border-red-500"
+                      : "focus:border-purple-400"
+                  }`}
+                  style={{
+                    WebkitAppearance: "none",
+                    MozAppearance: "textfield",
+                  }}
+                />
+                {/* Status indicator inside input */}
+                {accountNumber && isAccountNumberValid() && (
+                  <AccountStatusIndicator accountNumber={accountNumber} />
+                )}
+              </div>
 
-          {/* Account name display below input */}
-          {accountNumber && isAccountNumberValid() && (
-            <AccountNameDisplay accountNumber={accountNumber} />
+              {/* Account name display below input */}
+              {accountNumber && isAccountNumberValid() && (
+                <AccountNameDisplay accountNumber={accountNumber} />
+              )}
+            </>
           )}
         </div>
       </div>
