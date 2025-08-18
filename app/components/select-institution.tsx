@@ -503,6 +503,12 @@ const SelectInstitution = ({
     setValue("walletAddress", userPayLoad.pastedAddress || address || "");
   };
 
+  const renderMpesa = (name: string) => {
+    if (name.includes("SAFARICOM")) {
+      return "M-Pesa";
+    }
+    return name;
+  };
   return (
     <form onSubmit={onSubmit}>
       <div
@@ -525,7 +531,7 @@ const SelectInstitution = ({
             className="bg-transparent border w-full h-full !border-neutral-600 text-neutral-400 rounded-full p-3 cursor-pointer flex items-center justify-center"
           >
             <span className="line-clamp-1 text-white">
-              {institution?.name || "Select institution"}
+              {renderMpesa(institution?.name || "") || "Select institution"}
             </span>
             <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
               <path

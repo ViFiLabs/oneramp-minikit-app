@@ -63,6 +63,13 @@ export function InstitutionModal({
     institution.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const renderMpesa = (name: string) => {
+    if (name.includes("SAFARICOM")) {
+      return "M-Pesa";
+    }
+    return name;
+  };
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogPortal>
@@ -145,11 +152,11 @@ export function InstitutionModal({
                   >
                     <div className="w-8 h-8 bg-[#232323] rounded-md flex items-center justify-center">
                       <span className="text-white text-sm font-medium">
-                        {institution.name.charAt(0).toUpperCase()}
+                        {renderMpesa(institution.name).charAt(0).toUpperCase()}
                       </span>
                     </div>
                     <span className="text-white font-medium">
-                      {institution.name}
+                      {renderMpesa(institution.name)}
                     </span>
                   </button>
                 ))}
