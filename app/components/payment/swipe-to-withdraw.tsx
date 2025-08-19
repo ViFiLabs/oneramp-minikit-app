@@ -189,17 +189,18 @@ export function SwipeToWithdrawButton({
 
       const rect = containerRef.current.getBoundingClientRect();
       const handleWidth = 48; // w-12 = 48px
-      const maxDrag = rect.width - handleWidth;
+      const maxPossibleDrag = rect.width - handleWidth;
+      const maxAllowedDrag = maxPossibleDrag * 0.8; // Limit to 80% of slider width
       const newX = Math.max(
         0,
-        Math.min(maxDrag, e.clientX - rect.left - handleWidth / 2)
+        Math.min(maxAllowedDrag, e.clientX - rect.left - handleWidth / 2)
       );
       setDragX(newX);
 
-      if (newX >= maxDrag * COMPLETION_THRESHOLD) {
+      if (newX >= maxAllowedDrag * COMPLETION_THRESHOLD) {
         setIsCompleted(true);
-        // Smoothly assist the handle to the end for better UX
-        setDragX(maxDrag);
+        // Smoothly assist the handle to 80% position for better UX
+        setDragX(maxAllowedDrag);
         setIsDragging(false);
         setTimeout(() => {
           // Determine which action to take based on current state
@@ -217,18 +218,19 @@ export function SwipeToWithdrawButton({
 
       const rect = containerRef.current.getBoundingClientRect();
       const handleWidth = 48; // w-12 = 48px
-      const maxDrag = rect.width - handleWidth;
+      const maxPossibleDrag = rect.width - handleWidth;
+      const maxAllowedDrag = maxPossibleDrag * 0.8; // Limit to 80% of slider width
       const touch = e.touches[0];
       const newX = Math.max(
         0,
-        Math.min(maxDrag, touch.clientX - rect.left - handleWidth / 2)
+        Math.min(maxAllowedDrag, touch.clientX - rect.left - handleWidth / 2)
       );
       setDragX(newX);
 
-      if (newX >= maxDrag * COMPLETION_THRESHOLD) {
+      if (newX >= maxAllowedDrag * COMPLETION_THRESHOLD) {
         setIsCompleted(true);
-        // Smoothly assist the handle to the end for better UX
-        setDragX(maxDrag);
+        // Smoothly assist the handle to 80% position for better UX
+        setDragX(maxAllowedDrag);
         setIsDragging(false);
         setTimeout(() => {
           // Determine which action to take based on current state
