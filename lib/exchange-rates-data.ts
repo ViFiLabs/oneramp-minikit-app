@@ -1,24 +1,6 @@
-// Auto-generated file - do not edit manually
-// Generated on: 2025-08-03T19:53:14.844Z
-
-// Define a more flexible interface that matches the actual data structure
-export interface ExchangeRateResponse {
-  country: string;
-  exchange: number;
-  conversionResponse: {
-    success: boolean;
-    chargeFeeInFiat: number;
-    chargeFeeInUsd: number;
-    exchangeRate: number;
-    fiatAmount: number;
-    gasFeeInFiat: number;
-    cryptoAmount?: number;
-    providerPayoutAmount?: number;
-  };
-}
-
-const EXCHANGE_RATES_DATA = {
-  "lastUpdated": "2025-08-03T18:32:20.933Z",
+// Client-side exchange rates data for instant access
+export const exchangeRatesData = {
+  "lastUpdated": "2025-08-27T08:35:09.471Z",
   "exchangeRates": {
     "NG": {
       "buying": {
@@ -139,52 +121,52 @@ const EXCHANGE_RATES_DATA = {
     "UG": {
       "buying": {
         "momo": {
-          "exchange": 3565,
+          "exchange": 3570,
           "country": "UG",
           "conversionResponse": {
             "success": true,
             "chargeFeeInFiat": 0,
             "chargeFeeInUsd": 0.04,
-            "exchangeRate": 3565,
-            "fiatAmount": 3565,
+            "exchangeRate": 3570,
+            "fiatAmount": 3570,
             "gasFeeInFiat": 76.0888
           }
         },
         "bank": {
-          "exchange": 3565,
+          "exchange": 3570,
           "country": "UG",
           "conversionResponse": {
             "success": true,
             "chargeFeeInFiat": 0,
             "chargeFeeInUsd": 0.04,
-            "exchangeRate": 3565,
-            "fiatAmount": 3565,
+            "exchangeRate": 3570,
+            "fiatAmount": 3570,
             "gasFeeInFiat": 76.0888
           }
         }
       },
       "selling": {
         "momo": {
-          "exchange": 3565,
+          "exchange": 3570,
           "country": "UG",
           "conversionResponse": {
             "success": true,
             "chargeFeeInFiat": 0,
             "chargeFeeInUsd": 0.04,
-            "exchangeRate": 3565,
-            "fiatAmount": 3565,
+            "exchangeRate": 3570,
+            "fiatAmount": 3570,
             "gasFeeInFiat": 72.41640000000001
           }
         },
         "bank": {
-          "exchange": 3565,
+          "exchange": 3570,
           "country": "UG",
           "conversionResponse": {
             "success": true,
             "chargeFeeInFiat": 0,
             "chargeFeeInUsd": 0.04,
-            "exchangeRate": 3565,
-            "fiatAmount": 3565,
+            "exchangeRate": 3570,
+            "fiatAmount": 3570,
             "gasFeeInFiat": 72.41640000000001
           }
         }
@@ -441,29 +423,18 @@ const EXCHANGE_RATES_DATA = {
   }
 };
 
+// Instant client-side exchange rate getter
 export function getExchangeRateClient(
   country: string,
-  orderType: string,
-  providerType: string
-): ExchangeRateResponse | null {
-  try {
-    const countryRates = EXCHANGE_RATES_DATA.exchangeRates[country];
-    if (!countryRates) return null;
-
-    const orderTypeRates = countryRates[orderType];
-    if (!orderTypeRates) return null;
-
-    const rate = orderTypeRates[providerType];
-    return rate || null;
-  } catch {
-    return null;
+  orderType: "buying" | "selling" = "selling",
+  providerType: "momo" | "bank" = "momo"
+) {
+  if (!country) return null;
+  
+  const countryRates = exchangeRatesData.exchangeRates[country];
+  if (countryRates && countryRates[orderType] && countryRates[orderType][providerType]) {
+    return countryRates[orderType][providerType];
   }
-}
-
-export function getAllExchangeRatesClient(): Record<string, Record<string, Record<string, ExchangeRateResponse>>> {
-  return EXCHANGE_RATES_DATA.exchangeRates;
-}
-
-export function getLastUpdated(): string {
-  return EXCHANGE_RATES_DATA.lastUpdated;
+  
+  return null;
 }

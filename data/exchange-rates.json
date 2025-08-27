@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2025-08-03T19:53:14.844Z",
+  "lastUpdated": "2025-08-27T08:35:09.471Z",
   "exchangeRates": {
     "NG": {
       "buying": {
@@ -120,52 +120,52 @@
     "UG": {
       "buying": {
         "momo": {
-          "exchange": 3565,
+          "exchange": 3570,
           "country": "UG",
           "conversionResponse": {
             "success": true,
             "chargeFeeInFiat": 0,
             "chargeFeeInUsd": 0.04,
-            "exchangeRate": 3565,
-            "fiatAmount": 3565,
+            "exchangeRate": 3570,
+            "fiatAmount": 3570,
             "gasFeeInFiat": 76.0888
           }
         },
         "bank": {
-          "exchange": 3565,
+          "exchange": 3570,
           "country": "UG",
           "conversionResponse": {
             "success": true,
             "chargeFeeInFiat": 0,
             "chargeFeeInUsd": 0.04,
-            "exchangeRate": 3565,
-            "fiatAmount": 3565,
+            "exchangeRate": 3570,
+            "fiatAmount": 3570,
             "gasFeeInFiat": 76.0888
           }
         }
       },
       "selling": {
         "momo": {
-          "exchange": 3565,
+          "exchange": 3570,
           "country": "UG",
           "conversionResponse": {
             "success": true,
             "chargeFeeInFiat": 0,
             "chargeFeeInUsd": 0.04,
-            "exchangeRate": 3565,
-            "fiatAmount": 3565,
+            "exchangeRate": 3570,
+            "fiatAmount": 3570,
             "gasFeeInFiat": 72.41640000000001
           }
         },
         "bank": {
-          "exchange": 3565,
+          "exchange": 3570,
           "country": "UG",
           "conversionResponse": {
             "success": true,
             "chargeFeeInFiat": 0,
             "chargeFeeInUsd": 0.04,
-            "exchangeRate": 3565,
-            "fiatAmount": 3565,
+            "exchangeRate": 3570,
+            "fiatAmount": 3570,
             "gasFeeInFiat": 72.41640000000001
           }
         }
