@@ -503,6 +503,19 @@ const SelectInstitution = ({
     setValue("walletAddress", userPayLoad.pastedAddress || address || "");
   };
 
+  // Nigeria KYC phone validation (to show feedback under account input for buy flow)
+  const isValidNigerianPhone = (input?: string | null) => {
+    if (!input) return false;
+    const phone = String(input).replace(/\s|-/g, "");
+    return [/^\+234\d{10}$/i, /^234\d{10}$/i, /^0\d{10}$/].some((re) =>
+      re.test(phone)
+    );
+  };
+  const isNgPhoneInvalid =
+    !!buy &&
+    userPayLoad?.country?.countryCode === "NG" &&
+    !isValidNigerianPhone(kycData?.fullKYC?.phoneNumber || "");
+
   const renderMpesa = (name: string) => {
     if (name.includes("SAFARICOM")) {
       return "M-PESA";
@@ -544,62 +557,81 @@ const SelectInstitution = ({
             </svg>
           </Button>
 
-          {/* Account Number - only show after institution is selected */}
-          {institution && (
-            <>
-              <div className="flex-1 h-full w-full relative">
-                <Input
-                  type="number"
-                  placeholder="Account number"
-                  {...register("accountNumber", {
-                    required: "Account number is required",
-                    validate: {
-                      validLength: (value) => {
-                        if (!userPayLoad?.country?.accountNumberLength)
+          {/* Account Number - only show after institution is selected (hidden for NG buy flow) */}
+          {institution &&
+            !(buy && userPayLoad?.country?.countryCode === "NG") && (
+              <>
+                <div className="flex-1 h-full w-full relative">
+                  <Input
+                    type="number"
+                    placeholder="Account number"
+                    {...register("accountNumber", {
+                      required: "Account number is required",
+                      validate: {
+                        validLength: (value) => {
+                          if (!userPayLoad?.country?.accountNumberLength)
+                            return true;
+                          if (userPayLoad.paymentMethod === "bank") {
+                            const minLength =
+                              userPayLoad.country.accountNumberLength
+                                .bankLength;
+                            return (
+                              value.length >= minLength ||
+                              `Account number must be at least ${minLength} digits`
+                            );
+                          }
+                          if (userPayLoad.paymentMethod === "momo") {
+                            const minLength =
+                              userPayLoad.country.accountNumberLength
+                                .mobileLength;
+                            return (
+                              value.length >= minLength ||
+                              `Mobile number must be at least ${minLength} digits`
+                            );
+                          }
                           return true;
-                        if (userPayLoad.paymentMethod === "bank") {
-                          const minLength =
-                            userPayLoad.country.accountNumberLength.bankLength;
-                          return (
-                            value.length >= minLength ||
-                            `Account number must be at least ${minLength} digits`
-                          );
-                        }
-                        if (userPayLoad.paymentMethod === "momo") {
-                          const minLength =
-                            userPayLoad.country.accountNumberLength
-                              .mobileLength;
-                          return (
-                            value.length >= minLength ||
-                            `Mobile number must be at least ${minLength} digits`
-                          );
-                        }
-                        return true;
+                        },
                       },
-                    },
-                  })}
-                  className={`bg-transparent border !border-neutral-600 text-lg text-white font-medium rounded-full h-14 pl-6 pr-12 w-full focus:outline-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-inner-spin-button]:m-0 [&]:appearance-none ${
-                    touchedFields.accountNumber && errors.accountNumber
-                      ? "border-red-500 focus:border-red-500"
-                      : "focus:border-purple-400"
-                  }`}
-                  style={{
-                    WebkitAppearance: "none",
-                    MozAppearance: "textfield",
-                  }}
-                />
-                {/* Status indicator inside input */}
-                {accountNumber && isAccountNumberValid() && (
-                  <AccountStatusIndicator accountNumber={accountNumber} />
-                )}
-              </div>
+                    })}
+                    className={`bg-transparent border !border-neutral-600 text-lg text-white font-medium rounded-full h-14 pl-6 pr-12 w-full focus:outline-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-inner-spin-button]:m-0 [&]:appearance-none ${
+                      touchedFields.accountNumber && errors.accountNumber
+                        ? "border-red-500 focus:border-red-500"
+                        : "focus:border-purple-400"
+                    }`}
+                    style={{
+                      WebkitAppearance: "none",
+                      MozAppearance: "textfield",
+                    }}
+                  />
+                  {/* Status indicator inside input */}
+                  {accountNumber && isAccountNumberValid() && (
+                    <AccountStatusIndicator accountNumber={accountNumber} />
+                  )}
+                </div>
 
-              {/* Account name display below input */}
-              {accountNumber && isAccountNumberValid() && (
-                <AccountNameDisplay accountNumber={accountNumber} />
-              )}
-            </>
-          )}
+                {/* Account name display below input */}
+                {accountNumber && isAccountNumberValid() && (
+                  <AccountNameDisplay accountNumber={accountNumber} />
+                )}
+
+                {/* Nigeria-specific KYC phone feedback under account input when buying */}
+                {isNgPhoneInvalid && (
+                  <p className="mt-1 text-[10px] text-red-500">
+                    Invalid Nigerian phone number in KYC.
+                  </p>
+                )}
+              </>
+            )}
+
+          {/* Nigeria-specific KYC phone feedback below institution selector when account input is hidden */}
+          {institution &&
+            buy &&
+            userPayLoad?.country?.countryCode === "NG" &&
+            isNgPhoneInvalid && (
+              <p className="mt-1 text-[12px] text-red-500 text-center">
+                Invalid Nigerian phone number in KYC.
+              </p>
+            )}
         </div>
       </div>
 

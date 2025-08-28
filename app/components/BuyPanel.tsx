@@ -26,6 +26,8 @@ import { AppState, OrderStep, QuoteRequest } from "@/types";
 import { countries } from "@/data/countries";
 import { useAllCountryExchangeRates } from "@/hooks/useExchangeRate";
 import { usePreFetchInstitutions } from "@/hooks/useExchangeRate";
+import { useKYCStore } from "@/store/kyc-store";
+import { toast } from "sonner";
 
 // Reuse the same country list from SwapPanel
 export const countryCurrencies = [
@@ -68,6 +70,7 @@ export function BuyPanel() {
   const { setQuote } = useQuoteStore();
   const { setTransfer } = useTransferStore();
   const { address, isConnected } = useWalletGetInfo();
+  const { kycData } = useKYCStore();
 
   // Countries disabled for BuyPanel testing
   const DISABLED_COUNTRIES_FOR_BUY = useMemo(
@@ -122,6 +125,9 @@ export function BuyPanel() {
       if (!isConnected || !address) {
         throw new Error("Wallet not connected");
       }
+
+      // Nigeria phone validation is now handled in SelectInstitution component
+      // No need to validate here since the user can't proceed without valid KYC
 
       // Build quote payload (buy is quote-in, using cryptoAmount entry like SelectInstitution when country panel on top)
       const payload: QuoteRequest = {
@@ -190,11 +196,29 @@ export function BuyPanel() {
       let transferPayload:
         | import("@/types").TransferMomoRequest
         | import("@/types").TransferBankRequest;
-      const isNigeriaOrSouthAfrican =
-        country.countryCode === "NG" || country.countryCode === "ZA";
 
       if (paymentMethod === "momo") {
-        if (isNigeriaOrSouthAfrican) {
+        if (country.countryCode === "NG") {
+          // Nigeria: Submit only bank code (institution code) and leave account fields empty
+          const { useUserSelectionStore: selectionStore } = await import(
+            "@/store/user-selection"
+          );
+          const { institution: instSelected } = selectionStore.getState();
+          transferPayload = {
+            bank: {
+              code: instSelected?.code || "",
+              accountNumber: "",
+              accountName: "",
+            },
+            operator: "bank",
+            quoteId: quoteResp.quote.quoteId,
+            userDetails: {
+              ...userDetails,
+              phone: (phoneNumber || "") as string,
+            },
+          };
+        } else if (country.countryCode === "ZA") {
+          // South Africa: keep existing behavior (empty bank fields)
           transferPayload = {
             bank: { code: "", accountNumber: "", accountName: "" },
             operator: "bank",
@@ -219,7 +243,23 @@ export function BuyPanel() {
       } else if (paymentMethod === "bank") {
         if (!inst) throw new Error("Institution required");
         const accountName = acctName || fullName;
-        if (isNigeriaOrSouthAfrican) {
+        if (country.countryCode === "NG") {
+          // Nigeria: Submit only bank code and leave account fields empty
+          transferPayload = {
+            bank: {
+              code: inst.code,
+              accountNumber: "",
+              accountName: "",
+            },
+            operator: "bank",
+            quoteId: quoteResp.quote.quoteId,
+            userDetails: {
+              ...userDetails,
+              phone: (phoneNumber || "") as string,
+            },
+          };
+        } else if (country.countryCode === "ZA") {
+          // South Africa: keep previous behavior using provided account details
           transferPayload = {
             bank: {
               code: inst.code,
@@ -249,6 +289,8 @@ export function BuyPanel() {
         throw new Error("Unsupported payment method");
       }
 
+      console.log("transferPayload", transferPayload);
+
       const transferResp = await createTransferIn(transferPayload);
       return { quoteResp, transferResp };
     },
@@ -261,14 +303,46 @@ export function BuyPanel() {
         appState: AppState.Idle,
       });
     },
+    onError: (error) => {
+      const message =
+        error instanceof Error ? error.message : "Failed to start purchase";
+      toast.error(message);
+    },
   });
 
   const isBuyDisabled = useMemo(() => {
     if (!country || !asset || !currentNetwork || !amount) return true;
     if (!isConnected || !address) return true;
     if (appState === AppState.Processing) return true; // block swipe during account verification
+
+    // For Nigeria, disable when KYC phone is invalid
+    if (country.countryCode === "NG") {
+      const kycPhone = kycData?.fullKYC?.phoneNumber || "";
+
+      const isValidNigerianPhone = (input?: string | null) => {
+        if (!input) return false;
+        const phone = String(input).replace(/\s|-/g, "");
+        // Accept: +234XXXXXXXXXX (10 digits after country code), 234XXXXXXXXXX, or 0XXXXXXXXXX (11 digits)
+        const patterns = [/^\+234\d{10}$/i, /^234\d{10}$/i, /^0\d{10}$/];
+        return patterns.some((re) => re.test(phone));
+      };
+
+      if (!isValidNigerianPhone(kycPhone)) {
+        return true;
+      }
+    }
+
     return false;
-  }, [country, asset, currentNetwork, amount, isConnected, address, appState]);
+  }, [
+    country,
+    asset,
+    currentNetwork,
+    amount,
+    isConnected,
+    address,
+    appState,
+    kycData,
+  ]);
 
   const handleCountrySelect = (selectedCountry: Country) => {
     const rate = exchangeRate?.exchange ?? selectedCountry.exchangeRate;
