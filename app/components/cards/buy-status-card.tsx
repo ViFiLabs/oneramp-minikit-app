@@ -148,34 +148,66 @@ const BuyStatusCard: React.FC<BuyStatusCardProps> = ({
     setIsDragging(true);
   };
 
+  // Only show Nigeria instructions when we have complete and valid transfer data
+  // This prevents showing intermediate/default values that cause the flash
   const showNigeriaInstructions =
     quote.country === "NG" &&
     transfer?.userActionDetails?.userActionType === "AccountNumberUserAction" &&
+    transfer?.userActionDetails?.accountName && // Ensure we have the account name
+    transfer?.userActionDetails?.accountNumber && // Ensure we have the account number
+    transfer?.userActionDetails?.accountName.trim() !== "" && // Ensure account name is not just whitespace
+    transfer?.userActionDetails?.accountNumber.trim() !== "" && // Ensure account number is not just whitespace
+    // Additional checks to prevent showing placeholder/default values
+    transfer?.userActionDetails?.accountName !== "Loading..." &&
+    transfer?.userActionDetails?.accountName !== "Please wait..." &&
+    transfer?.userActionDetails?.accountName !== "Processing..." &&
     !hasConfirmedPaid;
+
+  // Debug logging to help track the issue
+  useEffect(() => {
+    if (quote.country === "NG" && transfer?.userActionDetails) {
+      console.log("Transfer userActionDetails changed:", {
+        accountName: transfer.userActionDetails.accountName,
+        accountNumber: transfer.userActionDetails.accountNumber,
+        userActionType: transfer.userActionDetails.userActionType,
+        showNigeriaInstructions,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }, [transfer?.userActionDetails, quote.country, showNigeriaInstructions]);
 
   const NigeriaInstructions = () => {
     if (!transfer) return null;
+
+    // Only show instructions when we have the final API response data
+    // This prevents showing intermediate/default values that cause the flash
+    const userActionDetails = transfer.userActionDetails;
+    if (
+      !userActionDetails ||
+      !userActionDetails.accountName ||
+      !userActionDetails.accountNumber
+    ) {
+      return null; // Don't render until we have complete data
+    }
+
     const {
-      accountName,
+      // accountName,
       accountNumber,
       // transactionReference,
       institutionName,
-    } = transfer.userActionDetails || {
-      accountName: "",
-      accountNumber: "",
-      transactionReference: "",
-      institutionName: "",
-    };
+    } = userActionDetails;
     return (
       <div className="w-full max-w-xl mx-auto border !border-neutral-800 rounded-2xl p-4 md:p-6 text-white space-y-3">
         <div className="text-left">
           <p className="text-sm text-neutral-400">Make a bank transfer to</p>
-          <p className="text-base font-semibold">
-            {institutionName || accountName}
-          </p>
+          {institutionName && (
+            <p className="text-base font-semibold">{institutionName}</p>
+          )}
         </div>
         <div className="grid grid-cols-1  gap-3">
-          <CopyRow label="Account Name" value={accountName} />
+          {institutionName && (
+            <CopyRow label="Account Name" value={institutionName} />
+          )}
           <CopyRow label="Account Number" value={accountNumber} />
           <CopyRow label="Amount" value={fiatAmount.toFixed(0)} />
           {/* <CopyRow label="Reference" value={transactionReference} /> */}
@@ -184,6 +216,7 @@ const BuyStatusCard: React.FC<BuyStatusCardProps> = ({
           Use the exact reference when making the transfer so we can match your
           payment.
         </p> */}
+
         <Button
           className="w-full !text-white  text-sm h-12 font-semibold my-4 rounded-lg "
           style={{
@@ -353,6 +386,29 @@ const BuyStatusCard: React.FC<BuyStatusCardProps> = ({
             </div>
 
             {showNigeriaInstructions && <NigeriaInstructions />}
+
+            {/* Show loading state while waiting for transfer details */}
+            {quote.country === "NG" &&
+              transfer?.userActionDetails?.userActionType ===
+                "AccountNumberUserAction" &&
+              !hasConfirmedPaid &&
+              (!transfer?.userActionDetails?.accountName ||
+                !transfer?.userActionDetails?.accountNumber ||
+                transfer?.userActionDetails?.accountName.trim() === "" ||
+                transfer?.userActionDetails?.accountNumber.trim() === "" ||
+                transfer?.userActionDetails?.accountName === "Loading..." ||
+                transfer?.userActionDetails?.accountName === "Please wait..." ||
+                transfer?.userActionDetails?.accountName ===
+                  "Processing...") && (
+                <div className="w-full max-w-xl mx-auto border !border-neutral-800 rounded-2xl p-4 md:p-6 text-white space-y-3">
+                  <div className="text-center">
+                    <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                    <p className="text-sm text-neutral-400">
+                      Loading transfer details...
+                    </p>
+                  </div>
+                </div>
+              )}
 
             {!isProcessing && (
               <div

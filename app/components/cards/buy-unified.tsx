@@ -48,8 +48,13 @@ const BuyUnified = () => {
 
     if (!isLoading && effectiveStatus) {
       // Keep the latest polled transfer fields in store so UI has fresh details (when available)
+      // Only update when we have complete userActionDetails to prevent flashing
       try {
-        if (transferStatus) {
+        if (
+          transferStatus &&
+          transferStatus.userActionDetails?.accountName &&
+          transferStatus.userActionDetails?.accountNumber
+        ) {
           setTransfer({
             transferId: transfer?.transferId || "",
             transferStatus: transferStatus.status,
