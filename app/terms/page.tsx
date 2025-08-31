@@ -153,6 +153,9 @@ export default function Terms() {
             </section>
           </div>
         </div>
+          {/* Footer - Fixed at bottom */}
+        <div className="p-6 pt-4 border-t border-[#333]">
+        </div>
       </div>
     </div>
   );

@@ -6,7 +6,7 @@ import Link from "next/link";
 export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen w-full bg-black text-white flex items-center justify-center p-4">
-      <div className="w-full max-w-3xl mx-auto bg-[#1a1a1a] rounded-2xl border border-[#333] overflow-hidden">
+      <div className="w-full max-w-3xl mx-auto bg-black rounded-2xl overflow-hidden">
         {/* Header - Fixed at top */}
         <div className="p-6 pb-4 border-b border-[#333]">
           <Link href="/" className="text-blue-400 hover:text-blue-300 text-sm mb-4 inline-flex items-center gap-2">
@@ -143,14 +143,6 @@ export default function PrivacyPolicy() {
 
         {/* Footer - Fixed at bottom */}
         <div className="p-6 pt-4 border-t border-[#333]">
-          <div className="flex flex-col sm:flex-row gap-3 justify-between items-center">
-            <Button asChild variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-800">
-              <Link href="/">Return to OneRamp</Link>
-            </Button>
-            <Button asChild variant="ghost" className="text-gray-400 hover:text-gray-300">
-              <Link href="/terms">Terms of Service</Link>
-            </Button>
-          </div>
         </div>
       </div>
     </div>
