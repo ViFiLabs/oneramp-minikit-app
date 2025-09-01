@@ -352,6 +352,15 @@ export function BuyPanel() {
     institution,
   ]);
 
+  // Nigeria-specific KYC phone validation to show an inline message (since institution/account inputs are hidden)
+  const isNgPhoneInvalid = useMemo(() => {
+    if (country?.countryCode !== "NG") return false;
+    const kycPhone = kycData?.fullKYC?.phoneNumber || "";
+    const phone = String(kycPhone).replace(/\s|-/g, "");
+    const patterns = [/^\+234\d{10}$/i, /^234\d{10}$/i, /^0\d{10}$/];
+    return !patterns.some((re) => re.test(phone));
+  }, [country?.countryCode, kycData]);
+
   const handleCountrySelect = (selectedCountry: Country) => {
     const rate = exchangeRate?.exchange ?? selectedCountry.exchangeRate;
 
@@ -467,6 +476,11 @@ export function BuyPanel() {
       {/* Show swipe button as soon as a country is picked; stays disabled until all requirements are met */}
       {country && (
         <div className="mt-4">
+          {isNgPhoneInvalid && country.countryCode === "NG" && (
+            <p className="text-red-500 text-xs mb-2 text-center">
+              Invalid Nigerian phone number in KYC.
+            </p>
+          )}
           <SwipeToBuyButton
             onBuyComplete={() => createBuyFlow.mutate()}
             isLoading={createBuyFlow.isPending}
