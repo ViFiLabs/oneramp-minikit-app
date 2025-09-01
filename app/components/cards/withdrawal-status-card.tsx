@@ -42,54 +42,53 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
       const isDesktopSize = window.innerWidth >= 768;
       setIsDesktop(isDesktopSize);
       
-      if (isDesktopSize) {
-        // Multiple fallback strategies to find the SwapPanel container
-        let panelContainer = null;
-        
-        // Strategy 1: Look for elements with specific background and rounded styles
-        const candidates = Array.from(document.querySelectorAll('div')).filter(el => {
-          const styles = window.getComputedStyle(el);
-          const classes = el.className;
-          return (
-            (styles.backgroundColor === 'rgb(24, 24, 24)' || classes.includes('bg-[#181818]')) &&
-            (styles.borderRadius === '24px' || classes.includes('rounded-3xl')) &&
-            styles.maxWidth === '448px' || classes.includes('max-w-md')
-          );
-        });
-        
-        if (candidates.length > 0) {
-          panelContainer = candidates[0];
-          console.log('Found panel via style matching:', panelContainer);
+      // Try to find panel bounds for both desktop and mobile
+      // Multiple fallback strategies to find the SwapPanel container
+      let panelContainer: Element | null = null;
+      
+      // Strategy 1: Look for elements with specific background and rounded styles
+      const candidates = Array.from(document.querySelectorAll('div')).filter(el => {
+        const styles = window.getComputedStyle(el);
+        const classes = el.className;
+        return (
+          (styles.backgroundColor === 'rgb(24, 24, 24)' || classes.includes('bg-[#181818]')) &&
+          (styles.borderRadius === '24px' || classes.includes('rounded-3xl')) &&
+          (styles.maxWidth === '448px' || classes.includes('max-w-md') || !isDesktopSize)
+        );
+      });
+      
+      if (candidates.length > 0) {
+        panelContainer = candidates[0];
+        console.log('Found panel via style matching:', panelContainer);
+      }
+      
+      // Strategy 2: Look for SwapPanel by finding text content
+      if (!panelContainer) {
+        const swapHeaders = Array.from(document.querySelectorAll('*')).filter(el => 
+          el.textContent && el.textContent.includes('Swap') && 
+          el.closest('div[class*="bg-"]')
+        );
+        if (swapHeaders.length > 0) {
+          panelContainer = swapHeaders[0].closest('div[class*="max-w-md"], div[class*="rounded-3xl"]');
+          console.log('Found panel via Swap header:', panelContainer);
         }
-        
-        // Strategy 2: Look for SwapPanel by finding text content
-        if (!panelContainer) {
-          const swapHeaders = Array.from(document.querySelectorAll('*')).filter(el => 
-            el.textContent && el.textContent.includes('Swap') && 
-            el.closest('div[class*="bg-"]')
-          );
-          if (swapHeaders.length > 0) {
-            panelContainer = swapHeaders[0].closest('div[class*="max-w-md"], div[class*="rounded-3xl"]');
-            console.log('Found panel via Swap header:', panelContainer);
-          }
-        }
-        
-        // Strategy 3: Look for the main content container
-        if (!panelContainer) {
-          panelContainer = document.querySelector('.max-w-md.mx-auto') ||
-                          document.querySelector('[class*="max-w-md"][class*="mx-auto"]');
-          console.log('Found panel via max-w-md selector:', panelContainer);
-        }
-        
-        if (panelContainer) {
-          const bounds = panelContainer.getBoundingClientRect();
-          setPanelBounds(bounds);
-          console.log('Panel bounds detected:', bounds, panelContainer);
-        } else {
-          console.warn('Panel container not found, using fallback positioning');
-          setPanelBounds(null);
-        }
+      }
+      
+      // Strategy 3: Look for the main content container
+      if (!panelContainer) {
+        panelContainer = document.querySelector('.max-w-md.mx-auto') ||
+                        document.querySelector('[class*="max-w-md"][class*="mx-auto"]') ||
+                        document.querySelector('main') ||
+                        document.querySelector('[class*="container"]');
+        console.log('Found panel via max-w-md selector:', panelContainer);
+      }
+      
+      if (panelContainer) {
+        const bounds = panelContainer.getBoundingClientRect();
+        setPanelBounds(bounds);
+        console.log('Panel bounds detected:', bounds, panelContainer);
       } else {
+        console.warn('Panel container not found, using fallback positioning');
         setPanelBounds(null);
       }
     };
@@ -248,7 +247,7 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
       {/* Backdrop */}
       <div
         className={`fixed transition-opacity duration-300 z-[55] ${
-          isDesktop && panelBounds 
+          panelBounds 
             ? 'bg-transparent' 
             : 'inset-0 bg-black bg-opacity-50 md:bg-black/60 md:backdrop-blur-lg'
         } ${isVisible ? "opacity-100" : "opacity-0"}`}
@@ -256,13 +255,13 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
         style={{ 
           position: 'fixed',
           zIndex: 55,
-          ...(isDesktop && panelBounds ? {
+          ...(panelBounds ? {
             // Constrain backdrop to panel area but make it transparent
             left: `${panelBounds.left}px`,
             top: `${panelBounds.top}px`,
             width: `${panelBounds.width}px`,
             height: `${panelBounds.height}px`,
-            borderRadius: '1.5rem', // Match panel's rounded-3xl
+            borderRadius: isDesktop ? '1.5rem' : '1.5rem', // Match panel's rounded-3xl
           } : {
             top: 0,
             left: 0,
@@ -279,7 +278,9 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
             ? panelBounds 
               ? '' 
               : 'items-center justify-center inset-0'
-            : 'items-end justify-center inset-0'
+            : panelBounds 
+              ? ''
+              : 'items-end justify-center inset-0'
         }`}
         style={{ 
           position: 'fixed', 
@@ -300,8 +301,17 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
             right: 0,
             bottom: 0,
             padding: '1rem'
+          } : panelBounds ? {
+            // Mobile positioning with panel bounds - slide from panel base
+            left: `${panelBounds.left}px`,
+            top: `${panelBounds.top}px`,
+            width: `${panelBounds.width}px`,
+            height: `${panelBounds.height}px`,
+            padding: 0,
+            alignItems: 'flex-end',
+            justifyContent: 'center'
           } : {
-            // Mobile positioning
+            // Mobile positioning fallback - slide from screen bottom
             top: 0,
             left: 0,
             right: 0,
@@ -313,14 +323,18 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
           ref={modalRef}
           className={`overflow-hidden shadow-2xl transition-all duration-500 ease-out ${
             isDesktop && panelBounds
-              ? `bg-gray-900 border border-[#232323] rounded-3xl w-full h-auto max-h-[70%] ${
+              ? `bg-gray-900 rounded-3xl w-full h-[50vh] ${
                   isVisible ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
                 }`
               : isDesktop 
-              ? `bg-gray-900 rounded-2xl max-w-md w-full h-auto max-h-[80vh] ${
+              ? `bg-gray-900 rounded-2xl max-w-md w-full h-[50vh] ${
                   isVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
                 }`
-              : `bg-gray-900 w-full h-[70vh] rounded-t-3xl ${
+              : panelBounds
+              ? `bg-gray-900 rounded-3xl w-full h-[50vh] ${
+                  isVisible ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
+                }`
+              : `bg-gray-900 w-full h-[60vh] rounded-t-3xl ${
                   isVisible ? 'translate-y-0' : 'translate-y-full'
                 }`
           }`}
