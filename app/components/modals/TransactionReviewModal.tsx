@@ -234,7 +234,12 @@ export function TransactionReviewModal() {
   };
 
   const handleEVMPayFailed = (error: Error) => {
-    // toast.error("Transaction failed");
+    console.error("❌ EVM transaction failed:", error);
+    setLoading(false);
+    updateSelection({
+      appState: AppState.Idle,
+      orderStep: OrderStep.PaymentFailed,
+    });
     return error;
   };
 

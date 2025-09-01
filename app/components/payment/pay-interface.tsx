@@ -475,8 +475,12 @@ export function PaymentInterface() {
   };
 
   const handleEVMPayFailed = (error: Error) => {
+    console.error("❌ EVM payment transaction failed:", error);
     setBlockchainLoading(false);
-    updateSelection({ appState: AppState.Idle });
+    updateSelection({ 
+      appState: AppState.Idle,
+      orderStep: OrderStep.PaymentFailed
+    });
     return error;
   };
 
