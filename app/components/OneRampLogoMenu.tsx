@@ -118,16 +118,10 @@ export function OneRampLogoMenu({ children }: OneRampLogoMenuProps) {
               duration: 0.2, 
               ease: "easeOut" 
             }}
-            className={`absolute z-50 mt-2 w-64 bg-[#1a1a1a] border border-[#333] rounded-xl shadow-xl overflow-hidden ${
+            className={`absolute z-50 mt-2 w-56 bg-[#1a1a1a] rounded-xl shadow-xl overflow-hidden ${
               isMobile ? 'left-0' : 'left-0'
             }`}
           >
-            {/* Menu Header */}
-            <div className="px-4 py-3 border-b border-[#333]">
-              <p className="text-sm font-medium text-white">OneRamp</p>
-              <p className="text-xs text-gray-400">Legal & Privacy</p>
-            </div>
-
             {/* Menu Items */}
             <div className="py-2">
               {menuItems.map((item) => (
