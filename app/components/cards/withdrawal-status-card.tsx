@@ -33,19 +33,77 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
   const [dragCurrentY, setDragCurrentY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
+  const [panelBounds, setPanelBounds] = useState<DOMRect | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
-  // Detect screen size
+  // Detect screen size and panel boundaries
   useEffect(() => {
-    const checkScreenSize = () => {
-      setIsDesktop(window.innerWidth >= 768);
+    const checkScreenSizeAndPanelBounds = () => {
+      const isDesktopSize = window.innerWidth >= 768;
+      setIsDesktop(isDesktopSize);
+      
+      if (isDesktopSize) {
+        // Multiple fallback strategies to find the SwapPanel container
+        let panelContainer = null;
+        
+        // Strategy 1: Look for elements with specific background and rounded styles
+        const candidates = Array.from(document.querySelectorAll('div')).filter(el => {
+          const styles = window.getComputedStyle(el);
+          const classes = el.className;
+          return (
+            (styles.backgroundColor === 'rgb(24, 24, 24)' || classes.includes('bg-[#181818]')) &&
+            (styles.borderRadius === '24px' || classes.includes('rounded-3xl')) &&
+            styles.maxWidth === '448px' || classes.includes('max-w-md')
+          );
+        });
+        
+        if (candidates.length > 0) {
+          panelContainer = candidates[0];
+          console.log('Found panel via style matching:', panelContainer);
+        }
+        
+        // Strategy 2: Look for SwapPanel by finding text content
+        if (!panelContainer) {
+          const swapHeaders = Array.from(document.querySelectorAll('*')).filter(el => 
+            el.textContent && el.textContent.includes('Swap') && 
+            el.closest('div[class*="bg-"]')
+          );
+          if (swapHeaders.length > 0) {
+            panelContainer = swapHeaders[0].closest('div[class*="max-w-md"], div[class*="rounded-3xl"]');
+            console.log('Found panel via Swap header:', panelContainer);
+          }
+        }
+        
+        // Strategy 3: Look for the main content container
+        if (!panelContainer) {
+          panelContainer = document.querySelector('.max-w-md.mx-auto') ||
+                          document.querySelector('[class*="max-w-md"][class*="mx-auto"]');
+          console.log('Found panel via max-w-md selector:', panelContainer);
+        }
+        
+        if (panelContainer) {
+          const bounds = panelContainer.getBoundingClientRect();
+          setPanelBounds(bounds);
+          console.log('Panel bounds detected:', bounds, panelContainer);
+        } else {
+          console.warn('Panel container not found, using fallback positioning');
+          setPanelBounds(null);
+        }
+      } else {
+        setPanelBounds(null);
+      }
     };
     
-    checkScreenSize();
-    window.addEventListener('resize', checkScreenSize);
+    checkScreenSizeAndPanelBounds();
+    window.addEventListener('resize', checkScreenSizeAndPanelBounds);
     
-    return () => window.removeEventListener('resize', checkScreenSize);
-  }, []);
+    // Also check bounds when modal becomes visible (in case DOM changes)
+    if (isVisible) {
+      setTimeout(checkScreenSizeAndPanelBounds, 100);
+    }
+    
+    return () => window.removeEventListener('resize', checkScreenSizeAndPanelBounds);
+  }, [isVisible]);
 
   // Show modal with animation and prevent body scroll
   useEffect(() => {
@@ -189,24 +247,82 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
     <>
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 bg-black bg-opacity-50 md:bg-black/60 md:backdrop-blur-lg z-[55] transition-opacity duration-300 ${
-          isVisible ? "opacity-100" : "opacity-0"
-        }`}
+        className={`fixed transition-opacity duration-300 z-[55] ${
+          isDesktop && panelBounds 
+            ? 'bg-transparent' 
+            : 'inset-0 bg-black bg-opacity-50 md:bg-black/60 md:backdrop-blur-lg'
+        } ${isVisible ? "opacity-100" : "opacity-0"}`}
         onClick={handleClose}
-        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+        style={{ 
+          position: 'fixed',
+          zIndex: 55,
+          ...(isDesktop && panelBounds ? {
+            // Constrain backdrop to panel area but make it transparent
+            left: `${panelBounds.left}px`,
+            top: `${panelBounds.top}px`,
+            width: `${panelBounds.width}px`,
+            height: `${panelBounds.height}px`,
+            borderRadius: '1.5rem', // Match panel's rounded-3xl
+          } : {
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0
+          })
+        }}
       />
 
       {/* Modal */}
       <div 
-        className={`fixed inset-0 z-[60] flex ${isDesktop ? 'items-center justify-center' : 'items-end justify-center'} p-0 md:p-4`}
-        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 60 }}
+        className={`fixed z-[60] flex ${
+          isDesktop 
+            ? panelBounds 
+              ? '' 
+              : 'items-center justify-center inset-0'
+            : 'items-end justify-center inset-0'
+        }`}
+        style={{ 
+          position: 'fixed', 
+          zIndex: 60,
+          // Use detected panel boundaries on desktop when available
+          ...(isDesktop && panelBounds ? {
+            left: `${panelBounds.left}px`,
+            top: `${panelBounds.top}px`,
+            width: `${panelBounds.width}px`,
+            height: `${panelBounds.height}px`,
+            padding: 0,
+            alignItems: 'flex-end',
+            justifyContent: 'center'
+          } : isDesktop ? {
+            // Fallback for desktop when panel bounds not detected
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            padding: '1rem'
+          } : {
+            // Mobile positioning
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0
+          })
+        }}
       >
         <div
           ref={modalRef}
-          className={`bg-gray-900 w-full overflow-hidden shadow-2xl transition-all duration-300 ease-out ${
-            isDesktop 
-              ? `rounded-2xl max-w-md h-auto max-h-[80vh] ${isVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`
-              : `h-[70vh] rounded-t-3xl ${isVisible ? 'translate-y-0' : 'translate-y-full'}`
+          className={`overflow-hidden shadow-2xl transition-all duration-500 ease-out ${
+            isDesktop && panelBounds
+              ? `bg-gray-900 border border-[#232323] rounded-3xl w-full h-auto max-h-[70%] ${
+                  isVisible ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
+                }`
+              : isDesktop 
+              ? `bg-gray-900 rounded-2xl max-w-md w-full h-auto max-h-[80vh] ${
+                  isVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
+                }`
+              : `bg-gray-900 w-full h-[70vh] rounded-t-3xl ${
+                  isVisible ? 'translate-y-0' : 'translate-y-full'
+                }`
           }`}
           style={{
             transition: isDragging ? "none" : "transform 300ms ease-out, opacity 300ms ease-out, scale 300ms ease-out",
