@@ -1,7 +1,8 @@
 "use client";
 
 import { Button } from "@/app/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogOverlay, DialogPortal, VisuallyHidden } from "@/components/ui/dialog";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { SUPPORTED_NETWORKS_WITH_RPC_URLS } from "@/data/networks";
 import useWalletGetInfo from "@/hooks/useWalletGetInfo";
 import { cn } from "@/lib/utils";
@@ -123,13 +124,48 @@ export const ModalConnectButton = ({ large }: { large?: boolean }) => {
       )}
 
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="!fixed !border-none !bottom-0 !left-0 !right-0 !top-auto !z-50 !max-w-none !w-full !h-fit !min-h-0 !max-h-none !p-0 !m-0 bg-[#181818] text-white flex flex-col rounded-t-3xl animate-slide-up-smooth overflow-hidden">
-          <div className="w-12 h-1 bg-gray-500 rounded-full mx-auto mt-3 mb-4"></div>
-          <div className="h-14 mb-4 px-5 flex items-center justify-between">
-            <h1 className="text-white text-xl font-semibold">My Wallets</h1>
-          </div>
+        <DialogPortal>
+          <DialogOverlay className="bg-black/60 backdrop-blur-lg fixed inset-0 z-40 md:bg-black/60 md:backdrop-blur-lg" />
+          <DialogPrimitive.Content
+            className="fixed z-50 bg-[#181818] border-none text-white p-0 m-0 shadow-2xl overflow-hidden
+            /* Mobile: bottom sheet behavior */
+            bottom-0 left-0 right-0 w-full rounded-t-3xl animate-slide-up-smooth
+            /* Desktop: centered modal */
+            md:bottom-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:max-w-md md:w-full md:rounded-2xl md:animate-in md:fade-in md:duration-200 md:transform
+            desktop-modal-center"
+            style={{
+              padding: 0,
+              height: "auto",
+              maxHeight: "60vh",
+              minHeight: "auto",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <VisuallyHidden>
+              <DialogPrimitive.Title>My Wallets</DialogPrimitive.Title>
+            </VisuallyHidden>
+            {/* Mobile pull indicator - only show on mobile */}
+            <div className="w-12 h-1 bg-gray-500 rounded-full mx-auto mt-3 mb-4 md:hidden"></div>
+            <div className="h-14 mb-4 px-5 flex items-center justify-between">
+              <h1 className="text-white text-xl font-semibold">My Wallets</h1>
+              {/* Desktop close button - only show on desktop */}
+              <button
+                onClick={() => setModalOpen(false)}
+                className="hidden md:block text-neutral-400 hover:text-white p-2 rounded-xl hover:bg-[#232323] transition-colors"
+              >
+                <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+                  <path
+                    d="M18 6L6 18M6 6l12 12"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </button>
+            </div>
 
-          <div className="flex flex-col gap-4 px-4 pb-8">
+            <div className="flex flex-col gap-4 px-4 pb-8">
             <>
               {isConnected && hasAnyEvmNetwork ? (
                 <ConnectedWalletCard />
@@ -160,7 +196,8 @@ export const ModalConnectButton = ({ large }: { large?: boolean }) => {
               )}
             </>
           </div>
-        </DialogContent>
+        </DialogPrimitive.Content>
+        </DialogPortal>
       </Dialog>
     </>
   );
