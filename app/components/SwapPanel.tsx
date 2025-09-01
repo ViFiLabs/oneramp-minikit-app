@@ -336,6 +336,7 @@ export function SwapPanel() {
     setStepMessage("Setting up withdrawal...");
 
     const transferPayload = createTransferPayload(quoteResponse.quote.quoteId);
+
     const transferResponse = await createTransferOut(transferPayload);
 
     console.log("✅ Transfer response:", transferResponse);
