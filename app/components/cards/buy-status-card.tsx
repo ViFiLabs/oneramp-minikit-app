@@ -259,23 +259,29 @@ const BuyStatusCard: React.FC<BuyStatusCardProps> = ({
   return (
     <>
       <div
-        className={`fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300 ${
+        className={`fixed inset-0 bg-black bg-opacity-50 md:bg-black/60 md:backdrop-blur-lg z-40 transition-opacity duration-300 ${
           isVisible ? "opacity-100" : "opacity-0"
         }`}
         onClick={handleClose}
       />
-      <div className="fixed inset-0 z-50 flex items-end justify-center p-0">
+      <div className="fixed inset-0 z-50 flex items-end justify-center p-0 md:items-center md:justify-center md:p-4">
         <div
           ref={modalRef}
-          className={`bg-gray-900 rounded-t-3xl w-full h-[60vh] overflow-hidden transition-all duration-300 ease-out shadow-2xl ${
-            isVisible ? "translate-y-0" : "translate-y-full"
-          }`}
+          className={`bg-gray-900 w-full h-[60vh] overflow-hidden transition-all duration-300 ease-out shadow-2xl
+            /* Mobile: bottom sheet behavior */
+            rounded-t-3xl
+            /* Desktop: centered modal */
+            md:rounded-2xl md:max-w-md md:w-full md:h-auto md:max-h-[80vh]
+            /* Mobile animations */
+            ${isVisible ? "translate-y-0" : "translate-y-full"}
+            /* Desktop animations - override mobile */
+            md:translate-y-0 ${isVisible ? "md:scale-100 md:opacity-100" : "md:scale-95 md:opacity-0"}`}
           style={{
-            transition: isDragging ? "none" : "transform 300ms ease-out",
+            transition: isDragging ? "none" : "transform 300ms ease-out, opacity 300ms ease-out, scale 300ms ease-out",
           }}
         >
           <div
-            className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing"
+            className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing md:hidden"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
@@ -285,11 +291,16 @@ const BuyStatusCard: React.FC<BuyStatusCardProps> = ({
           </div>
 
           <div
-            className="flex justify-end p-4 pb-2 cursor-grab active:cursor-grabbing"
+            className="flex justify-end p-4 pb-2 cursor-grab active:cursor-grabbing md:cursor-default"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
-            onMouseDown={handleMouseDown}
+            onMouseDown={(e) => {
+              // Only enable drag on mobile (< 768px)
+              if (window.innerWidth < 768) {
+                handleMouseDown(e);
+              }
+            }}
           >
             <button
               onClick={handleClose}

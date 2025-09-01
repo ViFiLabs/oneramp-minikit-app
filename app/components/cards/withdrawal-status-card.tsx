@@ -32,7 +32,20 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
   const [dragStartY, setDragStartY] = useState(0);
   const [dragCurrentY, setDragCurrentY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
+
+  // Detect screen size
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsDesktop(window.innerWidth >= 768);
+    };
+    
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   // Show modal with animation and prevent body scroll
   useEffect(() => {
@@ -176,41 +189,54 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
     <>
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300 ${
+        className={`fixed inset-0 bg-black bg-opacity-50 md:bg-black/60 md:backdrop-blur-lg z-[55] transition-opacity duration-300 ${
           isVisible ? "opacity-100" : "opacity-0"
         }`}
         onClick={handleClose}
+        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
       />
 
       {/* Modal */}
-      <div className="fixed inset-0 z-50 flex items-end justify-center p-0">
+      <div 
+        className={`fixed inset-0 z-[60] flex ${isDesktop ? 'items-center justify-center' : 'items-end justify-center'} p-0 md:p-4`}
+        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 60 }}
+      >
         <div
           ref={modalRef}
-          className={`bg-gray-900 rounded-t-3xl w-full h-[70vh] overflow-hidden transition-all duration-300 ease-out shadow-2xl ${
-            isVisible ? "translate-y-0" : "translate-y-full"
+          className={`bg-gray-900 w-full overflow-hidden shadow-2xl transition-all duration-300 ease-out ${
+            isDesktop 
+              ? `rounded-2xl max-w-md h-auto max-h-[80vh] ${isVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`
+              : `h-[70vh] rounded-t-3xl ${isVisible ? 'translate-y-0' : 'translate-y-full'}`
           }`}
           style={{
-            transition: isDragging ? "none" : "transform 300ms ease-out",
+            transition: isDragging ? "none" : "transform 300ms ease-out, opacity 300ms ease-out, scale 300ms ease-out",
           }}
         >
-          {/* Drag Handle for mobile */}
-          <div
-            className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            onMouseDown={handleMouseDown}
-          >
-            <div className="w-12 h-1 bg-gray-500 rounded-full"></div>
-          </div>
+          {/* Drag Handle for mobile - only show on mobile */}
+          {!isDesktop && (
+            <div
+              className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing"
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              onMouseDown={handleMouseDown}
+            >
+              <div className="w-12 h-1 bg-gray-500 rounded-full"></div>
+            </div>
+          )}
 
           {/* Header with Close Button */}
           <div
-            className="flex justify-end p-4 pb-2 cursor-grab active:cursor-grabbing"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            onMouseDown={handleMouseDown}
+            className={`flex justify-end p-4 pb-2 ${!isDesktop ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'}`}
+            onTouchStart={!isDesktop ? handleTouchStart : undefined}
+            onTouchMove={!isDesktop ? handleTouchMove : undefined}
+            onTouchEnd={!isDesktop ? handleTouchEnd : undefined}
+            onMouseDown={(e) => {
+              // Only enable drag on mobile
+              if (!isDesktop) {
+                handleMouseDown(e);
+              }
+            }}
           >
             <button
               onClick={handleClose}
