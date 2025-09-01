@@ -14,6 +14,7 @@ import BuyValueInput from "./inputs/BuyValueInput";
 import { CountryCurrencyModal } from "./modals/CountryCurrencyModal";
 import SelectCountryModal from "./modals/select-country-modal";
 import { TokenSelectModal } from "./modals/TokenSelectModal";
+import { KYCVerificationModal } from "./modals/KYCVerificationModal";
 import SelectInstitution from "./select-institution";
 import { SwipeToBuyButton } from "./payment/swipe-to-buy";
 import { useQuoteStore } from "@/store/quote-store";
@@ -45,6 +46,8 @@ export function BuyPanel() {
   // Local selection states removed; we route via unified modal flow
   const [showCountryModal, setShowCountryModal] = useState(false);
   const [showTokenModal, setShowTokenModal] = useState(false);
+  const [showKYCModal, setShowKYCModal] = useState(false);
+  const [swipeButtonReset, setSwipeButtonReset] = useState(false);
   const {
     updateSelection,
     country,
@@ -482,12 +485,26 @@ export function BuyPanel() {
             </p>
           )}
           <SwipeToBuyButton
-            onBuyComplete={() => createBuyFlow.mutate()}
+            onBuyComplete={() => {
+              // KYC gate for Buy flow (new users see KYC modal like Swap/Pay)
+              if (!kycData || kycData.kycStatus !== "VERIFIED") {
+                setShowKYCModal(true);
+                toast.error(
+                  "KYC verification is not complete. Please complete KYC to continue."
+                );
+                // reset slider back after short delay
+                setSwipeButtonReset(true);
+                setTimeout(() => setSwipeButtonReset(false), 100);
+                return;
+              }
+              createBuyFlow.mutate();
+            }}
             isLoading={createBuyFlow.isPending}
             disabled={isBuyDisabled}
             stepMessage={
               createBuyFlow.isPending ? "Setting up purchase..." : undefined
             }
+            reset={swipeButtonReset}
           />
         </div>
       )}
@@ -515,6 +532,17 @@ export function BuyPanel() {
       <TokenSelectModal
         open={showTokenModal}
         onClose={() => setShowTokenModal(false)}
+      />
+
+      {/* KYC Verification Modal */}
+      <KYCVerificationModal
+        open={showKYCModal}
+        onClose={() => {
+          setShowKYCModal(false);
+          setSwipeButtonReset(true);
+          setTimeout(() => setSwipeButtonReset(false), 100);
+        }}
+        kycLink={kycData?.message?.link || null}
       />
 
       {/* Review modal disabled for swipe flow */}
