@@ -58,14 +58,22 @@ export function OneRampLogoMenu({ children }: OneRampLogoMenuProps) {
 
   const menuItems = [
     {
+      label: "Legacy",
+      href: "https://pay.oneramp.io",
+      description: "Visit our legacy platform",
+      external: true
+    },
+    {
       label: "Terms",
       href: "/terms",
-      description: "View our terms of service"
+      description: "View our terms of service",
+      external: false
     },
     {
       label: "Privacy Policy", 
       href: "/privacy-policy",
-      description: "Read our privacy policy"
+      description: "Read our privacy policy",
+      external: false
     }
   ];
 
@@ -125,21 +133,71 @@ export function OneRampLogoMenu({ children }: OneRampLogoMenuProps) {
             {/* Menu Items */}
             <div className="py-2">
               {menuItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setIsOpen(false)}
-                  className="block px-4 py-3 hover:bg-[#2a2a2a] transition-colors group"
-                >
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium text-white group-hover:text-blue-400 transition-colors">
-                      {item.label}
-                    </span>
-                    <span className="text-xs text-gray-500 mt-1">
-                      {item.description}
-                    </span>
-                  </div>
-                </Link>
+                item.external ? (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setIsOpen(false)}
+                    className="block px-4 py-3 hover:bg-[#2a2a2a] transition-colors group"
+                  >
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium text-white group-hover:text-blue-400 transition-colors flex items-center gap-2">
+                        {item.label}
+                        {/* External link icon */}
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          className="text-gray-400 group-hover:text-blue-400 transition-colors"
+                        >
+                          <path
+                            d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          <path
+                            d="M15 3h6v6"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          <path
+                            d="M10 14L21 3"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </span>
+                      <span className="text-xs text-gray-500 mt-1">
+                        {item.description}
+                      </span>
+                    </div>
+                  </a>
+                ) : (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setIsOpen(false)}
+                    className="block px-4 py-3 hover:bg-[#2a2a2a] transition-colors group"
+                  >
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium text-white group-hover:text-blue-400 transition-colors">
+                        {item.label}
+                      </span>
+                      <span className="text-xs text-gray-500 mt-1">
+                        {item.description}
+                      </span>
+                    </div>
+                  </Link>
+                )
               ))}
             </div>
           </motion.div>
