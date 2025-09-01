@@ -45,8 +45,14 @@ export function BuyPanel() {
   // Local selection states removed; we route via unified modal flow
   const [showCountryModal, setShowCountryModal] = useState(false);
   const [showTokenModal, setShowTokenModal] = useState(false);
-  const { updateSelection, country, paymentMethod, asset, appState } =
-    useUserSelectionStore();
+  const {
+    updateSelection,
+    country,
+    paymentMethod,
+    asset,
+    appState,
+    institution,
+  } = useUserSelectionStore();
   const { exchangeRate, setExchangeRate, setError } = useExchangeRateStore();
   const { currentNetwork } = useNetworkStore();
 
@@ -199,14 +205,10 @@ export function BuyPanel() {
 
       if (paymentMethod === "momo") {
         if (country.countryCode === "NG") {
-          // Nigeria: Submit only bank code (institution code) and leave account fields empty
-          const { useUserSelectionStore: selectionStore } = await import(
-            "@/store/user-selection"
-          );
-          const { institution: instSelected } = selectionStore.getState();
+          // Nigeria: Submit empty bank fields for simplified flow
           transferPayload = {
             bank: {
-              code: instSelected?.code || "",
+              code: "",
               accountNumber: "",
               accountName: "",
             },
@@ -241,13 +243,11 @@ export function BuyPanel() {
           };
         }
       } else if (paymentMethod === "bank") {
-        if (!inst) throw new Error("Institution required");
-        const accountName = acctName || fullName;
         if (country.countryCode === "NG") {
-          // Nigeria: Submit only bank code and leave account fields empty
+          // Nigeria: Submit empty bank fields for simplified flow
           transferPayload = {
             bank: {
-              code: inst.code,
+              code: "",
               accountNumber: "",
               accountName: "",
             },
@@ -258,32 +258,36 @@ export function BuyPanel() {
               phone: (phoneNumber || "") as string,
             },
           };
-        } else if (country.countryCode === "ZA") {
-          // South Africa: keep previous behavior using provided account details
-          transferPayload = {
-            bank: {
-              code: inst.code,
-              accountNumber: (acctNum || "") as string,
-              accountName,
-            },
-            operator: "bank",
-            quoteId: quoteResp.quote.quoteId,
-            userDetails: {
-              ...userDetails,
-              phone: (phoneNumber || acctNum || "") as string,
-            },
-          };
         } else {
-          transferPayload = {
-            bank: {
-              code: inst.code,
-              accountNumber: (acctNum || "") as string,
-              accountName,
-            },
-            operator: "bank",
-            quoteId: quoteResp.quote.quoteId,
-            userDetails,
-          };
+          if (!inst) throw new Error("Institution required");
+          const accountName = acctName || fullName;
+          if (country.countryCode === "ZA") {
+            // South Africa: keep previous behavior using provided account details
+            transferPayload = {
+              bank: {
+                code: inst.code,
+                accountNumber: (acctNum || "") as string,
+                accountName,
+              },
+              operator: "bank",
+              quoteId: quoteResp.quote.quoteId,
+              userDetails: {
+                ...userDetails,
+                phone: (phoneNumber || acctNum || "") as string,
+              },
+            };
+          } else {
+            transferPayload = {
+              bank: {
+                code: inst.code,
+                accountNumber: (acctNum || "") as string,
+                accountName,
+              },
+              operator: "bank",
+              quoteId: quoteResp.quote.quoteId,
+              userDetails,
+            };
+          }
         }
       } else {
         throw new Error("Unsupported payment method");
@@ -330,6 +334,9 @@ export function BuyPanel() {
       if (!isValidNigerianPhone(kycPhone)) {
         return true;
       }
+    } else {
+      // For non-Nigeria countries, require institution selection
+      if (!institution) return true;
     }
 
     return false;
@@ -342,6 +349,7 @@ export function BuyPanel() {
     address,
     appState,
     kycData,
+    institution,
   ]);
 
   const handleCountrySelect = (selectedCountry: Country) => {
@@ -451,8 +459,10 @@ export function BuyPanel() {
         </>
       )}
 
-      {/* Always allow selecting institution once a country is chosen */}
-      {country && <SelectInstitution buy disableSubmit={true} />}
+      {/* Always allow selecting institution once a country is chosen, except for Nigeria buy flow */}
+      {country && country.countryCode !== "NG" && (
+        <SelectInstitution buy disableSubmit={true} />
+      )}
 
       {/* Show swipe button as soon as a country is picked; stays disabled until all requirements are met */}
       {country && (
