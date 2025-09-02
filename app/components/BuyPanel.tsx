@@ -191,7 +191,10 @@ export function BuyPanel() {
       }
 
       const userDetails = {
-        name: fullName,
+        name:
+          country.countryCode === "NG" && acctName
+            ? (acctName as string)
+            : fullName,
         country: country.countryCode || "",
         address: nationality || country.name || "",
         phone: acctNum || phoneNumber || "",
