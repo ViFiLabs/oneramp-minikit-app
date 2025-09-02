@@ -68,13 +68,16 @@ export function SwapPanel() {
   const { setTransfer, setTransactionHash } = useTransferStore();
   const { kycData } = useKYCStore();
 
-  // Get available assets for the current network
+  // Get available assets for the current network (limit to USDC and cNGN)
   const availableAssets = useMemo(() => {
-    if (!currentNetwork) return assets;
+    const allowedSymbols = new Set(["USDC", "cNGN"]);
+    if (!currentNetwork) {
+      return assets.filter((a) => allowedSymbols.has(a.symbol));
+    }
 
     return assets.filter((asset) => {
       const networkConfig = asset.networks[currentNetwork.name];
-      return networkConfig && networkConfig.tokenAddress;
+      return !!networkConfig && allowedSymbols.has(asset.symbol);
     });
   }, [currentNetwork]);
 
@@ -125,13 +128,34 @@ export function SwapPanel() {
 
   // Sync selectedCurrency with global asset on mount
   useEffect(() => {
+    const allowedSymbols = new Set(["USDC", "cNGN"]);
+    // If global asset exists and differs, but is not allowed, coerce to first allowed
+    if (
+      asset &&
+      (!allowedSymbols.has(asset.symbol) ||
+        !availableAssets.find((a) => a.symbol === asset.symbol))
+    ) {
+      if (availableAssets.length > 0) {
+        setSelectedCurrency(availableAssets[0]);
+        updateSelection({ asset: availableAssets[0] });
+      }
+      return;
+    }
+
     if (asset && asset !== selectedCurrency) {
       setSelectedCurrency(asset);
-    } else if (!asset && selectedCurrency) {
-      // Set global asset to selectedCurrency if no global asset is set
-      updateSelection({ asset: selectedCurrency });
+    } else if (!asset) {
+      // Set global asset to a default allowed asset
+      const defaultAsset =
+        availableAssets[0] ||
+        assets.find((a) => allowedSymbols.has(a.symbol)) ||
+        assets[0];
+      if (defaultAsset) {
+        setSelectedCurrency(defaultAsset);
+        updateSelection({ asset: defaultAsset });
+      }
     }
-  }, [asset, selectedCurrency]); // Removed updateSelection from dependencies
+  }, [asset, selectedCurrency, availableAssets, updateSelection]);
 
   // Close wallet modal when wallet gets connected
   useEffect(() => {
@@ -182,7 +206,10 @@ export function SwapPanel() {
       }
 
       const baseUserDetails = {
-        name: fullName,
+        name:
+          country.countryCode === "NG" && userSelectionStore.accountName
+            ? userSelectionStore.accountName
+            : fullName,
         country: country.countryCode || "",
         address: nationality || country.name || "",
         dob: dateOfBirth,
@@ -325,7 +352,6 @@ export function SwapPanel() {
     };
 
     const quoteResponse = await createQuoteOut(quotePayload);
-    console.log("✅ Quote response:", quoteResponse);
 
     if (!quoteResponse?.quote?.quoteId) {
       throw new Error("No quote ID received from quote response");
@@ -338,8 +364,6 @@ export function SwapPanel() {
     const transferPayload = createTransferPayload(quoteResponse.quote.quoteId);
 
     const transferResponse = await createTransferOut(transferPayload);
-
-    console.log("✅ Transfer response:", transferResponse);
 
     return {
       quote: quoteResponse,
@@ -424,7 +448,6 @@ export function SwapPanel() {
     const contractAddress = asset.networks[networkName]?.tokenAddress;
 
     if (!contractAddress) {
-      console.log("No contract address found for network:", networkName);
       setWithdrawLoading(false);
       return;
     }
@@ -492,7 +515,6 @@ export function SwapPanel() {
   // Handle swipe to withdraw completion
   const handleWithdrawComplete = () => {
     if (!isAmountValid || !country || !institution || !accountNumber) {
-      console.log("Basic validation failed");
       return;
     }
 

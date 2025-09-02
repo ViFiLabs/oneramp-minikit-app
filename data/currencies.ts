@@ -96,4 +96,40 @@ export const assets: Asset[] = [
       },
     },
   },
+
+  {
+    name: "cNGN",
+    logo: "/logos/cngn.png",
+    symbol: "cNGN",
+    network: "Ethereum",
+    networks: {
+      Ethereum: {
+        ...mainnet,
+        logo: "/logos/ethereum.png",
+        type: ChainTypes.EVM,
+        chainId: 1,
+        chainNamespace: "eip155",
+        caipNetworkId: "eip155:1",
+        tokenAddress: "0x17CDB2a01e7a34CbB3DD4b83260B05d0274C8dab", // placeholder if not available
+      },
+      Polygon: {
+        ...polygon,
+        logo: "/logos/polygon.png",
+        type: ChainTypes.EVM,
+        chainId: 137,
+        chainNamespace: "eip155",
+        caipNetworkId: "eip155:137",
+        tokenAddress: "0x52828daa48C1a9A06F37500882b42daf0bE04C3B", // placeholder
+      },
+      Base: {
+        ...base,
+        logo: "/logos/base.png",
+        type: ChainTypes.EVM,
+        chainId: 8453,
+        chainNamespace: "eip155",
+        caipNetworkId: "eip155:8453",
+        tokenAddress: "0x46C85152bFe9f96829aA94755D9f915F9B10EF5F", // placeholder
+      },
+    },
+  },
 ];

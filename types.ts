@@ -60,9 +60,9 @@ export interface Asset {
   name: string;
   logo: string;
   symbol: string;
-  networks: {
+  networks: Partial<{
     [key in (typeof SUPPORTED_NETWORK_NAMES)[number]]: Network;
-  };
+  }>;
 }
 
 export interface Institution {
