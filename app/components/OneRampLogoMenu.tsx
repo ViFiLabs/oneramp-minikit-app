@@ -67,13 +67,15 @@ export function OneRampLogoMenu({ children }: OneRampLogoMenuProps) {
       label: "Terms",
       href: "/terms",
       description: "View our terms of service",
-      external: false
+      external: false,
+      prefetch: true
     },
     {
       label: "Privacy Policy", 
       href: "/privacy-policy",
       description: "Read our privacy policy",
-      external: false
+      external: false,
+      prefetch: true
     }
   ];
 
@@ -185,6 +187,7 @@ export function OneRampLogoMenu({ children }: OneRampLogoMenuProps) {
                   <Link
                     key={item.href}
                     href={item.href}
+                    prefetch={item.prefetch || false}
                     onClick={() => setIsOpen(false)}
                     className="block px-4 py-3 hover:bg-[#2a2a2a] transition-colors group"
                   >

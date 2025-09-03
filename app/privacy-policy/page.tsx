@@ -1,7 +1,47 @@
-"use client";
-
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { Suspense } from "react";
+import type { Metadata } from "next";
+
+// Metadata for SEO optimization
+export const metadata: Metadata = {
+  title: "Privacy Policy | VIFI Holdings - Oneramp.io",
+  description: "Read VIFI Holdings privacy policy. Learn how we protect your data when using Oneramp.io and our decentralized financial services. Your privacy is our priority.",
+  keywords: ["privacy policy", "VIFI Holdings", "Oneramp.io", "data protection", "cryptocurrency privacy", "DeFi privacy"],
+  robots: "index, follow",
+  openGraph: {
+    title: "Privacy Policy | VIFI Holdings",
+    description: "Privacy policy for VIFI Holdings services including Oneramp.io and data protection practices",
+    type: "website"
+  }
+};
+
+// Pre-calculate the date at build time
+const LAST_UPDATED = new Date().toLocaleDateString();
+
+// Loading component for better UX
+function PrivacyLoading() {
+  return (
+    <div className="min-h-screen w-full bg-black text-white flex items-center justify-center p-4">
+      <div className="w-full max-w-3xl mx-auto bg-black rounded-2xl overflow-hidden">
+        <div className="p-6 pb-4 border-b border-[#333]">
+          <div className="h-4 bg-gray-700 rounded w-20 mb-4 animate-pulse"></div>
+          <div className="h-8 bg-gray-700 rounded w-40 mb-2 animate-pulse"></div>
+          <div className="h-4 bg-gray-700 rounded w-32 animate-pulse"></div>
+        </div>
+        <div className="h-[70vh] overflow-y-auto p-6">
+          <div className="space-y-6">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="space-y-2">
+                <div className="h-4 bg-gray-700 rounded w-3/4 animate-pulse"></div>
+                <div className="h-4 bg-gray-700 rounded w-1/2 animate-pulse"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function PrivacyPolicy() {
   return (
@@ -16,7 +56,7 @@ export default function PrivacyPolicy() {
             Go back
           </Link>
           <h1 className="text-2xl md:text-3xl font-bold mb-2">Privacy Policy</h1>
-          <p className="text-gray-400 text-sm">Last updated: {new Date().toLocaleDateString()}</p>
+          <p className="text-gray-400 text-sm">Last updated: {LAST_UPDATED}</p>
         </div>
 
         {/* Scrollable Content */}
