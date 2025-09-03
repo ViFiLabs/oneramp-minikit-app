@@ -18,10 +18,11 @@ const nextConfig = {
   compress: true,
   // Enable experimental features for better performance
   experimental: {
-    optimizeCss: true,
     scrollRestoration: true,
   },
-  // Add headers for better caching
+  // Output configuration for deployment
+  output: process.env.NODE_ENV === 'production' ? 'standalone' : undefined,
+  // Add headers for better caching and security
   async headers() {
     return [
       {
@@ -38,6 +39,14 @@ const nextConfig = {
           {
             key: 'X-Frame-Options',
             value: 'DENY'
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff'
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'origin-when-cross-origin'
           }
         ]
       },
@@ -56,6 +65,15 @@ const nextConfig = {
           {
             key: 'Cache-Control',
             value: 'public, max-age=3600, stale-while-revalidate=86400'
+          }
+        ]
+      },
+      {
+        source: '/favicon.ico',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=86400'
           }
         ]
       }
