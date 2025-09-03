@@ -193,7 +193,7 @@ export const countries: Country[] = [
     exchangeRate: 1_588.69,
     institutions: [],
     fiatMinMax: { min: 3_000, max: 480_000 },
-    cryptoMinMax: { min: 2, max: 2_500 },
+    cryptoMinMax: { min: 1, max: 2_500 },
     accountNumberLength: {
       bankLength: 10,
       mobileLength: 9,
