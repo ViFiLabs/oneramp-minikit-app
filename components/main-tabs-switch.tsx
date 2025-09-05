@@ -1,10 +1,10 @@
 "use client";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { SwapPanel } from "@/app/components/SwapPanel";
 import { BuyPanel } from "@/app/components/BuyPanel";
-import { useUserSelectionStore } from "@/store/user-selection";
+import { SwapPanel } from "@/app/components/SwapPanel";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAmountStore } from "@/store/amount-store";
+import { useUserSelectionStore } from "@/store/user-selection";
 import { AnimatePresence, motion } from "framer-motion";
 // import { countries } from "@/data/countries";
 import { PayPanel } from "@/app/components/PayPanel";

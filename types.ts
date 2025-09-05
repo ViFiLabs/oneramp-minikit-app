@@ -118,6 +118,12 @@ export interface UserSelectionGlobalState {
   countryPanelOnTop?: boolean;
   billTillPayout?: UserBillTillPayout;
   isPayout?: boolean;
+  /**
+   * Optional action required when working with cNGN token flows.
+   * Example values: "fiat_withdrawal" | "onchain_transfer". When undefined,
+   * UI should prompt the user to pick one before proceeding.
+   */
+  cngnAction?: "fiat_withdrawal" | "onchain_transfer";
 }
 
 export interface UserBillTillPayout {

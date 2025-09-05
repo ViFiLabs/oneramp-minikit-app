@@ -26,6 +26,7 @@ const initialState: UserSelectionGlobalState = {
   pastedAddress: undefined,
   countryPanelOnTop: false,
   isPayout: true,
+  cngnAction: undefined,
 };
 
 const defaultState = {

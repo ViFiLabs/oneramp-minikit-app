@@ -38,6 +38,8 @@ import SelectInstitution from "./select-institution";
 import { KYCVerificationModal } from "./modals/KYCVerificationModal";
 import { toast } from "sonner";
 import { ModalConnectButton } from "@/components/modal-connect-button";
+// Standalone cNGN action picker now lives in CNGNActionPanel
+import SelectCNGNAction from "./SelectCNGNAction";
 
 const networks: Network[] = SUPPORTED_NETWORKS_WITH_RPC_URLS;
 
@@ -123,7 +125,8 @@ export function SwapPanel() {
   const handleCurrencyChange = (currency: Asset) => {
     setSelectedCurrency(currency);
     // Update global store with selected currency
-    updateSelection({ asset: currency });
+    // Reset cNGN action whenever asset changes so the top UI prompts selection
+    updateSelection({ asset: currency, cngnAction: undefined });
   };
 
   // Sync selectedCurrency with global asset on mount
@@ -581,7 +584,13 @@ export function SwapPanel() {
     !institution ||
     !accountNumber ||
     !evmConnected ||
-    stepMessage === "Transaction Complete!";
+    stepMessage === "Transaction Complete!" ||
+    // For cNGN ensure action is selected
+    (selectedCurrency.symbol === "cNGN" && !userSelectionStore.cngnAction);
+
+  // Show dedicated cNGN intro screen inside the card when cNGN is selected
+  const showCNGNIntro =
+    selectedCurrency.symbol === "cNGN" && !userSelectionStore.cngnAction;
 
   return (
     <div className="w-full max-w-md mx-auto min-h-[400px] bg-[#181818] rounded-3xl p-0 flex flex-col gap-0 md:shadow-lg md:border border-[#232323] relative">
@@ -599,129 +608,166 @@ export function SwapPanel() {
         />
       </motion.div>
 
+      {/* cNGN Intro UI in-place under header */}
+      {showCNGNIntro && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        >
+          <div className="mx-3 md:mx-4 my-2 bg-[#232323] rounded-2xl p-4 md:p-5 border border-[#2a2a2a]">
+            <SelectCNGNAction />
+          </div>
+        </motion.div>
+      )}
+
       {/* Animated Panel Container */}
-      <AnimatePresence mode="wait">
-        {countryPanelOnTop ? (
-          <motion.div
-            key="country-top"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-          >
+      {!showCNGNIntro && (
+        <AnimatePresence mode="wait">
+          {countryPanelOnTop ? (
             <motion.div
-              initial={{ y: 100 }}
-              animate={{ y: 0 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
+              key="country-top"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
             >
-              <ToPanel
-                selectedCountryCurrency={selectedCountryCurrency}
-                onBeneficiarySelect={handleBeneficiarySelect}
+              <motion.div
+                initial={{ y: 100 }}
+                animate={{ y: 0 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+              >
+                <ToPanel
+                  selectedCountryCurrency={selectedCountryCurrency}
+                  onBeneficiarySelect={handleBeneficiarySelect}
+                />
+              </motion.div>
+
+              {/* Arrow in the middle */}
+              <SwapArrow
+                onClick={() => {
+                  updateSelection({ countryPanelOnTop: !countryPanelOnTop });
+                  setAmount("0");
+                }}
               />
+
+              <motion.div
+                initial={{ y: -100 }}
+                animate={{ y: 0 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+              >
+                <FromPanel
+                  selectedCurrency={selectedCurrency}
+                  networks={networks}
+                  canSwitchNetwork={canSwitchNetwork}
+                  onNetworkSelect={handleNetworkSelect}
+                />
+              </motion.div>
             </motion.div>
-
-            {/* Arrow in the middle */}
-            <SwapArrow
-              onClick={() => {
-                updateSelection({ countryPanelOnTop: !countryPanelOnTop });
-                setAmount("0");
-              }}
-            />
-
+          ) : (
             <motion.div
-              initial={{ y: -100 }}
-              animate={{ y: 0 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
+              key="crypto-top"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
             >
-              <FromPanel
-                selectedCurrency={selectedCurrency}
-                networks={networks}
-                canSwitchNetwork={canSwitchNetwork}
-                onNetworkSelect={handleNetworkSelect}
-              />
-            </motion.div>
-          </motion.div>
-        ) : (
-          <motion.div
-            key="crypto-top"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-          >
-            <motion.div
-              initial={{ y: 100 }}
-              animate={{ y: 0 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
-            >
-              <FromPanel
-                selectedCurrency={selectedCurrency}
-                networks={networks}
-                canSwitchNetwork={canSwitchNetwork}
-                onNetworkSelect={handleNetworkSelect}
-              />
-            </motion.div>
+              <motion.div
+                initial={{ y: 100 }}
+                animate={{ y: 0 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+              >
+                <FromPanel
+                  selectedCurrency={selectedCurrency}
+                  networks={networks}
+                  canSwitchNetwork={canSwitchNetwork}
+                  onNetworkSelect={handleNetworkSelect}
+                />
+              </motion.div>
 
-            {/* Arrow in the middle */}
-            <SwapArrow
-              onClick={() => {
-                updateSelection({ countryPanelOnTop: !countryPanelOnTop });
-                setAmount("0");
-              }}
-            />
-
-            <motion.div
-              initial={{ y: -100 }}
-              animate={{ y: 0 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
-            >
-              <ToPanel
-                selectedCountryCurrency={selectedCountryCurrency}
-                onBeneficiarySelect={handleBeneficiarySelect}
+              {/* Arrow in the middle */}
+              <SwapArrow
+                onClick={() => {
+                  updateSelection({ countryPanelOnTop: !countryPanelOnTop });
+                  setAmount("0");
+                }}
               />
+
+              <motion.div
+                initial={{ y: -100 }}
+                animate={{ y: 0 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+              >
+                <ToPanel
+                  selectedCountryCurrency={selectedCountryCurrency}
+                  onBeneficiarySelect={handleBeneficiarySelect}
+                />
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>
+      )}
 
       {/* Swap Info */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.2, ease: "easeOut" }}
-      >
-        <ExchangeRateComponent />
-      </motion.div>
+      {!showCNGNIntro && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2, ease: "easeOut" }}
+        >
+          <ExchangeRateComponent />
+        </motion.div>
+      )}
 
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.3, ease: "easeOut" }}
-      >
-        {country ? (
-          <div className="px-3 md:px-4">
-            <SelectInstitution disableSubmit={true} />
-            <div className="mt-4">
-              <SwipeToWithdrawButton
-                onWithdrawComplete={handleWithdrawComplete}
-                isLoading={withdrawLoading}
-                disabled={isWithdrawDisabled}
-                stepMessage={stepMessage}
-                onSwapClick={handleSwapClick}
-                isWalletConnected={evmConnected}
-                hasKYC={!!kycData?.fullKYC}
-                onConnectWallet={handleConnectWallet}
-                onStartKYC={handleStartKYC}
-                reset={swipeButtonReset}
-              />
+      {!showCNGNIntro && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.3, ease: "easeOut" }}
+        >
+          {country ? (
+            <div className="px-3 md:px-4">
+              <SelectInstitution disableSubmit={true} />
+              <div className="mt-4">
+                <SwipeToWithdrawButton
+                  onWithdrawComplete={handleWithdrawComplete}
+                  isLoading={withdrawLoading}
+                  disabled={isWithdrawDisabled}
+                  stepMessage={stepMessage}
+                  onSwapClick={handleSwapClick}
+                  isWalletConnected={evmConnected}
+                  hasKYC={kycData?.kycStatus === "VERIFIED"}
+                  onConnectWallet={handleConnectWallet}
+                  onStartKYC={handleStartKYC}
+                  reset={swipeButtonReset}
+                />
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="px-3 md:px-4 mt-4">
-            <SwapButton onClick={handleSwapClick} text="Swap" />
-          </div>
-        )}
-      </motion.div>
+          ) : (
+            <div className="px-3 md:px-4 mt-4">
+              <SwapButton onClick={handleSwapClick} text="Swap" />
+            </div>
+          )}
+        </motion.div>
+      )}
+
+      {/* When showing cNGN intro, still render the swipe button area disabled */}
+      {showCNGNIntro && (
+        <div className="mt-auto px-3 md:px-4 pb-4">
+          <SwipeToWithdrawButton
+            onWithdrawComplete={handleWithdrawComplete}
+            isLoading={withdrawLoading}
+            disabled={isWithdrawDisabled}
+            stepMessage={stepMessage}
+            onSwapClick={handleSwapClick}
+            isWalletConnected={evmConnected}
+            hasKYC={kycData?.kycStatus === "VERIFIED"}
+            onConnectWallet={handleConnectWallet}
+            onStartKYC={handleStartKYC}
+            reset={swipeButtonReset}
+          />
+        </div>
+      )}
 
       {/* KYC Verification Modal */}
       <KYCVerificationModal
