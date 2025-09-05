@@ -565,12 +565,28 @@ const SelectInstitution = ({
                   <Input
                     type="number"
                     placeholder="Account number"
+                    onInput={(e) => {
+                      // For Uganda, Kenya, Tanzania - prevent typing more than 10 characters
+                      if (userPayLoad?.country && ['UG', 'KE', 'TZ'].includes(userPayLoad.country.countryCode)) {
+                        const target = e.target as HTMLInputElement;
+                        if (target.value.length > 10) {
+                          target.value = target.value.slice(0, 10);
+                        }
+                      }
+                    }}
                     {...register("accountNumber", {
                       required: "Account number is required",
                       validate: {
                         validLength: (value) => {
                           if (!userPayLoad?.country?.accountNumberLength)
                             return true;
+                          
+                          // Check for Uganda, Kenya, Tanzania - limit to 10 characters
+                          const isEastAfricanCountry = ['UG', 'KE', 'TZ'].includes(userPayLoad.country.countryCode);
+                          if (isEastAfricanCountry && value.length > 10) {
+                            return "Account number cannot exceed 10 characters";
+                          }
+                          
                           if (userPayLoad.paymentMethod === "bank") {
                             const minLength =
                               userPayLoad.country.accountNumberLength

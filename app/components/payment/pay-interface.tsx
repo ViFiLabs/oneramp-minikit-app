@@ -780,9 +780,23 @@ export function PaymentInterface() {
               <Input
                 value={billTillPayout?.tillNumber || ""}
                 type="number"
-                onChange={(e) =>
-                  updateBillTillPayout({ tillNumber: e.target.value })
-                }
+                onInput={(e) => {
+                  // For Uganda, Kenya, Tanzania - prevent typing more than 10 characters
+                  if (country && ['UG', 'KE', 'TZ'].includes(country.countryCode)) {
+                    const target = e.target as HTMLInputElement;
+                    if (target.value.length > 10) {
+                      target.value = target.value.slice(0, 10);
+                    }
+                  }
+                }}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  // For Uganda, Kenya, Tanzania - limit to 10 characters
+                  if (country && ['UG', 'KE', 'TZ'].includes(country.countryCode) && value.length > 10) {
+                    return; // Don't update if exceeds 10 characters
+                  }
+                  updateBillTillPayout({ tillNumber: value });
+                }}
                 className="!bg-neutral-800 !border-neutral-600 text-base text-white h-12 rounded-lg px-4 pr-12"
                 placeholder="Enter till number"
                 disabled={isProcessing}
@@ -805,6 +819,7 @@ export function PaymentInterface() {
                   </div>
                 )}
             </div>
+         
           </div>
         );
 
@@ -819,9 +834,23 @@ export function PaymentInterface() {
                 <Input
                   value={billTillPayout?.billNumber || ""}
                   type="number"
-                  onChange={(e) =>
-                    updateBillTillPayout({ billNumber: e.target.value })
-                  }
+                  onInput={(e) => {
+                    // For Uganda, Kenya, Tanzania - prevent typing more than 10 characters
+                    if (country && ['UG', 'KE', 'TZ'].includes(country.countryCode)) {
+                      const target = e.target as HTMLInputElement;
+                      if (target.value.length > 10) {
+                        target.value = target.value.slice(0, 10);
+                      }
+                    }
+                  }}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // For Uganda, Kenya, Tanzania - limit to 10 characters
+                    if (country && ['UG', 'KE', 'TZ'].includes(country.countryCode) && value.length > 10) {
+                      return; // Don't update if exceeds 10 characters
+                    }
+                    updateBillTillPayout({ billNumber: value });
+                  }}
                   className="!bg-neutral-800 !border-neutral-600 text-sm sm:text-base text-white h-12 rounded-lg px-4 pr-12"
                   placeholder="Enter paybill number"
                   disabled={isProcessing}
@@ -844,6 +873,7 @@ export function PaymentInterface() {
                     </div>
                   )}
               </div>
+           
             </div>
 
             <div className="space-y-3">
@@ -854,9 +884,23 @@ export function PaymentInterface() {
                 <Input
                   value={billTillPayout?.accountNumber || ""}
                   type="number"
-                  onChange={(e) =>
-                    updateBillTillPayout({ accountNumber: e.target.value })
-                  }
+                  onInput={(e) => {
+                    // For Uganda, Kenya, Tanzania - prevent typing more than 10 characters
+                    if (country && ['UG', 'KE', 'TZ'].includes(country.countryCode)) {
+                      const target = e.target as HTMLInputElement;
+                      if (target.value.length > 10) {
+                        target.value = target.value.slice(0, 10);
+                      }
+                    }
+                  }}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // For Uganda, Kenya, Tanzania - limit to 10 characters
+                    if (country && ['UG', 'KE', 'TZ'].includes(country.countryCode) && value.length > 10) {
+                      return; // Don't update if exceeds 10 characters
+                    }
+                    updateBillTillPayout({ accountNumber: value });
+                  }}
                   className="!bg-neutral-800 !border-neutral-600 text-sm sm:text-base text-white h-12 rounded-lg px-4 pr-12"
                   placeholder="Enter account number"
                   disabled={isProcessing}
@@ -911,9 +955,23 @@ export function PaymentInterface() {
                 <Input
                   value={billTillPayout?.phoneNumber || ""}
                   type="tel"
-                  onChange={(e) =>
-                    updateBillTillPayout({ phoneNumber: e.target.value })
-                  }
+                  onInput={(e) => {
+                    // For Uganda, Kenya, Tanzania - prevent typing more than 10 characters
+                    if (country && ['UG', 'KE', 'TZ'].includes(country.countryCode)) {
+                      const target = e.target as HTMLInputElement;
+                      if (target.value.length > 10) {
+                        target.value = target.value.slice(0, 10);
+                      }
+                    }
+                  }}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // For Uganda, Kenya, Tanzania - limit to 10 characters
+                    if (country && ['UG', 'KE', 'TZ'].includes(country.countryCode) && value.length > 10) {
+                      return; // Don't update if exceeds 10 characters
+                    }
+                    updateBillTillPayout({ phoneNumber: value });
+                  }}
                   className="!bg-neutral-800 !border-neutral-600 text-sm sm:text-base text-white h-12 rounded-lg px-4"
                   placeholder=" 0700 000 000"
                   disabled={isProcessing}
