@@ -39,7 +39,9 @@ import { KYCVerificationModal } from "./modals/KYCVerificationModal";
 import { toast } from "sonner";
 import { ModalConnectButton } from "@/components/modal-connect-button";
 // Standalone cNGN action picker now lives in CNGNActionPanel
-import SelectCNGNAction from "./SelectCNGNAction";
+import { supportedAssetsUI } from "@/data/assets-ui";
+import { cNGNTabsUI } from "./cNGN/utils";
+import SelectCNGNAction from "./cNGN/SelectCNGNAction";
 
 const networks: Network[] = SUPPORTED_NETWORKS_WITH_RPC_URLS;
 
@@ -126,7 +128,11 @@ export function SwapPanel() {
     setSelectedCurrency(currency);
     // Update global store with selected currency
     // Reset cNGN action whenever asset changes so the top UI prompts selection
-    updateSelection({ asset: currency, cngnAction: undefined });
+    updateSelection({
+      asset: currency,
+      cngnAction: undefined,
+      cngnActiveTab: undefined,
+    } as unknown as Record<string, unknown>);
   };
 
   // Sync selectedCurrency with global asset on mount
@@ -588,9 +594,38 @@ export function SwapPanel() {
     // For cNGN ensure action is selected
     (selectedCurrency.symbol === "cNGN" && !userSelectionStore.cngnAction);
 
-  // Show dedicated cNGN intro screen inside the card when cNGN is selected
-  const showCNGNIntro =
-    selectedCurrency.symbol === "cNGN" && !userSelectionStore.cngnAction;
+  // Resolve dynamic asset-specific UI component if any
+  const DynamicAssetUI = useMemo(() => {
+    const entry =
+      supportedAssetsUI[
+        selectedCurrency.symbol as keyof typeof supportedAssetsUI
+      ];
+    return entry?.component ?? null;
+  }, [selectedCurrency.symbol]);
+
+  // Show dedicated asset intro screen inside the card when asset has a UI and prerequisites not met
+  const showDynamicIntro =
+    selectedCurrency.symbol === "cNGN" &&
+    !(
+      userSelectionStore as unknown as {
+        cngnActiveTab?: keyof typeof cNGNTabsUI;
+      }
+    ).cngnActiveTab;
+
+  // Render active cNGN tab panel if set in user selection via SelectCNGNAction
+  const ActiveCNGNPanel = useMemo(() => {
+    if (selectedCurrency.symbol !== "cNGN") return null;
+    const key = (
+      userSelectionStore as unknown as {
+        cngnActiveTab?: keyof typeof cNGNTabsUI;
+      }
+    ).cngnActiveTab;
+    if (!key) return null;
+    const entry = cNGNTabsUI[key];
+    return entry?.component ?? null;
+  }, [selectedCurrency.symbol, userSelectionStore]);
+
+  const isCustomCNGNView = !!ActiveCNGNPanel || showDynamicIntro;
 
   return (
     <div className="w-full max-w-md mx-auto min-h-[400px] bg-[#181818] rounded-3xl p-0 flex flex-col gap-0 md:shadow-lg md:border border-[#232323] relative">
@@ -608,21 +643,34 @@ export function SwapPanel() {
         />
       </motion.div>
 
-      {/* cNGN Intro UI in-place under header */}
-      {showCNGNIntro && (
+      {/* Asset-specific UI in-place under header */}
+      {showDynamicIntro && DynamicAssetUI && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          <div className="mx-3 md:mx-4 my-2 bg-[#232323] rounded-2xl p-4 md:p-5 border border-[#2a2a2a]">
-            <SelectCNGNAction />
+          <div className="mx-3 md:mx-4 my-2 ">
+            <DynamicAssetUI />
           </div>
         </motion.div>
       )}
 
+      {/* If a CNGN tab is active, render it just below header and hide default panels */}
+      {ActiveCNGNPanel && (
+        <div className="mx-3 md:mx-4 my-2">
+          {/* Persist the cNGN action selector so users can switch panels */}
+          {selectedCurrency.symbol === "cNGN" && (
+            <div className="mb-2">
+              <SelectCNGNAction />
+            </div>
+          )}
+          <ActiveCNGNPanel />
+        </div>
+      )}
+
       {/* Animated Panel Container */}
-      {!showCNGNIntro && (
+      {!isCustomCNGNView && (
         <AnimatePresence mode="wait">
           {countryPanelOnTop ? (
             <motion.div
@@ -645,6 +693,7 @@ export function SwapPanel() {
 
               {/* Arrow in the middle */}
               <SwapArrow
+                disabled
                 onClick={() => {
                   updateSelection({ countryPanelOnTop: !countryPanelOnTop });
                   setAmount("0");
@@ -687,6 +736,7 @@ export function SwapPanel() {
 
               {/* Arrow in the middle */}
               <SwapArrow
+                disabled
                 onClick={() => {
                   updateSelection({ countryPanelOnTop: !countryPanelOnTop });
                   setAmount("0");
@@ -709,65 +759,48 @@ export function SwapPanel() {
       )}
 
       {/* Swap Info */}
-      {!showCNGNIntro && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.2, ease: "easeOut" }}
-        >
-          <ExchangeRateComponent />
-        </motion.div>
-      )}
-
-      {!showCNGNIntro && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.3, ease: "easeOut" }}
-        >
-          {country ? (
-            <div className="px-3 md:px-4">
-              <SelectInstitution disableSubmit={true} />
-              <div className="mt-4">
-                <SwipeToWithdrawButton
-                  onWithdrawComplete={handleWithdrawComplete}
-                  isLoading={withdrawLoading}
-                  disabled={isWithdrawDisabled}
-                  stepMessage={stepMessage}
-                  onSwapClick={handleSwapClick}
-                  isWalletConnected={evmConnected}
-                  hasKYC={kycData?.kycStatus === "VERIFIED"}
-                  onConnectWallet={handleConnectWallet}
-                  onStartKYC={handleStartKYC}
-                  reset={swipeButtonReset}
-                />
+      {!isCustomCNGNView && (
+        <>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.2, ease: "easeOut" }}
+          >
+            <ExchangeRateComponent />
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.3, ease: "easeOut" }}
+          >
+            {country ? (
+              <div className="px-3 md:px-4">
+                <SelectInstitution disableSubmit={true} />
+                <div className="mt-4">
+                  <SwipeToWithdrawButton
+                    onWithdrawComplete={handleWithdrawComplete}
+                    isLoading={withdrawLoading}
+                    disabled={isWithdrawDisabled}
+                    stepMessage={stepMessage}
+                    onSwapClick={handleSwapClick}
+                    isWalletConnected={evmConnected}
+                    hasKYC={!!kycData?.fullKYC}
+                    onConnectWallet={handleConnectWallet}
+                    onStartKYC={handleStartKYC}
+                    reset={swipeButtonReset}
+                  />
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="px-3 md:px-4 mt-4">
-              <SwapButton onClick={handleSwapClick} text="Swap" />
-            </div>
-          )}
-        </motion.div>
+            ) : (
+              <div className="px-3 md:px-4 mt-4">
+                <SwapButton onClick={handleSwapClick} text="Swap" />
+              </div>
+            )}
+          </motion.div>
+        </>
       )}
 
-      {/* When showing cNGN intro, still render the swipe button area disabled */}
-      {showCNGNIntro && (
-        <div className="mt-auto px-3 md:px-4 pb-4">
-          <SwipeToWithdrawButton
-            onWithdrawComplete={handleWithdrawComplete}
-            isLoading={withdrawLoading}
-            disabled={isWithdrawDisabled}
-            stepMessage={stepMessage}
-            onSwapClick={handleSwapClick}
-            isWalletConnected={evmConnected}
-            hasKYC={kycData?.kycStatus === "VERIFIED"}
-            onConnectWallet={handleConnectWallet}
-            onStartKYC={handleStartKYC}
-            reset={swipeButtonReset}
-          />
-        </div>
-      )}
+      {/* Hide the lower Swipe to Withdraw when rendering cNGN custom UI */}
 
       {/* KYC Verification Modal */}
       <KYCVerificationModal

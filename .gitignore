@@ -42,3 +42,7 @@ next-env.d.ts
 package-lock.json
 
 /scripts
+
+EXCHANGE_RATES_CACHE.md
+INSTITUTIONS_CACHE.md
+USER_TESTING_PLAN.md
