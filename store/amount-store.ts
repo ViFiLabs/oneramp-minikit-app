@@ -13,6 +13,11 @@ interface AmountStore {
   setCryptoAmount: (cryptoAmount: string) => void;
   setMessage: (message: string) => void;
   resetAmount: () => void;
+  // Cashout fee states
+  includeCashoutFees: boolean;
+  cashoutFeeAmount: number;
+  setIncludeCashoutFees: (include: boolean) => void;
+  setCashoutFeeAmount: (amount: number) => void;
 }
 
 const initialState = {
@@ -21,6 +26,8 @@ const initialState = {
   isValid: true,
   message: "",
   cryptoAmount: "0",
+  includeCashoutFees: false,
+  cashoutFeeAmount: 0,
 };
 
 export const useAmountStore = create<AmountStore>()(
@@ -32,6 +39,8 @@ export const useAmountStore = create<AmountStore>()(
       setIsValid: (isValid: boolean) => set({ isValid }),
       setMessage: (message: string) => set({ message }),
       setCryptoAmount: (cryptoAmount: string) => set({ cryptoAmount }),
+      setIncludeCashoutFees: (include: boolean) => set({ includeCashoutFees: include }),
+      setCashoutFeeAmount: (amount: number) => set({ cashoutFeeAmount: amount }),
       resetAmount: () => set(initialState),
     }),
     { name: "amount-store" }
