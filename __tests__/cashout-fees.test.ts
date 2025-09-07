@@ -1,4 +1,3 @@
-import { describe, it, expect } from '@jest/globals';
 import { calculateCashoutFee, supportsCashoutFees, getUgandaCashoutBreakdown } from '../utils/cashout-fees';
 
 describe('Cashout Fees', () => {
