@@ -1,5 +1,5 @@
 // Tanzania cashout fee ranges and corresponding fees
-const CASHOUT_FEE_RANGES = [
+const TANZANIA_CASHOUT_FEE_RANGES = [
   { min: 0, max: 999, fee: 185 },
   { min: 1000, max: 1999, fee: 360 },
   { min: 2000, max: 2999, fee: 410 },
@@ -26,17 +26,82 @@ const CASHOUT_FEE_RANGES = [
   { min: 3000001, max: Infinity, fee: 12000 },
 ];
 
+// Uganda cashout fee ranges (Withdraw from Agent fees in UGX)
+const UGANDA_WITHDRAW_FEE_RANGES = [
+  { min: 0, max: 2500, fee: 330 },
+  { min: 2501, max: 5000, fee: 440 },
+  { min: 5001, max: 15000, fee: 700 },
+  { min: 15001, max: 30000, fee: 880 },
+  { min: 30001, max: 45000, fee: 1210 },
+  { min: 45001, max: 60000, fee: 1500 },
+  { min: 60001, max: 125000, fee: 1925 },
+  { min: 125001, max: 250000, fee: 3575 },
+  { min: 250001, max: 500000, fee: 7000 },
+  { min: 500001, max: 1000000, fee: 12500 },
+  { min: 1000001, max: 2000000, fee: 15000 },
+  { min: 2000001, max: 3000000, fee: 18000 },
+  { min: 3000001, max: 4000000, fee: 18000 },
+  { min: 4000001, max: 5000000, fee: 18000 },
+];
+
+// Uganda tax rate (0.5% of transaction amount)
+const UGANDA_TAX_RATE = 0.005;
+
 /**
- * Calculate the cashout fee for a given amount in TZS
- * @param amount - The amount in TZS
- * @returns The cashout fee in TZS
+ * Calculate the cashout fee for a given amount based on country
+ * @param amount - The amount in local currency
+ * @param countryName - Name of the country
+ * @returns The total cashout fee in local currency
  */
-export function calculateCashoutFee(amount: number): number {
-  const range = CASHOUT_FEE_RANGES.find(
+export function calculateCashoutFee(amount: number, countryName?: string): number {
+  if (!countryName) return 0;
+  
+  const country = countryName.toLowerCase();
+  
+  if (country === "tanzania") {
+    const range = TANZANIA_CASHOUT_FEE_RANGES.find(
+      (range) => amount >= range.min && amount <= range.max
+    );
+    return range ? range.fee : 0;
+  }
+  
+  if (country === "uganda") {
+    // Get withdraw from agent fee
+    const withdrawRange = UGANDA_WITHDRAW_FEE_RANGES.find(
+      (range) => amount >= range.min && amount <= range.max
+    );
+    const withdrawFee = withdrawRange ? withdrawRange.fee : 0;
+    
+    // Calculate tax (0.5% of amount)
+    const taxAmount = Math.round(amount * UGANDA_TAX_RATE);
+    
+    return withdrawFee + taxAmount;
+  }
+  
+  return 0;
+}
+
+/**
+ * Get detailed breakdown of cashout fees for Uganda
+ * @param amount - The amount in UGX
+ * @returns Object with withdraw fee, tax amount, and total
+ */
+export function getUgandaCashoutBreakdown(amount: number): {
+  withdrawFee: number;
+  taxAmount: number;
+  total: number;
+} {
+  const withdrawRange = UGANDA_WITHDRAW_FEE_RANGES.find(
     (range) => amount >= range.min && amount <= range.max
   );
+  const withdrawFee = withdrawRange ? withdrawRange.fee : 0;
+  const taxAmount = Math.round(amount * UGANDA_TAX_RATE);
   
-  return range ? range.fee : 0;
+  return {
+    withdrawFee,
+    taxAmount,
+    total: withdrawFee + taxAmount,
+  };
 }
 
 /**
@@ -45,5 +110,6 @@ export function calculateCashoutFee(amount: number): number {
  * @returns boolean indicating if cashout fees are supported
  */
 export function supportsCashoutFees(countryName: string): boolean {
-  return countryName.toLowerCase() === "tanzania";
+  const country = countryName.toLowerCase();
+  return country === "tanzania" || country === "uganda";
 }

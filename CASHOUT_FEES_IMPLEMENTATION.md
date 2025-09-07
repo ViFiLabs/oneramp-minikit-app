@@ -1,15 +1,28 @@
-# Tanzania Cashout Fees Implementation
+# Tanzania & Uganda Cashout Fees Implementation
 
 ## Overview
-Added an optional checkbox feature that allows users to include cashout fees when sending money to Tanzania. The cashout fees are calculated based on predefined amount ranges specific to Tanzania.
+
+Added an optional checkbox feature that allows users to include cashout fees when sending money to Tanzania or Uganda. The cashout fees are calculated based on predefined amount ranges and fee structures specific to each country.
+
+### Tanzania
+- Fixed cashout fees based on amount ranges
+
+### Uganda  
+- Withdraw from Agent fees based on amount ranges
+- Tax amount calculated as 0.5% of transaction amount
+- Total cashout fee = Withdraw fee + Tax amount
 
 ## Files Modified/Created
 
 ### 1. `/utils/cashout-fees.ts` (New File)
-- Contains the cashout fee calculation logic with all amount ranges and corresponding fees
-- Exports `calculateCashoutFee(amount: number)` function to calculate fees based on amount
-- Exports `supportsCashoutFees(countryName: string)` function to check if a country supports cashout fees
-- Currently only supports Tanzania
+
+- Contains the cashout fee calculation logic for both Tanzania and Uganda
+- Tanzania: Fixed fees based on amount ranges
+- Uganda: Withdraw from Agent fees + 0.5% tax calculation
+- Exports `calculateCashoutFee(amount: number, countryName?: string)` function
+- Exports `getUgandaCashoutBreakdown(amount: number)` for detailed Uganda fee breakdown
+- Exports `supportsCashoutFees(countryName: string)` function to check country support
+- Currently supports Tanzania and Uganda
 
 ### 2. `/store/amount-store.ts` (Modified)
 - Added new state variables:
@@ -33,7 +46,9 @@ Added an optional checkbox feature that allows users to include cashout fees whe
 - Tests various amount ranges and edge cases
 - Validates country support functionality
 
-## Cashout Fee Ranges (Tanzania - TZS)
+## Cashout Fee Ranges
+
+### Tanzania (TZS)
 
 | Amount Range (TZS) | Cashout Fee (TZS) |
 |-------------------|-------------------|
@@ -61,6 +76,31 @@ Added an optional checkbox feature that allows users to include cashout fees whe
 | 900,000 - 1,000,000 | 9,776 |
 | 1,000,001 - 3,000,000 | 9,875 |
 | > 3,000,000 | 12,000 |
+
+### Uganda (UGX)
+
+**Withdraw from Agent Fees:**
+
+| Amount Range (UGX) | Withdraw Fee (UGX) |
+|-------------------|-------------------|
+| 0 - 2,500 | 330 |
+| 2,501 - 5,000 | 440 |
+| 5,001 - 15,000 | 700 |
+| 15,001 - 30,000 | 880 |
+| 30,001 - 45,000 | 1,210 |
+| 45,001 - 60,000 | 1,500 |
+| 60,001 - 125,000 | 1,925 |
+| 125,001 - 250,000 | 3,575 |
+| 250,001 - 500,000 | 7,000 |
+| 500,001 - 1,000,000 | 12,500 |
+| 1,000,001 - 2,000,000 | 15,000 |
+| 2,000,001 - 3,000,000 | 18,000 |
+| 3,000,001 - 4,000,000 | 18,000 |
+| 4,000,001 - 5,000,000 | 18,000 |
+
+**Tax Amount:** 0.5% of transaction amount
+
+**Total Cashout Fee = Withdraw from Agent Fee + Tax Amount (0.5%)**
 
 ## User Experience
 

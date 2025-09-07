@@ -62,7 +62,7 @@ import { toast } from "sonner";
 import { getBusinessAccountName } from "@/actions/transfer";
 import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "@/hooks/useDebounce";
-import { calculateCashoutFee, supportsCashoutFees } from "@/utils/cashout-fees";
+import { calculateCashoutFee, supportsCashoutFees, getUgandaCashoutBreakdown } from "@/utils/cashout-fees";
 
 export function PaymentInterface() {
   const {
@@ -340,7 +340,7 @@ export function PaymentInterface() {
   useEffect(() => {
     if (country && supportsCashoutFees(country.name) && includeCashoutFees) {
       const numericAmount = parseFloat(amount) || 0;
-      const fee = calculateCashoutFee(numericAmount);
+      const fee = calculateCashoutFee(numericAmount, country.name);
       setCashoutFeeAmount(fee);
     } else {
       setCashoutFeeAmount(0);
@@ -1228,7 +1228,7 @@ export function PaymentInterface() {
             )}
           </div>
 
-          {/* Cashout Fees Checkbox for Tanzania */}
+          {/* Cashout Fees Checkbox for Tanzania and Uganda */}
           {country && supportsCashoutFees(country.name) && (
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
@@ -1246,8 +1246,23 @@ export function PaymentInterface() {
                 </label>
               </div>
               {includeCashoutFees && (
-                <div className="text-xs text-gray-400">
-                  <p>Cashout fee: {cashoutFeeAmount.toLocaleString()} {country.currency}</p>
+                <div className="text-xs text-gray-400 space-y-1">
+                  {country.name.toLowerCase() === "uganda" ? (
+                    // Uganda breakdown
+                    (() => {
+                      const breakdown = getUgandaCashoutBreakdown(parseFloat(amount) || 0);
+                      return (
+                        <>
+                          <p>Withdraw from Agent: {breakdown.withdrawFee.toLocaleString()} {country.currency}</p>
+                          <p>Tax (0.5%): {breakdown.taxAmount.toLocaleString()} {country.currency}</p>
+                          <p className="font-medium">Total cashout fee: {breakdown.total.toLocaleString()} {country.currency}</p>
+                        </>
+                      );
+                    })()
+                  ) : (
+                    // Tanzania breakdown
+                    <p>Cashout fee: {cashoutFeeAmount.toLocaleString()} {country.currency}</p>
+                  )}
                 </div>
               )}
             </div>
@@ -1328,10 +1343,32 @@ export function PaymentInterface() {
                   <span>Amount in {country.currency}</span>
                   <span>{parseFloat(amount).toLocaleString()}</span>
                 </div>
-                <div className="flex items-center justify-between text-xs text-gray-400">
-                  <span>Cashout Fee</span>
-                  <span>{cashoutFeeAmount.toLocaleString()}</span>
-                </div>
+                
+                {country.name.toLowerCase() === "uganda" ? (
+                  // Uganda detailed breakdown
+                  (() => {
+                    const breakdown = getUgandaCashoutBreakdown(parseFloat(amount) || 0);
+                    return (
+                      <>
+                        <div className="flex items-center justify-between text-xs text-gray-400">
+                          <span>Withdraw from Agent</span>
+                          <span>{breakdown.withdrawFee.toLocaleString()}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-xs text-gray-400">
+                          <span>Tax (0.5%)</span>
+                          <span>{breakdown.taxAmount.toLocaleString()}</span>
+                        </div>
+                      </>
+                    );
+                  })()
+                ) : (
+                  // Tanzania simple breakdown
+                  <div className="flex items-center justify-between text-xs text-gray-400">
+                    <span>Cashout Fee</span>
+                    <span>{cashoutFeeAmount.toLocaleString()}</span>
+                  </div>
+                )}
+                
                 <div className="h-px bg-gray-700"></div>
                 <div className="flex items-center justify-between text-xs text-white">
                   <span>Amount in {asset?.symbol || "USDC"}</span>
