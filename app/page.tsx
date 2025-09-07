@@ -7,7 +7,7 @@ import { SwapBuyTabs } from "./components/SwapBuyTabs";
 import StateContextProvider from "./providers/StateContextProvider";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
 import { useEffect, useState } from "react";
-import sdk from "@farcaster/frame-sdk";
+import sdk from "@farcaster/miniapp-sdk";
 import { HeroText } from "./components/HeroText";
 import { Badge } from "@/components/ui/badge";
 import { OneRampLogoMenu } from "./components/OneRampLogoMenu";
