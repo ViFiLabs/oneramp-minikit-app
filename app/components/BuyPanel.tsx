@@ -29,7 +29,6 @@ import { useAllCountryExchangeRates } from "@/hooks/useExchangeRate";
 import { usePreFetchInstitutions } from "@/hooks/useExchangeRate";
 import { useKYCStore } from "@/store/kyc-store";
 import { toast } from "sonner";
-import { KYCVerificationModal } from "./modals/KYCVerificationModal";
 
 // Reuse the same country list from SwapPanel
 export const countryCurrencies = [
