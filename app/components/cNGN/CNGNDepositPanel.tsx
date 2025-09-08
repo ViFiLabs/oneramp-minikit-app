@@ -7,8 +7,6 @@ import { useNetworkStore } from "@/store/network";
 import { useAmountStore } from "@/store/amount-store";
 // Country modal is not used in cNGN deposit (locked to Nigeria)
 // import type { Country } from "@/types";
-import ExchangeRateComponent from "@/app/components/exchange-rate-component";
-import BuyValueInput from "@/app/components/inputs/BuyValueInput";
 import { SwipeToBuyButton } from "@/app/components/payment/swipe-to-buy";
 import { useEffect } from "react";
 import { countries } from "@/data/countries";
@@ -16,7 +14,7 @@ import { countries } from "@/data/countries";
 export default function CNGNDepositPanel() {
   const { country, asset, updateSelection } = useUserSelectionStore();
   const { currentNetwork } = useNetworkStore();
-  const { setAmount } = useAmountStore();
+  const { amount, setAmount } = useAmountStore();
 
   // No-op: country selection disabled for this panel
 
@@ -34,8 +32,28 @@ export default function CNGNDepositPanel() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Local helpers for formatting and input handling (commas, max 2 decimals)
+  const formatNumber = (num: string) => {
+    let clean = (num || "").replace(/[^\d.]/g, "");
+    const parts = clean.split(".");
+    if (parts.length > 2) clean = `${parts[0]}.${parts.slice(1).join("")}`;
+    const [intPart, decPart] = clean.split(".");
+    const withCommas = intPart
+      ? intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+      : "";
+    if (decPart !== undefined) return `${withCommas}.${decPart.slice(0, 2)}`;
+    return withCommas;
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value.replace(/,/g, "");
+    if (rawValue === "" || rawValue === "." || /^\d*\.?\d*$/.test(rawValue)) {
+      setAmount(rawValue);
+    }
+  };
+
   return (
-    <div className="w-full bg-[#181818] rounded-2xl min-h-[360px] p-4 md:p-6 flex flex-col gap-4 border !border-[#232323]">
+    <div className="w-full bg-[#181818] rounded-2xl min-h-[360px] p-4 md:p-6 flex flex-col gap-4 border !border-[#232323] md:mt-5">
       <div className="flex justify-between items-center">
         <span className="text-neutral-400 text-base md:text-lg">
           You&apos;re buying
@@ -54,9 +72,19 @@ export default function CNGNDepositPanel() {
       </div>
 
       <div className="flex flex-col items-center justify-center gap-4">
-        <div className="w-full flex items-center justify-center">
-          <div className="w-full max-w-[300px] flex justify-center">
-            <BuyValueInput />
+        {/* cNGN amount input (token pill + numeric input) */}
+        <div className="w-full">
+          <div className="flex flex-col relative ">
+            <div className="flex items-center justify-center w-full ">
+              <input
+                type="text"
+                inputMode="decimal"
+                value={formatNumber(amount || "")}
+                onChange={handleChange}
+                className="mx-auto pr-2 text-center !leading-tight py-4 font-semibold !text-6xl outline-none bg-transparent border-none focus:ring-0 focus:border-0 focus-visible:ring-0 focus-visible:border-transparent focus:outline-none text-white w-full"
+                placeholder="0.00"
+              />
+            </div>
           </div>
         </div>
 
@@ -92,39 +120,21 @@ export default function CNGNDepositPanel() {
             />
           </svg>
         </Button>
-
-        <div className="flex gap-3 md:gap-4">
-          <Button
-            variant="outline"
-            className="rounded-full px-5 py-2 text-sm md:text-base text-white bg-[#232323] border-none hover:bg-[#3a4155]"
-            onClick={() => setAmount("100")}
-          >
-            $100
-          </Button>
-          <Button
-            variant="outline"
-            className="rounded-full px-5 py-2 text-sm md:text-base text-white bg-[#232323] border-none hover:bg-[#3a4155]"
-            onClick={() => setAmount("300")}
-          >
-            $300
-          </Button>
-          <Button
-            variant="outline"
-            className="rounded-full px-5 py-2 text-sm md:text-base text-white bg-[#232323] border-none hover:bg-[#3a4155]"
-            onClick={() => setAmount("500")}
-          >
-            $500
-          </Button>
-        </div>
       </div>
 
-      {country && currentNetwork && (
-        <ExchangeRateComponent
-          default
-          orderType="buying"
-          showAmountConversion
-        />
-      )}
+      {/* Peg line for cNGN */}
+      <div className="text-center text-neutral-400 text-sm">
+        {Number(amount || 0).toLocaleString("en-US", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}{" "}
+        cNGN ={" "}
+        {Number(amount || 0).toLocaleString("en-US", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}{" "}
+        NGN
+      </div>
 
       <div className="mt-2">
         <SwipeToBuyButton onBuyComplete={() => {}} disabled stepMessage={""} />

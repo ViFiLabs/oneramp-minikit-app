@@ -4,109 +4,92 @@ import Image from "next/image";
 import { useMemo } from "react";
 import { useUserSelectionStore } from "@/store/user-selection";
 import { useAmountStore } from "@/store/amount-store";
-import { FromPanel } from "@/app/components/panels/FromPanel";
-import { SwapArrow } from "@/app/components/panels/SwapArrow";
 import { SwipeToWithdrawButton } from "@/app/components/payment/swipe-to-withdraw";
-import { SUPPORTED_NETWORKS_WITH_RPC_URLS } from "@/data/networks";
-import type { Network } from "@/types";
-
-const networks: Network[] = SUPPORTED_NETWORKS_WITH_RPC_URLS;
+import { SwapArrow } from "@/app/components/panels/SwapArrow";
 
 export default function CNGNSwapToUSDCPanel() {
-  const { asset, country } = useUserSelectionStore();
-  const { amount, isValid: isAmountValid } = useAmountStore();
+  const { country } = useUserSelectionStore();
+  const { amount, setAmount, isValid: isAmountValid } = useAmountStore();
 
   const computedToValue = useMemo(() => {
     const a = parseFloat(String(amount || 0));
-    const rate = country?.exchangeRate || 0; // NGN per cNGN
-    if (!a || !rate) return "0.00";
-    return (a * rate).toLocaleString("en-US", {
+    const ngnPerUSDC = country?.exchangeRate || 0; // 1 USDC ~ N NGN
+    if (!a || !ngnPerUSDC) return "0.00";
+    const usdc = a / ngnPerUSDC; // cNGN == NGN; convert NGN → USDC
+    return usdc.toLocaleString("en-US", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
   }, [amount, country?.exchangeRate]);
 
   return (
-    <div className="flex flex-col gap-3 md:gap-4">
-      {/* Title */}
-      <div className="bg-[#232323] rounded-2xl px-4 py-3 text-white/90 text-base font-medium">
-        Swap cNGN for USDC
-      </div>
-
-      {/* From token pill (cNGN) */}
-      <div className="flex items-center gap-2 px-1">
-        <div className="flex items-center bg-black rounded-full pl-2 pr-3 py-1">
-          <Image
-            src="/logos/cngn.png"
-            alt="cNGN"
-            width={16}
-            height={16}
-            className="rounded-full mr-2"
+    <div className="flex flex-col gap-3 md:gap-4 md:mt-5">
+      {/* From */}
+      <div className="bg-[#232323] rounded-2xl p-4 md:p-5 flex flex-col relative h-[115px]">
+        <div className="flex items-center justify-between ">
+          <span className="text-neutral-200 text-base md:text-lg font-medium">
+            From
+          </span>
+          <span className="text-neutral-400 text-xs md:text-sm">
+            Balance: -- <span className="text-red-400 ml-1">Max</span>
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-3 ">
+          <div className="flex items-center bg-black rounded-full px-5 py-2">
+            <Image
+              src="/logos/cngn.png"
+              alt="cNGN"
+              width={25}
+              height={25}
+              className="rounded-full mr-2"
+            />
+            <span className="text-white text-lg font-medium">cNGN</span>
+          </div>
+          <input
+            type="text"
+            inputMode="decimal"
+            value={amount || ""}
+            onChange={(e) => setAmount(e.target.value)}
+            className="text-right pr-2 !leading-tight py-4 font-semibold !text-4xl outline-none bg-transparent border-none focus:ring-0 focus:border-0 focus-visible:ring-0 focus-visible:border-transparent focus:outline-none text-white w-28 md:w-40"
+            placeholder="0.00"
           />
-          <span className="text-white text-sm font-medium">cNGN</span>
         </div>
       </div>
 
-      {/* From block */}
-      <FromPanel
-        selectedCurrency={asset as unknown as never}
-        networks={networks}
-        canSwitchNetwork={() => true}
-        onNetworkSelect={async () => {}}
-      />
-
+      {/* Arrow */}
       <SwapArrow disabled />
 
-      {/* To block (token pill + amount on right) */}
-      <div className="mx-0 my-0 bg-[#232323] rounded-2xl p-4 md:p-5 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="flex items-center bg-black rounded-full pl-2 pr-3 py-1">
+      {/* To */}
+      <div className="bg-[#232323] rounded-2xl p-4 md:p-5 flex flex-col relative h-[115px]">
+        <div className="text-neutral-300 text-base mb-2">To</div>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center bg-black rounded-full px-5 py-2">
             <Image
               src="/logos/USDC.svg"
               alt="USDC"
-              width={16}
-              height={16}
+              width={25}
+              height={25}
               className="rounded-full mr-2"
             />
-            <span className="text-white text-sm font-medium">USDC</span>
-            <svg
-              width="16"
-              height="16"
-              fill="none"
-              viewBox="0 0 24 24"
-              className="ml-1 text-neutral-400"
-            >
-              <path
-                d="M7 10l5 5 5-5"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <span className="text-white text-lg font-medium">USDC</span>
           </div>
-        </div>
-        <div className="text-white text-3xl font-semibold tracking-tight">
-          {computedToValue}
+          <div className="text-white !text-4xl font-semibold tracking-tight ">
+            {computedToValue}
+          </div>
         </div>
       </div>
 
-      {/* Rate + slippage line */}
       <div className="flex items-center justify-between text-xs text-neutral-400 px-1">
         <div>
-          {/* Reuse component to ensure rate line stays fresh */}
-          <span className="mr-2">
-            1 USDC ~{" "}
-            {country?.exchangeRate?.toLocaleString("en-US", {
-              maximumFractionDigits: 2,
-            }) || "-"}{" "}
-            NGN
-          </span>
+          1 USDC ~{" "}
+          {country?.exchangeRate?.toLocaleString("en-US", {
+            maximumFractionDigits: 2,
+          }) || "-"}{" "}
+          NGN
         </div>
         <div>Max slippage ~ 2.5%</div>
       </div>
 
-      {/* Swipe */}
       <div className="mt-2">
         <SwipeToWithdrawButton
           onWithdrawComplete={() => {}}
