@@ -32,14 +32,15 @@ const ACTIONS: { value: CngnAction; label: string; description: string }[] = [
 
 export default function SelectCNGNAction() {
   const { cngnAction, updateSelection } = useUserSelectionStore();
+  // Subscribe to activeTab to re-render label when selection changes
+  const activeTab = useUserSelectionStore(
+    (s) =>
+      (s as unknown as { cngnActiveTab?: keyof typeof cNGNTabsUI })
+        .cngnActiveTab
+  );
   const [open, setOpen] = useState(false);
 
   const selectedLabel = useMemo(() => {
-    const activeTab = (
-      useUserSelectionStore.getState() as unknown as {
-        cngnActiveTab?: keyof typeof cNGNTabsUI;
-      }
-    ).cngnActiveTab;
     if (activeTab) {
       switch (activeTab) {
         case "deposit":
@@ -60,7 +61,7 @@ export default function SelectCNGNAction() {
     }
     const found = ACTIONS.find((a) => a.value === cngnAction);
     return found ? found.label : "Select cNGN action";
-  }, [cngnAction]);
+  }, [cngnAction, activeTab]);
 
   const handleOpenTab = (tab: keyof typeof cNGNTabsUI) => {
     // Persist active tab to global selection so SwapPanel can render it
@@ -188,6 +189,7 @@ export default function SelectCNGNAction() {
 
             <Button
               onClick={() => handleOpenTab("payWithcNGN")}
+              disabled
               className="w-full flex items-center justify-start hover:!bg-neutral-800 gap-6  px-4 rounded-lg h-14 transition-colors"
             >
               <HandCoins className="size-6" />
@@ -197,6 +199,7 @@ export default function SelectCNGNAction() {
             </Button>
             <Button
               onClick={() => handleOpenTab("payGlobally")}
+              disabled
               className="w-full flex items-center justify-start gap-6 hover:!bg-neutral-800   px-4 rounded-lg h-14 transition-colors"
             >
               <Globe className="size-6" />
