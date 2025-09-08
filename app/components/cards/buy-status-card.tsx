@@ -261,23 +261,21 @@ const BuyStatusCard: React.FC<BuyStatusCardProps> = ({
     }
 
     const {
-      // accountName,
+      accountName,
       accountNumber,
       // transactionReference,
       institutionName,
     } = userActionDetails;
     return (
-      <div className="w-full max-w-xl mx-auto border !border-neutral-800 rounded-2xl p-4 md:p-6 text-white space-y-3">
+      <div className="w-full max-w-xl mx-auto  border !border-neutral-800 rounded-2xl p-4 md:p-6 text-white space-y-3">
         <div className="text-left">
           <p className="text-sm text-neutral-400">Make a bank transfer to</p>
           {institutionName && (
             <p className="text-base font-semibold">{institutionName}</p>
           )}
         </div>
-        <div className="grid grid-cols-1  gap-3">
-          {institutionName && (
-            <CopyRow label="Account Name" value={institutionName} />
-          )}
+        <div className="grid grid-cols-1 gap-3">
+          {accountName && <CopyRow label="Account Name" value={accountName} />}
           <CopyRow label="Account Number" value={accountNumber} />
           <CopyRow label="Amount" value={fiatAmount.toFixed(0)} />
           {/* <CopyRow label="Reference" value={transactionReference} /> */}
@@ -306,21 +304,31 @@ const BuyStatusCard: React.FC<BuyStatusCardProps> = ({
   };
 
   const CopyRow = ({ label, value }: { label: string; value?: string }) => {
-    const onCopy = () => {
-      if (value) navigator.clipboard.writeText(value);
+    const [copied, setCopied] = useState(false);
+    const onCopy = async () => {
+      if (!value) return;
+      try {
+        await navigator.clipboard.writeText(value);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+      } catch {
+        // silently fail; keep UX simple
+      }
     };
     return (
       <div className="flex items-center justify-between bg-[#181818] rounded-xl px-3 py-2 border !border-[#2a2a2a]">
-        <div>
+        <div className="flex-1 min-w-0 mr-3">
           <p className="text-xs text-neutral-400">{label}</p>
-          <p className="text-sm font-medium">{value || "-"}</p>
+          <p className="text-sm font-medium truncate">{value || "-"}</p>
         </div>
         <button
           type="button"
           onClick={onCopy}
-          className="text-xs text-blue-400 hover:text-blue-300"
+          className={`text-xs flex-shrink-0 ${
+            copied ? "text-green-400" : "text-blue-400 hover:text-blue-300"
+          }`}
         >
-          Copy
+          {copied ? "Copied!" : "Copy"}
         </button>
       </div>
     );
@@ -454,7 +462,7 @@ const BuyStatusCard: React.FC<BuyStatusCardProps> = ({
           >
             <button
               onClick={handleClose}
-              className="w-8 h-8 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-colors z-10"
+              className="w-8 h-8 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-colors"
               onTouchStart={(e) => e.stopPropagation()}
               onMouseDown={(e) => e.stopPropagation()}
             >
@@ -462,7 +470,7 @@ const BuyStatusCard: React.FC<BuyStatusCardProps> = ({
             </button>
           </div>
 
-          <div className="px-6 pb-6 flex flex-col items-center space-y-6 flex-1 justify-center">
+          <div className="px-6 pb-24 md:pb-20 flex flex-col items-center space-y-6 flex-1 justify-center">
             <div className="flex items-center justify-center min-h-[80px]">
               {isProcessing ? (
                 <div

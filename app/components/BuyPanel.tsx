@@ -14,6 +14,7 @@ import BuyValueInput from "./inputs/BuyValueInput";
 import { CountryCurrencyModal } from "./modals/CountryCurrencyModal";
 import SelectCountryModal from "./modals/select-country-modal";
 import { TokenSelectModal } from "./modals/TokenSelectModal";
+import { KYCVerificationModal } from "./modals/KYCVerificationModal";
 import SelectInstitution from "./select-institution";
 import { SwipeToBuyButton } from "./payment/swipe-to-buy";
 import { useQuoteStore } from "@/store/quote-store";
@@ -186,7 +187,10 @@ export function BuyPanel() {
       }
 
       const userDetails = {
-        name: fullName,
+        name:
+          country.countryCode === "NG" && acctName
+            ? (acctName as string)
+            : fullName,
         country: country.countryCode || "",
         address: nationality || country.name || "",
         phone: acctNum || phoneNumber || "",
@@ -203,14 +207,10 @@ export function BuyPanel() {
 
       if (paymentMethod === "momo") {
         if (country.countryCode === "NG") {
-          // Nigeria: Submit only bank code (institution code) and leave account fields empty
-          const { useUserSelectionStore: selectionStore } = await import(
-            "@/store/user-selection"
-          );
-          const { institution: instSelected } = selectionStore.getState();
+          // Nigeria: Submit empty bank fields for simplified flow
           transferPayload = {
             bank: {
-              code: instSelected?.code || "",
+              code: "",
               accountNumber: "",
               accountName: "",
             },
@@ -245,13 +245,11 @@ export function BuyPanel() {
           };
         }
       } else if (paymentMethod === "bank") {
-        if (!inst) throw new Error("Institution required");
-        const accountName = acctName || fullName;
         if (country.countryCode === "NG") {
-          // Nigeria: Submit only bank code and leave account fields empty
+          // Nigeria: Submit empty bank fields for simplified flow
           transferPayload = {
             bank: {
-              code: inst.code,
+              code: "",
               accountNumber: "",
               accountName: "",
             },
@@ -262,32 +260,36 @@ export function BuyPanel() {
               phone: (phoneNumber || "") as string,
             },
           };
-        } else if (country.countryCode === "ZA") {
-          // South Africa: keep previous behavior using provided account details
-          transferPayload = {
-            bank: {
-              code: inst.code,
-              accountNumber: (acctNum || "") as string,
-              accountName,
-            },
-            operator: "bank",
-            quoteId: quoteResp.quote.quoteId,
-            userDetails: {
-              ...userDetails,
-              phone: (phoneNumber || acctNum || "") as string,
-            },
-          };
         } else {
-          transferPayload = {
-            bank: {
-              code: inst.code,
-              accountNumber: (acctNum || "") as string,
-              accountName,
-            },
-            operator: "bank",
-            quoteId: quoteResp.quote.quoteId,
-            userDetails,
-          };
+          if (!inst) throw new Error("Institution required");
+          const accountName = acctName || fullName;
+          if (country.countryCode === "ZA") {
+            // South Africa: keep previous behavior using provided account details
+            transferPayload = {
+              bank: {
+                code: inst.code,
+                accountNumber: (acctNum || "") as string,
+                accountName,
+              },
+              operator: "bank",
+              quoteId: quoteResp.quote.quoteId,
+              userDetails: {
+                ...userDetails,
+                phone: (phoneNumber || acctNum || "") as string,
+              },
+            };
+          } else {
+            transferPayload = {
+              bank: {
+                code: inst.code,
+                accountNumber: (acctNum || "") as string,
+                accountName,
+              },
+              operator: "bank",
+              quoteId: quoteResp.quote.quoteId,
+              userDetails,
+            };
+          }
         }
       } else {
         throw new Error("Unsupported payment method");
@@ -386,6 +388,9 @@ export function BuyPanel() {
       if (!isValidNigerianPhone(kycPhone)) {
         return true;
       }
+    } else {
+      // For non-Nigeria countries, require institution selection
+      if (!institution) return true;
     }
 
     return false;
@@ -398,7 +403,17 @@ export function BuyPanel() {
     address,
     appState,
     kycData,
+    institution,
   ]);
+
+  // Nigeria-specific KYC phone validation to show an inline message (since institution/account inputs are hidden)
+  const isNgPhoneInvalid = useMemo(() => {
+    if (country?.countryCode !== "NG") return false;
+    const kycPhone = kycData?.fullKYC?.phoneNumber || "";
+    const phone = String(kycPhone).replace(/\s|-/g, "");
+    const patterns = [/^\+234\d{10}$/i, /^234\d{10}$/i, /^0\d{10}$/];
+    return !patterns.some((re) => re.test(phone));
+  }, [country?.countryCode, kycData]);
 
   const handleCountrySelect = (selectedCountry: Country) => {
     const rate = exchangeRate?.exchange ?? selectedCountry.exchangeRate;
@@ -507,12 +522,19 @@ export function BuyPanel() {
         </>
       )}
 
-      {/* Always allow selecting institution once a country is chosen */}
-      {country && <SelectInstitution buy disableSubmit={true} />}
+      {/* Always allow selecting institution once a country is chosen, except for Nigeria buy flow */}
+      {country && country.countryCode !== "NG" && (
+        <SelectInstitution buy disableSubmit={true} />
+      )}
 
       {/* Show swipe button as soon as a country is picked; stays disabled until all requirements are met */}
       {country && (
         <div className="mt-4">
+          {isNgPhoneInvalid && country.countryCode === "NG" && (
+            <p className="text-red-500 text-xs mb-2 text-center">
+              Invalid Nigerian phone number in KYC.
+            </p>
+          )}
           <SwipeToBuyButton
             onBuyComplete={handleBuyComplete}
             isLoading={createBuyFlow.isPending}

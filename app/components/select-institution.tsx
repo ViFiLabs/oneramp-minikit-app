@@ -160,7 +160,10 @@ const SelectInstitution = ({
         }
 
         const userDetails = {
-          name: fullName,
+          name:
+            country?.countryCode === "NG" && userPayLoad.accountName
+              ? userPayLoad.accountName
+              : fullName,
           country: country?.countryCode || "",
           address: nationality || country?.name || "",
           phone: accountNumber,
@@ -245,7 +248,10 @@ const SelectInstitution = ({
             : userPayLoad.accountName || fullName;
 
         const userDetails = {
-          name: fullName,
+          name:
+            country?.countryCode === "NG" && userPayLoad.accountName
+              ? userPayLoad.accountName
+              : fullName,
           country: country?.countryCode || "",
           address: nationality || country?.name || "",
           phone: accountNumber,

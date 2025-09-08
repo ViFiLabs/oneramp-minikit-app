@@ -182,7 +182,10 @@ export function SwapPanel() {
       }
 
       const baseUserDetails = {
-        name: fullName,
+        name:
+          country.countryCode === "NG" && userSelectionStore.accountName
+            ? userSelectionStore.accountName
+            : fullName,
         country: country.countryCode || "",
         address: nationality || country.name || "",
         dob: dateOfBirth,
@@ -336,6 +339,7 @@ export function SwapPanel() {
     setStepMessage("Setting up withdrawal...");
 
     const transferPayload = createTransferPayload(quoteResponse.quote.quoteId);
+
     const transferResponse = await createTransferOut(transferPayload);
 
     console.log("✅ Transfer response:", transferResponse);
