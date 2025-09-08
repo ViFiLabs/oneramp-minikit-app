@@ -126,11 +126,11 @@ export function SwipeToBuyButton({
           background:
             stepMessage === "Transaction Complete!"
               ? "linear-gradient(135deg, #10b981, #059669)"
-              : "linear-gradient(135deg, #7B68EE, #6A5ACD)",
+              : "linear-gradient(135deg, #3b82f6, #1d4ed8)",
           boxShadow:
             stepMessage === "Transaction Complete!"
               ? "0 4px 12px rgba(16, 185, 129, 0.3)"
-              : "0 4px 12px rgba(123, 104, 238, 0.3)",
+              : "0 4px 12px rgba(59, 130, 246, 0.3)",
         }}
       >
         <div
@@ -140,7 +140,7 @@ export function SwipeToBuyButton({
             background:
               stepMessage === "Transaction Complete!"
                 ? "linear-gradient(135deg, #059669, #047857)"
-                : "linear-gradient(135deg, #6A5ACD, #5A4FCF)",
+                : "linear-gradient(135deg, #2563eb, #1e40af)",
             opacity: dragX > 0 ? 0.7 : 0,
           }}
         />

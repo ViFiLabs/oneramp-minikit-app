@@ -55,26 +55,21 @@ export function SwipeToWithdrawButton({
   const getButtonText = () => {
     if (isLoading && stepMessage) return stepMessage;
 
-    // Check wallet connection and KYC status
+    // Check wallet connection
     if (!isWalletConnected) return "Connect Wallet";
-    if (isWalletConnected && !hasKYC) return "Swipe to Complete KYC";
-    if (isWalletConnected && hasKYC) return "Swipe to Withdraw";
-
+    
+    // Always show "Swipe to Withdraw" if wallet is connected, regardless of KYC status
     return "Swipe to Withdraw";
   };
 
   const getHelperText = () => {
     if (isLoading) return "Please wait while we process your request...";
 
-    // Check wallet connection and KYC status
+    // Check wallet connection
     if (!isWalletConnected) return "Connect your wallet to continue";
-    if (isWalletConnected && !hasKYC)
-      return "Complete KYC verification to withdraw";
-    if (isWalletConnected && hasKYC && disabled)
-      return "Complete form details to continue";
-    if (isWalletConnected && hasKYC)
-      return "Drag the slider to confirm withdrawal";
-
+    
+    // Always show withdrawal-related helper text, regardless of KYC status
+    if (disabled) return "Complete form details to continue";
     return "Drag the slider to confirm withdrawal";
   };
 
@@ -142,14 +137,15 @@ export function SwipeToWithdrawButton({
   const handleMouseDown = (e: React.MouseEvent) => {
     if (isLoading) return;
 
-    // Handle different states
+    // Handle wallet connection
     if (!isWalletConnected) {
       onConnectWallet?.();
       return;
     }
 
-    // Allow dragging for both KYC and withdrawal states
-    if (isWalletConnected && (!hasKYC || (hasKYC && !disabled))) {
+    // Allow dragging when wallet is connected (regardless of KYC status)
+    // Only block if disabled (form incomplete)
+    if (isWalletConnected && !disabled) {
       setIsDragging(true);
       if (e.cancelable) {
         e.preventDefault();
@@ -157,21 +153,22 @@ export function SwipeToWithdrawButton({
       return;
     }
 
-    // For disabled withdrawal state (form incomplete)
-    if (disabled && isWalletConnected && hasKYC) return;
+    // For disabled state (form incomplete)
+    if (disabled) return;
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (isLoading) return;
 
-    // Handle different states
+    // Handle wallet connection
     if (!isWalletConnected) {
       onConnectWallet?.();
       return;
     }
 
-    // Allow dragging for both KYC and withdrawal states
-    if (isWalletConnected && (!hasKYC || (hasKYC && !disabled))) {
+    // Allow dragging when wallet is connected (regardless of KYC status)
+    // Only block if disabled (form incomplete)
+    if (isWalletConnected && !disabled) {
       setIsDragging(true);
       if (e.cancelable) {
         e.preventDefault();
@@ -179,8 +176,8 @@ export function SwipeToWithdrawButton({
       return;
     }
 
-    // For disabled withdrawal state (form incomplete)
-    if (disabled && isWalletConnected && hasKYC) return;
+    // For disabled state (form incomplete)
+    if (disabled) return;
   };
 
   useEffect(() => {
@@ -203,12 +200,9 @@ export function SwipeToWithdrawButton({
         setDragX(maxAllowedDrag);
         setIsDragging(false);
         setTimeout(() => {
-          // Determine which action to take based on current state
-          if (isWalletConnected && !hasKYC) {
-            onStartKYC?.();
-          } else if (isWalletConnected && hasKYC) {
-            onWithdrawComplete();
-          }
+          // Always call onWithdrawComplete when swipe is completed
+          // Let the parent component handle KYC verification
+          onWithdrawComplete();
         }, 300);
       }
     };
@@ -233,12 +227,9 @@ export function SwipeToWithdrawButton({
         setDragX(maxAllowedDrag);
         setIsDragging(false);
         setTimeout(() => {
-          // Determine which action to take based on current state
-          if (isWalletConnected && !hasKYC) {
-            onStartKYC?.();
-          } else if (isWalletConnected && hasKYC) {
-            onWithdrawComplete();
-          }
+          // Always call onWithdrawComplete when swipe is completed
+          // Let the parent component handle KYC verification
+          onWithdrawComplete();
         }, 300);
       }
     };
@@ -276,9 +267,7 @@ export function SwipeToWithdrawButton({
     isDragging,
     isCompleted,
     onWithdrawComplete,
-    onStartKYC,
     isWalletConnected,
-    hasKYC,
   ]);
 
   // Reset when loading changes or when KYC/wallet state changes
@@ -287,30 +276,28 @@ export function SwipeToWithdrawButton({
       setIsCompleted(false);
       setDragX(0);
     }
-  }, [isLoading, isWalletConnected, hasKYC]);
+  }, [isLoading, isWalletConnected]);
 
   return (
     <div className="relative">
       <div
         ref={containerRef}
         className={`relative rounded-full h-16 flex items-center justify-center overflow-hidden cursor-pointer select-none ${
-          !isWalletConnected || (disabled && isWalletConnected && hasKYC)
-            ? "opacity-50"
-            : ""
+          !isWalletConnected || disabled ? "opacity-50" : ""
         }`}
         style={{
           background:
-            !isWalletConnected || (disabled && isWalletConnected && hasKYC)
+            !isWalletConnected || disabled
               ? "linear-gradient(135deg, #6b7280, #4b5563)"
               : stepMessage === "Transaction Complete!"
               ? "linear-gradient(135deg, #10b981, #059669)"
-              : "linear-gradient(135deg, #7B68EE, #6A5ACD)",
+              : "linear-gradient(135deg, #3b82f6, #1d4ed8)",
           boxShadow:
-            !isWalletConnected || (disabled && isWalletConnected && hasKYC)
+            !isWalletConnected || disabled
               ? "none"
               : stepMessage === "Transaction Complete!"
               ? "0 4px 12px rgba(16, 185, 129, 0.3)"
-              : "0 4px 12px rgba(123, 104, 238, 0.3)",
+              : "0 4px 12px rgba(59, 130, 246, 0.3)",
         }}
       >
         {/* Background overlay that fills as dragged */}
@@ -321,7 +308,7 @@ export function SwipeToWithdrawButton({
             background:
               stepMessage === "Transaction Complete!"
                 ? "linear-gradient(135deg, #059669, #047857)"
-                : "linear-gradient(135deg, #6A5ACD, #5A4FCF)",
+                : "linear-gradient(135deg, #2563eb, #1e40af)",
             opacity: dragX > 0 ? 0.7 : 0,
           }}
         />
@@ -341,7 +328,7 @@ export function SwipeToWithdrawButton({
               ? "not-allowed"
               : !isWalletConnected
               ? "pointer"
-              : disabled && isWalletConnected && hasKYC
+              : disabled
               ? "not-allowed"
               : isDragging
               ? "grabbing"

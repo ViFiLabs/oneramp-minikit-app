@@ -6,7 +6,11 @@ import {
   DialogContent,
   DialogTrigger,
   DialogClose,
+  DialogOverlay,
+  DialogPortal,
+  VisuallyHidden,
 } from "@/components/ui/dialog";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { SUPPORTED_NETWORKS_WITH_RPC_URLS } from "@/data/networks";
 import useWalletGetInfo from "@/hooks/useWalletGetInfo";
 import { cn } from "@/lib/utils";
@@ -150,11 +154,15 @@ export const ConnectButton = ({ large }: { large?: boolean }) => {
         )}
       </DialogTrigger>
 
-      <DialogContent className="fixed inset-0 z-50 w-screen h-screen max-w-none max-h-none p-0 bg-[#181818] text-white flex flex-col translate-x-0 translate-y-0 top-0 left-0">
+      <DialogContent className="fixed z-50 bg-[#181818] border-none text-white p-0 m-0 shadow-2xl overflow-hidden
+        /* Mobile: full screen behavior - for backwards compatibility */
+        inset-0 w-screen h-screen max-w-none max-h-none translate-x-0 translate-y-0 top-0 left-0
+        /* Desktop: centered modal */
+        md:bottom-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:max-w-md md:w-full md:rounded-2xl md:animate-in md:fade-in md:duration-200 md:transform md:h-auto md:max-h-[80vh] md:inset-auto">
         <div className="h-14 mb-4 px-3 flex items-center justify-between">
           <h1 className="text-white text-xl font-semibold">My Wallets</h1>
           <DialogClose asChild>
-            <button className="absolute top-4 right-4 text-neutral-400 hover:text-white p-2 rounded-xl hover:bg-[#232323] transition-colors">
+            <button className="text-neutral-400 hover:text-white p-2 rounded-xl hover:bg-[#232323] transition-colors">
               <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
                 <path
                   d="M18 6L6 18M6 6l12 12"

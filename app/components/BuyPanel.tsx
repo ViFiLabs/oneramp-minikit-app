@@ -47,15 +47,10 @@ export function BuyPanel() {
   const [showCountryModal, setShowCountryModal] = useState(false);
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [showKYCModal, setShowKYCModal] = useState(false);
+  const [kycTriggered, setKycTriggered] = useState(false);
   const [swipeButtonReset, setSwipeButtonReset] = useState(false);
-  const {
-    updateSelection,
-    country,
-    paymentMethod,
-    asset,
-    appState,
-    institution,
-  } = useUserSelectionStore();
+  const { updateSelection, country, paymentMethod, asset, appState, institution } =
+    useUserSelectionStore();
   const { exchangeRate, setExchangeRate, setError } = useExchangeRateStore();
   const { currentNetwork } = useNetworkStore();
 
@@ -320,6 +315,58 @@ export function BuyPanel() {
     },
   });
 
+  // Handle KYC completion and auto-retry buy
+  useEffect(() => {
+    if (kycTriggered && kycData && kycData.kycStatus === "VERIFIED") {
+      setKycTriggered(false);
+      setShowKYCModal(false);
+      // Auto-retry the buy flow after KYC completion
+      createBuyFlow.mutate();
+    }
+  }, [kycTriggered, kycData, createBuyFlow]);
+
+  // Reset buy state function (similar to resetPaymentState in payment interface)
+  const resetBuyState = () => {
+    setShowKYCModal(false);
+    setKycTriggered(false);
+  };
+
+  // Handle buy completion with KYC verification
+  const handleBuyComplete = () => {
+    // Verify KYC before proceeding with purchase
+    if (kycData && kycData.kycStatus !== "VERIFIED") {
+      // Reset swipe button to roll back to initial position
+      setSwipeButtonReset(true);
+      setTimeout(() => setSwipeButtonReset(false), 100);
+
+      // Set flag to indicate KYC was triggered
+      setKycTriggered(true);
+      setShowKYCModal(true);
+      toast.error("KYC verification required");
+      return;
+    }
+
+    // Additional check for rejected or in-review KYC
+    if (
+      kycData?.kycStatus === "REJECTED" ||
+      kycData?.kycStatus === "IN_REVIEW"
+    ) {
+      // Reset swipe button to roll back to initial position
+      setSwipeButtonReset(true);
+      setTimeout(() => setSwipeButtonReset(false), 100);
+
+      setKycTriggered(true);
+      setShowKYCModal(true);
+      toast.error(
+        "KYC verification is not complete. Please wait for verification to finish."
+      );
+      return;
+    }
+
+    // If KYC is verified, proceed with the purchase
+    createBuyFlow.mutate();
+  };
+
   const isBuyDisabled = useMemo(() => {
     if (!country || !asset || !currentNetwork || !amount) return true;
     if (!isConnected || !address) return true;
@@ -488,20 +535,7 @@ export function BuyPanel() {
             </p>
           )}
           <SwipeToBuyButton
-            onBuyComplete={() => {
-              // KYC gate for Buy flow (new users see KYC modal like Swap/Pay)
-              if (!kycData || kycData.kycStatus !== "VERIFIED") {
-                setShowKYCModal(true);
-                toast.error(
-                  "KYC verification is not complete. Please complete KYC to continue."
-                );
-                // reset slider back after short delay
-                setSwipeButtonReset(true);
-                setTimeout(() => setSwipeButtonReset(false), 100);
-                return;
-              }
-              createBuyFlow.mutate();
-            }}
+            onBuyComplete={handleBuyComplete}
             isLoading={createBuyFlow.isPending}
             disabled={isBuyDisabled}
             stepMessage={
@@ -540,11 +574,7 @@ export function BuyPanel() {
       {/* KYC Verification Modal */}
       <KYCVerificationModal
         open={showKYCModal}
-        onClose={() => {
-          setShowKYCModal(false);
-          setSwipeButtonReset(true);
-          setTimeout(() => setSwipeButtonReset(false), 100);
-        }}
+        onClose={resetBuyState}
         kycLink={kycData?.message?.link || null}
       />
 

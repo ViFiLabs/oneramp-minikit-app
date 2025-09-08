@@ -7,6 +7,7 @@ import EVMProvider from "./providers/EVMProvider";
 import { headers } from "next/headers";
 import { Toaster } from "@/components/ui/sonner";
 import { MiniKitContextProvider } from "./context/minikit-provider";
+import { Navbar } from "@/components/navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -69,7 +70,10 @@ export default async function RootLayout({
         suppressHydrationWarning={true}
       >
         <MiniKitContextProvider>
-          <EVMProvider cookies={cookies}>{children}</EVMProvider>
+          <EVMProvider cookies={cookies}>
+            <Navbar />
+            {children}
+          </EVMProvider>
         </MiniKitContextProvider>
         <Toaster />
       </body>
