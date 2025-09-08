@@ -49,7 +49,7 @@ export function BuyPanel() {
   const [showKYCModal, setShowKYCModal] = useState(false);
   const [kycTriggered, setKycTriggered] = useState(false);
   const [swipeButtonReset, setSwipeButtonReset] = useState(false);
-  const { updateSelection, country, paymentMethod, asset, appState } =
+  const { updateSelection, country, paymentMethod, asset, appState, institution } =
     useUserSelectionStore();
   const { exchangeRate, setExchangeRate, setError } = useExchangeRateStore();
   const { currentNetwork } = useNetworkStore();
