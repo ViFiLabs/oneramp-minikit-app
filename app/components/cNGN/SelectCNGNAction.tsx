@@ -40,27 +40,64 @@ export default function SelectCNGNAction() {
   );
   const [open, setOpen] = useState(false);
 
-  const selectedLabel = useMemo(() => {
+  const selectedInfo = useMemo(() => {
     if (activeTab) {
       switch (activeTab) {
         case "deposit":
-          return "Get cNGN via Bank";
+          return {
+            label: "Get cNGN via Bank",
+            icon: <Landmark className="size-4 text-white/80" />,
+          };
         case "withdraw":
-          return "Withdraw to Bank";
+          return {
+            label: "Withdraw to Bank",
+            icon: <Landmark className="size-4 text-white/80" />,
+          };
         case "swapToUSDC":
-          return "Swap for USDC";
+          return {
+            label: "Swap for USDC",
+            icon: (
+              <Image
+                src="/logos/USDC.svg"
+                alt="USDC"
+                width={16}
+                height={16}
+                className="rounded"
+              />
+            ),
+          };
         case "swapTocNGN":
-          return "Swap for cNGN";
+          return {
+            label: "Swap for cNGN",
+            icon: (
+              <Image
+                src="/logos/cngn.png"
+                alt="cNGN"
+                width={16}
+                height={16}
+                className="rounded"
+              />
+            ),
+          };
         case "payWithcNGN":
-          return "Pay with cNGN";
+          return {
+            label: "Pay with cNGN",
+            icon: <HandCoins className="size-4 text-white/80" />,
+          };
         case "payGlobally":
-          return "Pay globally";
+          return {
+            label: "Pay globally",
+            icon: <Globe className="size-4 text-white/80" />,
+          };
         default:
           break;
       }
     }
     const found = ACTIONS.find((a) => a.value === cngnAction);
-    return found ? found.label : "Select cNGN action";
+    return {
+      label: found ? found.label : "Select cNGN action",
+      icon: null as React.ReactNode,
+    };
   }, [cngnAction, activeTab]);
 
   const handleOpenTab = (tab: keyof typeof cNGNTabsUI) => {
@@ -79,8 +116,9 @@ export default function SelectCNGNAction() {
           type="button"
           className="w-full text-left !bg-[#232323] border !border-[#3a3a3a]/40 hover:bg-[#212121] text-neutral-300 rounded-xl h-14 px-6 flex items-center justify-between transition-colors"
         >
-          <span className="text-base font-medium text-neutral-200">
-            {selectedLabel}
+          <span className="text-base font-medium text-neutral-200 flex items-center gap-2">
+            {selectedInfo.icon}
+            {selectedInfo.label}
           </span>
           <svg
             width="16"
