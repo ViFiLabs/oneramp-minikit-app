@@ -54,9 +54,10 @@ export function MainTabsSwitch() {
 
   return (
     <Tabs defaultValue="Pay" className="w-full ">
-      <TabsList className="grid bg-neutral-700/80 w-full sm:max-w-xs sm:mx-auto grid-cols-3 p-1 rounded-t-full h-12">
-        <TabsTrigger
-          value="Pay"
+      <div className="w-full max-w-md mx-auto">
+        <TabsList className="inline-flex bg-black w-fit p-1 h-12 gap-4">
+          <TabsTrigger
+            value="Pay"
           onClick={() => washTheseFields(false, true)}
           className="data-[state=active]:!bg-neutral-600 data-[state=active]:!text-white text-sm data-[state=active]:font-semibold text-neutral-300 rounded-full transition-all"
         >
@@ -77,6 +78,7 @@ export function MainTabsSwitch() {
           Deposit
         </TabsTrigger>
       </TabsList>
+      </div>
       <TabsContent value="Pay" className="w-full">
         <PayPanel />
       </TabsContent>
@@ -106,9 +108,9 @@ export function MainTabsSwitch() {
               ease: "easeOut",
               delay: 0.2,
             }}
-            className="text-center mt-6 px-4"
+            className="w-full max-w-md mx-auto text-center mt-6 px-4 py-4 bg-black rounded-lg"
           >
-            <p className="text-sm md:text-base text-neutral-400 font-light">
+            <p className="text-base md:text-lg text-white font-light">
               Pay with crypto. Buy and sell instantly{" "}
               <br className="hidden sm:block" />
               on Base and other supported chains.
