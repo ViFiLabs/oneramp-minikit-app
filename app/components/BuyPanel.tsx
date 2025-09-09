@@ -430,7 +430,7 @@ export function BuyPanel() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto bg-[#181818] rounded-2xl min-h-[400px] p-4 md:p-6 flex flex-col gap-3 md:gap-4 border !border-[#232323]">
+    <div className="w-full max-w-md mx-auto bg-[#181818] rounded-3xl min-h-[400px] p-4 md:p-6 flex flex-col gap-3 md:gap-4 border !border-[#232323]">
       <div className="flex justify-between items-center mb-2 md:mb-4">
         <span className="text-neutral-400 text-base md:text-lg">
           You&apos;re buying

@@ -1036,7 +1036,7 @@ export function PaymentInterface() {
   };
 
   return (
-    <div className="mx-auto w-full bg-[#181818] text-white rounded-2xl overflow-hidden p-4 sm:p-5 space-y-3 sm:space-y-4 min-h-[400px]">
+    <div className="mx-auto w-full bg-[#181818] text-white rounded-3xl overflow-hidden p-4 sm:p-5 space-y-3 sm:space-y-4 min-h-[400px]">
       {/* Pay Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-lg sm:text-xl">Pay</h2>
