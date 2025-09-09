@@ -59,7 +59,7 @@ export function MainTabsSwitch() {
           <TabsTrigger
             value="Pay"
           onClick={() => washTheseFields(false, true)}
-          className="data-[state=active]:!bg-neutral-600 data-[state=active]:!text-white text-sm data-[state=active]:font-semibold text-neutral-300 rounded-full transition-all"
+          className="data-[state=active]:!bg-neutral-600 data-[state=active]:!text-white text-sm data-[state=active]:font-semibold text-neutral-300 rounded-2xl transition-all"
         >
           Pay
         </TabsTrigger>
