@@ -37,7 +37,7 @@ import { ToPanel } from "./panels/ToPanel";
 import SelectInstitution from "./select-institution";
 import { KYCVerificationModal } from "./modals/KYCVerificationModal";
 import { toast } from "sonner";
-import { ModalConnectButton } from "@/components/modal-connect-button";
+import { ModalConnectButton } from "@/app/components/wallet/modal-connect-button";
 
 const networks: Network[] = SUPPORTED_NETWORKS_WITH_RPC_URLS;
 

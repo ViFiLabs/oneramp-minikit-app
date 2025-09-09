@@ -1,6 +1,6 @@
 "use client";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
 import { SwapPanel } from "@/app/components/SwapPanel";
 import { BuyPanel } from "@/app/components/BuyPanel";
 import { useUserSelectionStore } from "@/store/user-selection";

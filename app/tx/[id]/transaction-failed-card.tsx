@@ -4,7 +4,7 @@ import React from "react";
 import { FiCheck, FiLink, FiFileText, FiXCircle } from "react-icons/fi";
 import { TransferType, TransferStatus } from "@/types";
 // import AssetAvator from "@/app/components/cards/asset-avator";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/app/components/ui/button";
 import CountryAvator from "@/app/components/cards/country-avator";
 import SupportButton from "@/app/components/buttons/support-button";
 

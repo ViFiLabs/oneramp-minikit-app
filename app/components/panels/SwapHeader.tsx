@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/app/components/ui/button";
 import { Asset } from "@/types";
 import { CurrencySelector } from "./CurrencySelector";
 

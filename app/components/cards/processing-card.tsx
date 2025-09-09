@@ -6,8 +6,8 @@ import { Loader, X } from "lucide-react";
 import { TransferType, Quote, Transfer } from "@/types";
 import AssetAvator from "./asset-avator";
 import CountryAvator from "./country-avator";
-import { Button } from "@/components/ui/button";
-import TransactionsModal from "@/components/modals/transactions-modal";
+import { Button } from "@/app/components/ui/button";
+import TransactionsModal from "@/app/components/modals/transactions-modal";
 
 import { PAY_SUPPORTED_COUNTRIES } from "@/data/countries";
 

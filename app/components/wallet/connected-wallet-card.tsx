@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Button } from "@/app/components/ui/button";
 import useWalletGetInfo from "@/hooks/useWalletGetInfo";
 import { useNetworkStore } from "@/store/network";

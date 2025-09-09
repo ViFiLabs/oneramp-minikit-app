@@ -1,6 +1,6 @@
 import { createTransferIn, submitTransactionHash } from "@/actions/transfer";
-import { ConnectSingleWallet } from "@/components/connect-single-wallet";
-import { Button } from "@/components/ui/button";
+import { ConnectSingleWallet } from "@/app/components/wallet/connect-single-wallet";
+import { Button } from "@/app/components/ui/button";
 import useWalletInfo from "@/hooks/useWalletGetInfo";
 import useEVMPay from "@/onchain/useEVMPay";
 import { useKYCStore } from "@/store/kyc-store";

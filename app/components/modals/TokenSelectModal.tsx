@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/app/components/ui/button";
 import { assets } from "@/data/currencies";
 import { SUPPORTED_NETWORKS_WITH_RPC_URLS } from "@/data/networks";
 import { Asset, Network } from "@/types";
@@ -14,7 +14,7 @@ import {
   DialogPortal,
   DialogOverlay,
   VisuallyHidden,
-} from "@/components/ui/dialog";
+} from "@/app/components/ui/dialog";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 
 interface TokenSelectModalProps {

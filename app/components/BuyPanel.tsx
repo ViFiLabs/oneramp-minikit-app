@@ -1,6 +1,6 @@
 "use client";
 import { getCountryExchangeRate } from "@/actions/rates";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/app/components/ui/button";
 import { useAmountStore } from "@/store/amount-store";
 import { useExchangeRateStore } from "@/store/exchange-rate-store";
 import { useNetworkStore } from "@/store/network";

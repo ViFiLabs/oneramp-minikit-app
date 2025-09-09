@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/app/components/ui/button";
 import { SUPPORTED_NETWORKS } from "@/data/networks";
 import { useAppKitNetwork } from "@reown/appkit/react";
 

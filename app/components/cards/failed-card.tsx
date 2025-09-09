@@ -4,10 +4,10 @@ import React from "react";
 import { FiCheck, FiLink, FiXCircle } from "react-icons/fi";
 import { TransferType, Quote } from "@/types";
 import AssetAvator from "./asset-avator";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/app/components/ui/button";
 import CountryAvator from "./country-avator";
 import SupportButton from "../buttons/support-button";
-import TransactionsModal from "@/components/modals/transactions-modal";
+import TransactionsModal from "@/app/components/modals/transactions-modal";
 import { PAY_SUPPORTED_COUNTRIES } from "@/data/countries";
 
 interface FailedCardProps {

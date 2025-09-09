@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/app/components/ui/button";
 import { PAY_SUPPORTED_COUNTRIES } from "@/data/countries";
 import { useUserSelectionStore } from "@/store/user-selection";
 import { Quote, Transfer } from "@/types";

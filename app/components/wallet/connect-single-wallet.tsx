@@ -5,7 +5,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from "@/app/components/ui/popover";
 import { SUPPORTED_NETWORKS_WITH_RPC_URLS } from "@/data/networks";
 import useWalletGetInfo from "@/hooks/useWalletGetInfo";
 import { cn } from "@/lib/utils";

@@ -1,8 +1,10 @@
 "use client";
 
-import { ModalConnectButton } from "@/components/modal-connect-button";
-import Image from "next/image";
-import { Badge } from "@/components/ui/badge";
+import NextImage from "next/image";
+import Link from "next/link";
+import { ModalConnectButton } from "@/app/components/wallet/modal-connect-button";
+import { Suspense } from "react";
+import { Badge } from "@/app/components/ui/badge";
 import { OneRampLogoMenu } from "@/app/components/OneRampLogoMenu";
 import { useEffect, useState } from "react";
 
@@ -32,7 +34,7 @@ export function Navbar() {
           <div className="flex items-center">
             <OneRampLogoMenu>
               <div className="relative flex items-center gap-2">
-                <Image
+                <NextImage
                   src="/large.png"
                   alt="OneRamp"
                   width={80}

@@ -2,16 +2,16 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { ArrowUpDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/app/components/ui/button";
+import { Input } from "@/app/components/ui/input";
+import { Checkbox } from "@/app/components/ui/checkbox";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/app/components/ui/select";
 import { SwipeToPayButton } from "./swipe-to-pay";
 import { CountryCurrencyModal } from "../modals/CountryCurrencyModal";
 import { InstitutionModal } from "../modals/InstitutionModal";
@@ -55,7 +55,7 @@ import Image from "next/image";
 import {
   ExchangeRateSkeleton,
   CryptoAmountSkeleton,
-} from "@/components/ui/skeleton";
+} from "@/app/components/ui/skeleton";
 import FeeSummary, { FeeSummarySkeleton } from "./fee-summary";
 import { KYCVerificationModal } from "../modals/KYCVerificationModal";
 import { toast } from "sonner";

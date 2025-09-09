@@ -6,10 +6,10 @@ import {
   DialogPortal,
   DialogOverlay,
   VisuallyHidden,
-} from "@/components/ui/dialog";
+} from "@/app/components/ui/dialog";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useUserSelectionStore } from "@/store/user-selection";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/app/components/ui/button";
 import { useUserLocation } from "@/hooks/useUserLocation";
 import { useMemo } from "react";
 import { usePreFetchInstitutions } from "@/hooks/useExchangeRate";

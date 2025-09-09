@@ -2,8 +2,8 @@
 
 import { createQuoteIn, createQuoteOut } from "@/actions/quote";
 import { createTransferOut } from "@/actions/transfer";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/app/components/ui/button";
+import { Input } from "@/app/components/ui/input";
 import { assets } from "@/data/currencies";
 import { SUPPORTED_NETWORKS_WITH_RPC_URLS } from "@/data/networks";
 import useWalletGetInfo from "@/hooks/useWalletGetInfo";

@@ -5,9 +5,9 @@ import "./globals.css";
 
 import EVMProvider from "./providers/EVMProvider";
 import { headers } from "next/headers";
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "@/app/components/ui/sonner";
 import { MiniKitContextProvider } from "./context/minikit-provider";
-import { Navbar } from "@/components/navbar";
+import { Navbar } from "@/app/components/navigation/navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

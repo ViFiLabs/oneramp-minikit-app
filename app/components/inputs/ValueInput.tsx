@@ -1,4 +1,4 @@
-import { Input } from "@/components/ui/input";
+import { Input } from "@/app/components/ui/input";
 import { GLOBAL_MIN_MAX } from "@/data/countries";
 import React, { useState, useEffect, useMemo } from "react";
 import { cn } from "@/lib/utils";

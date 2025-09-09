@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/app/components/ui/button";
+import { Checkbox } from "@/app/components/ui/checkbox";
 import useWalletGetInfo from "@/hooks/useWalletGetInfo";
 import { useKYCStore } from "@/store/kyc-store";
 import { useKYCStatus } from "@/hooks/useKYCStatus";

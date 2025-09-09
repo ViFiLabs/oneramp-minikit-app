@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/app/components/ui/button";
 import { NetworkSelectModal } from "./modals/NetworkSelectModal";
 import { Network } from "@/types";
 import { SUPPORTED_NETWORKS_WITH_RPC_URLS } from "@/data/networks";

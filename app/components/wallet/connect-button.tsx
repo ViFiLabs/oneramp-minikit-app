@@ -9,7 +9,7 @@ import {
   DialogOverlay,
   DialogPortal,
   VisuallyHidden,
-} from "@/components/ui/dialog";
+} from "@/app/components/ui/dialog";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { SUPPORTED_NETWORKS_WITH_RPC_URLS } from "@/data/networks";
 import useWalletGetInfo from "@/hooks/useWalletGetInfo";

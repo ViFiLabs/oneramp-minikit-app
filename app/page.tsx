@@ -6,7 +6,7 @@ import sdk from "@farcaster/miniapp-sdk";
 import { HeroText } from "./components/HeroText";
 import { SwapBuyTabs } from "./components/SwapBuyTabs";
 import StateContextProvider from "./providers/StateContextProvider";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/app/components/ui/button";
 import { HelpCircle } from "lucide-react";
 
 export default function Home() {

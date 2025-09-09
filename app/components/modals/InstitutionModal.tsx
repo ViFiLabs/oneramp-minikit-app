@@ -1,5 +1,5 @@
 "use client";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/app/components/ui/input";
 // Use the actual API response type for institutions
 interface Institution {
   name: string;
@@ -24,7 +24,7 @@ import {
   DialogPortal,
   DialogOverlay,
   VisuallyHidden,
-} from "@/components/ui/dialog";
+} from "@/app/components/ui/dialog";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 
 import { getInstitutionsClient } from "@/lib/institutions-data";

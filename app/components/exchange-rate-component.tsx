@@ -3,7 +3,7 @@ import { useUserSelectionStore } from "@/store/user-selection";
 import { useAllCountryExchangeRates } from "@/hooks/useExchangeRate";
 import { useAmountStore } from "@/store/amount-store";
 import { cn } from "@/lib/utils";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/app/components/ui/skeleton";
 
 const ExchangeRateComponent = ({
   default: isDefault,

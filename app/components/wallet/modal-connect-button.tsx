@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/app/components/ui/button";
-import { Dialog, DialogContent, DialogOverlay, DialogPortal, VisuallyHidden } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogOverlay, DialogPortal, VisuallyHidden } from "@/app/components/ui/dialog";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { SUPPORTED_NETWORKS_WITH_RPC_URLS } from "@/data/networks";
 import useWalletGetInfo from "@/hooks/useWalletGetInfo";
@@ -19,7 +19,7 @@ import { useMutation } from "@tanstack/react-query";
 import { getKYC } from "@/actions/kyc";
 import { useKYCStore } from "@/store/kyc-store";
 import { useUserSelectionStore } from "@/store/user-selection";
-import TransactionsModal from "./modals/transactions-modal";
+import TransactionsModal from "../modals/transactions-modal";
 
 export const ModalConnectButton = ({ large }: { large?: boolean }) => {
   const { address, isConnected } = useWalletGetInfo();
