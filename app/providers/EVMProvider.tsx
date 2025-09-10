@@ -23,7 +23,7 @@ const metadata = {
 };
 
 // Base-compatible featured wallets
-const baseWalletIds = [
+const WalletIds = [
   "fd20dc426fb37566d803205b19bbc1d4096b248ac04548e3cfb6b3a38bd033aa", // Coinbase Wallet
   "c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96", // MetaMask
   "4622a2b2d6af1c9844944291e5e7351a6aa24cd7b23099efac1b2fd875da31a0", // Trust Wallet
@@ -42,12 +42,13 @@ createAppKit({
   features: {
     analytics: true,
     email: false,
-    socials: false,
+    socials: ["google","farcaster"],
+    emailShowWallets: true,
     swaps: false,
     onramp: false,
   },
-  featuredWalletIds: baseWalletIds,
-  includeWalletIds: baseWalletIds, // Only show these wallets
+  featuredWalletIds: WalletIds,
+  includeWalletIds: WalletIds, // Only show these wallets
   themeMode: "dark",
   // themeVariables: {
   //   "--w3m-color-mix": "#00d4aa",
