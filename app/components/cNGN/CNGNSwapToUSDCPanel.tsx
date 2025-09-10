@@ -8,7 +8,7 @@ import { SwipeToWithdrawButton } from "@/app/components/payment/swipe-to-withdra
 import { SwapArrow } from "@/app/components/panels/SwapArrow";
 
 export default function CNGNSwapToUSDCPanel() {
-  const { country } = useUserSelectionStore();
+  const { country, updateSelection } = useUserSelectionStore();
   const { amount, setAmount, isValid: isAmountValid } = useAmountStore();
 
   const computedToValue = useMemo(() => {
@@ -57,7 +57,15 @@ export default function CNGNSwapToUSDCPanel() {
       </div>
 
       {/* Arrow */}
-      <SwapArrow disabled />
+      <SwapArrow
+        double
+        onClick={() => {
+          setAmount("0");
+          updateSelection({
+            cngnActiveTab: "swapTocNGN",
+          } as unknown as Record<string, unknown>);
+        }}
+      />
 
       {/* To */}
       <div className="bg-[#232323] rounded-2xl p-4 md:p-5 flex flex-col relative h-[115px]">

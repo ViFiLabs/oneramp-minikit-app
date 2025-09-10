@@ -1,13 +1,10 @@
 import CNGNSwapToUSDCPanel from "./CNGNSwapToUSDCPanel";
 import CNGNWithdrawPanel from "./CNGNWithdrawPanel";
 import CNGNSwapTocNGNPanel from "./CNGNSwapTocNGNPanel";
-import CNGNPayWithcNGNPanel from "./CNGNPayWithcNGNPanel";
-import { CNGNGloballyPanel } from "./CNGNGloballyPanel";
-import CNGNDepositPanel from "./CNGNDepositPanel";
 
 export const cNGNTabsUI = {
   deposit: {
-    component: CNGNDepositPanel,
+    component: null,
   },
   withdraw: {
     component: CNGNWithdrawPanel, // CNGNWithdrawPanel
@@ -19,9 +16,9 @@ export const cNGNTabsUI = {
     component: CNGNSwapTocNGNPanel, // CNGNSwapTocNGNPanel
   },
   payWithcNGN: {
-    component: CNGNPayWithcNGNPanel, // CNGNPayWithcNGNPanel
+    component: null, // CNGNPayWithcNGNPanel
   },
   payGlobally: {
-    component: CNGNGloballyPanel, // CNGNGloballyPanel
+    component: null, // CNGNGloballyPanel
   },
 };

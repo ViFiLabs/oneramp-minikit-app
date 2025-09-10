@@ -3,12 +3,15 @@
 import { Button } from "@/components/ui/button";
 import { Asset } from "@/types";
 import { CurrencySelector } from "./CurrencySelector";
+import Image from "next/image";
 
 interface SwapHeaderProps {
   selectedCurrency: Asset;
   onCurrencyChange: (currency: Asset) => void;
   availableAssets?: Asset[];
   onSettingsClick?: () => void;
+  disableAssetSelection?: boolean;
+  title?: string;
 }
 
 export function SwapHeader({
@@ -16,16 +19,33 @@ export function SwapHeader({
   onCurrencyChange,
   availableAssets,
   onSettingsClick,
+  disableAssetSelection,
+  title = "Swap",
 }: SwapHeaderProps) {
   return (
     <div className="flex items-center justify-between px-4 md:px-6 pt-6 pb-2">
       <div className="flex items-center gap-3">
-        <span className="text-xl md:text-2xl font-bold text-white">Swap</span>
-        <CurrencySelector
-          selectedCurrency={selectedCurrency}
-          onCurrencyChange={onCurrencyChange}
-          availableAssets={availableAssets}
-        />
+        <span className="text-xl md:text-2xl font-bold text-white">
+          {title}
+        </span>
+        {disableAssetSelection ? (
+          <div className="flex items-center bg-black rounded-full px-3 py-1 select-none cursor-not-allowed opacity-90">
+            <Image
+              src="/logos/cngn.png"
+              alt="cNGN"
+              width={18}
+              height={18}
+              className="rounded-full mr-2"
+            />
+            <span className="text-white text-sm font-medium">cNGN</span>
+          </div>
+        ) : (
+          <CurrencySelector
+            selectedCurrency={selectedCurrency}
+            onCurrencyChange={onCurrencyChange}
+            availableAssets={availableAssets}
+          />
+        )}
       </div>
       <Button
         variant="outline"

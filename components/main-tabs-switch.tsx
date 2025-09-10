@@ -43,6 +43,16 @@ export function MainTabsSwitch() {
     }
   };
 
+  // Dedicated switch handler for the Swap tab so cNGN swap UI shows by default
+  const switchToSwap = () => {
+    washTheseFields(false, false);
+    // Clear any previously selected cNGN tab (e.g., 'withdraw') so SwapPanel can default to swap UI
+    updateSelection({ cngnActiveTab: undefined } as unknown as Record<
+      string,
+      unknown
+    >);
+  };
+
   // Show loading state during hydration
   if (!hasMounted) {
     return (
@@ -54,29 +64,38 @@ export function MainTabsSwitch() {
 
   return (
     <Tabs defaultValue="Pay" className="w-full ">
-      <TabsList className="grid bg-neutral-700/80 w-full sm:max-w-xs sm:mx-auto grid-cols-3 p-1 rounded-t-full h-12">
-        <TabsTrigger
-          value="Pay"
-          onClick={() => washTheseFields(false, true)}
-          className="data-[state=active]:!bg-neutral-600 data-[state=active]:!text-white text-sm data-[state=active]:font-semibold text-neutral-300 rounded-full transition-all"
-        >
-          Pay
-        </TabsTrigger>
-        <TabsTrigger
-          value="Withdraw"
-          onClick={() => washTheseFields(false, false)}
-          className="data-[state=active]:!bg-neutral-600 data-[state=active]:!text-white text-sm data-[state=active]:font-semibold text-neutral-300 rounded-full transition-all"
-        >
-          Withdraw
-        </TabsTrigger>
-        <TabsTrigger
-          value="Deposit"
-          onClick={() => washTheseFields(true, false)}
-          className="data-[state=active]:!bg-neutral-600 data-[state=active]:!text-white text-sm data-[state=active]:font-semibold text-neutral-300 rounded-full transition-all"
-        >
-          Deposit
-        </TabsTrigger>
-      </TabsList>
+      <div className="w-full flex items-center justify-between gap-3 sm:max-w-lg sm:mx-auto ">
+        <TabsList className="flex w-full p-1 rounded-full h-12 bg-transparent">
+          <TabsTrigger
+            value="Pay"
+            onClick={() => washTheseFields(false, true)}
+            className="flex-1 data-[state=active]:!bg-neutral-600 data-[state=active]:!text-white text-sm data-[state=active]:font-semibold text-neutral-300 rounded-full transition-all"
+          >
+            Pay
+          </TabsTrigger>
+          <TabsTrigger
+            value="Withdraw"
+            onClick={() => washTheseFields(false, false)}
+            className="flex-1 data-[state=active]:!bg-neutral-600 data-[state=active]:!text-white text-sm data-[state=active]:font-semibold text-neutral-300 rounded-full transition-all"
+          >
+            Withdraw
+          </TabsTrigger>
+          <TabsTrigger
+            value="Deposit"
+            onClick={() => washTheseFields(true, false)}
+            className="flex-1 data-[state=active]:!bg-neutral-600 data-[state=active]:!text-white text-sm data-[state=active]:font-semibold text-neutral-300 rounded-full transition-all"
+          >
+            Deposit
+          </TabsTrigger>
+          <TabsTrigger
+            value="Swap"
+            onClick={switchToSwap}
+            className="flex-1 data-[state=active]:!bg-neutral-600 data-[state=active]:!text-white text-sm data-[state=active]:font-semibold text-neutral-300 rounded-full transition-all"
+          >
+            Swap
+          </TabsTrigger>
+        </TabsList>
+      </div>
       <TabsContent value="Pay" className="w-full">
         <PayPanel />
       </TabsContent>
@@ -85,6 +104,10 @@ export function MainTabsSwitch() {
       </TabsContent>
       <TabsContent value="Deposit" className="w-full">
         <BuyPanel />
+      </TabsContent>
+      <TabsContent value="Swap" className="w-full">
+        {/* Default to cNGN swap UI */}
+        <SwapPanel mode="swap" />
       </TabsContent>
 
       {/* Descriptive text that animates out when country is selected */}

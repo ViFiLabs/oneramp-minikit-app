@@ -530,9 +530,7 @@ const SelectInstitution = ({
   };
   return (
     <form onSubmit={onSubmit}>
-      <div
-        className={`mb-2 bg-[#232323] rounded-t-[2rem] p-5 flex flex-col gap-4 `}
-      >
+      <div className={`mb-2 bg-[#232323] rounded-xl p-5 flex flex-col gap-4 `}>
         <div className="flex items-center justify-between">
           <span className="text-white text-lg font-medium">Recipient</span>
         </div>

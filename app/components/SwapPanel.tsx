@@ -41,11 +41,14 @@ import { ModalConnectButton } from "@/components/modal-connect-button";
 // Standalone cNGN action picker now lives in CNGNActionPanel
 import { supportedAssetsUI } from "@/data/assets-ui";
 import { cNGNTabsUI } from "./cNGN/utils";
-import SelectCNGNAction from "./cNGN/SelectCNGNAction";
 
 const networks: Network[] = SUPPORTED_NETWORKS_WITH_RPC_URLS;
 
-export function SwapPanel() {
+export function SwapPanel({
+  mode = "withdraw",
+}: {
+  mode?: "withdraw" | "swap";
+}) {
   const [withdrawLoading, setWithdrawLoading] = useState(false);
   const [stepMessage, setStepMessage] = useState("");
   const [showKYCModal, setShowKYCModal] = useState(false);
@@ -145,8 +148,14 @@ export function SwapPanel() {
         !availableAssets.find((a) => a.symbol === asset.symbol))
     ) {
       if (availableAssets.length > 0) {
-        setSelectedCurrency(availableAssets[0]);
-        updateSelection({ asset: availableAssets[0] });
+        // In swap mode, prefer cNGN as default asset
+        const preferred =
+          mode === "swap"
+            ? availableAssets.find((a) => a.symbol === "cNGN") ||
+              availableAssets[0]
+            : availableAssets[0];
+        setSelectedCurrency(preferred);
+        updateSelection({ asset: preferred });
       }
       return;
     }
@@ -156,6 +165,9 @@ export function SwapPanel() {
     } else if (!asset) {
       // Set global asset to a default allowed asset
       const defaultAsset =
+        (mode === "swap"
+          ? availableAssets.find((a) => a.symbol === "cNGN")
+          : undefined) ||
         availableAssets[0] ||
         assets.find((a) => allowedSymbols.has(a.symbol)) ||
         assets[0];
@@ -164,7 +176,7 @@ export function SwapPanel() {
         updateSelection({ asset: defaultAsset });
       }
     }
-  }, [asset, selectedCurrency, availableAssets, updateSelection]);
+  }, [asset, selectedCurrency, availableAssets, updateSelection, mode]);
 
   // Close wallet modal when wallet gets connected
   useEffect(() => {
@@ -603,6 +615,21 @@ export function SwapPanel() {
     return entry?.component ?? null;
   }, [selectedCurrency.symbol]);
 
+  // When user selects cNGN, default to showing the Withdraw-to-bank flow immediately
+  const activeCngnTab = (
+    userSelectionStore as unknown as {
+      cngnActiveTab?: keyof typeof cNGNTabsUI;
+    }
+  ).cngnActiveTab;
+
+  useEffect(() => {
+    if (selectedCurrency.symbol === "cNGN" && !activeCngnTab) {
+      updateSelection({
+        cngnActiveTab: mode === "swap" ? "swapToUSDC" : "withdraw",
+      } as unknown as Record<string, unknown>);
+    }
+  }, [selectedCurrency.symbol, activeCngnTab, updateSelection, mode]);
+
   // Show dedicated asset intro screen inside the card when asset has a UI and prerequisites not met
   const showDynamicIntro =
     selectedCurrency.symbol === "cNGN" &&
@@ -640,6 +667,8 @@ export function SwapPanel() {
           onCurrencyChange={handleCurrencyChange}
           availableAssets={availableAssets}
           onSettingsClick={handleSettingsClick}
+          disableAssetSelection={mode === "swap"}
+          title={mode === "swap" ? "Swap" : "Withdraw"}
         />
       </motion.div>
 
@@ -657,17 +686,20 @@ export function SwapPanel() {
       )}
 
       {/* If a CNGN tab is active, render it just below header and hide default panels */}
-      {ActiveCNGNPanel && (
-        <div className="mx-3 md:mx-4 my-2">
-          {/* Persist the cNGN action selector so users can switch panels */}
-          {selectedCurrency.symbol === "cNGN" && (
-            <div className="mb-2">
-              <SelectCNGNAction />
-            </div>
-          )}
-          <ActiveCNGNPanel />
-        </div>
-      )}
+      <AnimatePresence mode="wait">
+        {ActiveCNGNPanel && (
+          <motion.div
+            key={`cngn-${activeCngnTab ?? "none"}`}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className="mx-3 md:mx-4 my-2"
+          >
+            <ActiveCNGNPanel />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Animated Panel Container */}
       {!isCustomCNGNView && (
