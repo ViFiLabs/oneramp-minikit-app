@@ -52,13 +52,6 @@ export function Navbar() {
             </OneRampLogoMenu>
           </div>
 
-          {/* Center - Title (hidden on mobile) */}
-          <div className="hidden md:flex items-center justify-center">
-            <h1 className="text-white text-lg font-medium">
-              Spend Crypto in Africa
-            </h1>
-          </div>
-
           {/* Right side - Connect Button */}
           <div className="flex items-center">
             <ModalConnectButton />
