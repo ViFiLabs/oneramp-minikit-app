@@ -23,7 +23,7 @@ export default function CNGNSwapTocNGNPanel() {
   }, [amount, country?.exchangeRate]);
 
   return (
-    <div className="flex flex-col gap-3 md:gap-4 md:mt-5">
+    <div className="flex flex-col gap-1  md:mt-5">
       {/* From USDC */}
       <div className="bg-[#232323] rounded-2xl p-4 md:p-5 flex flex-col relative h-[115px]">
         <div className="flex items-center justify-between ">
@@ -87,7 +87,7 @@ export default function CNGNSwapTocNGNPanel() {
         </div>
       </div>
 
-      <div className="flex items-center justify-between text-xs text-neutral-400 px-1">
+      <div className="flex items-center justify-between text-xs my-2 text-neutral-400 px-1">
         <div>
           1 cNGN ~{" "}
           {(country?.exchangeRate

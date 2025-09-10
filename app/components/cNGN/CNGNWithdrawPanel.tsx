@@ -407,7 +407,7 @@ export default function CNGNWithdrawPanel() {
   };
 
   return (
-    <div className="flex flex-col gap-3 md:gap-4 md:mt-5">
+    <div className="flex flex-col gap-1 md:mt-5">
       {/* From (custom cNGN token input) */}
       <div className="bg-[#232323] rounded-2xl p-4 md:p-5 flex flex-col relative h-[115px]">
         <div className="flex items-center justify-between ">
@@ -463,7 +463,7 @@ export default function CNGNWithdrawPanel() {
       </div>
 
       {/* Peg line for cNGN */}
-      <div className="px-1 text-xs text-neutral-400">1 cNGN ~ 1 NGN</div>
+      <div className="px-1 text-xs text-neutral-400 my-2">1 cNGN ~ 1 NGN</div>
 
       {/* Recipient */}
       <SelectInstitution disableSubmit={true} />
