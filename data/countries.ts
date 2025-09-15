@@ -192,7 +192,7 @@ export const countries: Country[] = [
     phoneCode: "+234",
     exchangeRate: 1_588.69,
     institutions: [],
-    fiatMinMax: { min: 3_000, max: 480_000 },
+    fiatMinMax: { min: 3_000, max: 3_375_000 },
     cryptoMinMax: { min: 1, max: 2_500 },
     accountNumberLength: {
       bankLength: 10,
@@ -207,7 +207,7 @@ export const countries: Country[] = [
     phoneCode: "+254",
     exchangeRate: 130,
     institutions: [],
-    fiatMinMax: { min: 120, max: 25_000 },
+    fiatMinMax: { min: 120, max: 450_000 },
     cryptoMinMax: { min: 1, max: 2_500 },
     accountNumberLength: {
       bankLength: 13,
@@ -237,7 +237,7 @@ export const countries: Country[] = [
     phoneCode: "+256",
     exchangeRate: 3_804.44,
     institutions: [],
-    fiatMinMax: { min: 2_500, max: 4_556_194 },
+    fiatMinMax: { min: 2_500, max: 5_000_000 },
     cryptoMinMax: { min: 1, max: 2_500 },
     accountNumberLength: {
       bankLength: 10,
