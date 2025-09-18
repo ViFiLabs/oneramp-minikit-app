@@ -15,6 +15,7 @@ import {
   TransferBankRequest,
   TransferMomoRequest,
   TransferType,
+  SubmitTransactionHashRequest,
 } from "@/types";
 import { useMutation } from "@tanstack/react-query";
 import { Loader } from "lucide-react";
@@ -63,7 +64,7 @@ export function TransactionReviewModal() {
   // Create the mutation with reset capability
   const submitTxHashMutation = useMutation({
     mutationKey: ["submit-tx-hash"],
-    mutationFn: submitTransactionHash,
+    mutationFn: (payload: SubmitTransactionHashRequest) => submitTransactionHash(payload),
     onSuccess: (response) => {
       submitTxHashMutation.reset();
       submitTransferIn.reset();

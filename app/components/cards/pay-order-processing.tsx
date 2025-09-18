@@ -4,7 +4,7 @@ import { submitTransactionHash, getTransferStatus } from "@/actions/transfer";
 import { useQuoteStore } from "@/store/quote-store";
 import { useTransferStore } from "@/store/transfer-store";
 import { useUserSelectionStore } from "@/store/user-selection";
-import { OrderStep, TransferStatusEnum } from "@/types";
+import { OrderStep, TransferStatusEnum, SubmitTransactionHashRequest } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
@@ -34,7 +34,7 @@ const PayOrderProcessing = () => {
   // Submit transaction hash mutation
   const submitTxHashMutation = useMutation({
     mutationKey: ["submit-tx-hash-pay"],
-    mutationFn: submitTransactionHash,
+    mutationFn: (payload: SubmitTransactionHashRequest) => submitTransactionHash(payload),
     onSuccess: () => {
       console.log("Transaction hash submitted successfully:");
       hashSubmittedRef.current = true;

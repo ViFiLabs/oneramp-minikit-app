@@ -4,7 +4,7 @@ import { submitTransactionHash, getTransferStatus } from "@/actions/transfer";
 import { useQuoteStore } from "@/store/quote-store";
 import { useTransferStore } from "@/store/transfer-store";
 import { useUserSelectionStore } from "@/store/user-selection";
-import { OrderStep, TransferStatusEnum, TransferType } from "@/types";
+import { OrderStep, TransferStatusEnum, TransferType, SubmitTransactionHashRequest } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -97,7 +97,7 @@ const WithdrawalUnified = () => {
   // Submit transaction hash mutation
   const submitTxHashMutation = useMutation({
     mutationKey: ["submit-tx-hash-withdrawal"],
-    mutationFn: submitTransactionHash,
+    mutationFn: (payload: SubmitTransactionHashRequest) => submitTransactionHash(payload),
     onSuccess: () => {
       console.log("Withdrawal transaction hash submitted successfully");
       hashSubmittedRef.current = true;
