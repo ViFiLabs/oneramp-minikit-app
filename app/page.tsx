@@ -4,7 +4,7 @@ import { useMiniKit } from "@coinbase/onchainkit/minikit";
 import { useEffect, useState } from "react";
 import sdk from "@farcaster/miniapp-sdk";
 import { HeroText } from "./components/HeroText";
-import { SwapBuyTabs } from "./components/SwapBuyTabs";
+import { PanelTabs } from "./components/PanelTabs";
 import StateContextProvider from "./providers/StateContextProvider";
 import { Button } from "@/app/components/ui/button";
 import { HelpCircle } from "lucide-react";
@@ -38,7 +38,7 @@ export default function Home() {
         <div className="flex flex-col items-center justify-start w-full pt-6 pb-2 md:pt-16">
           <StateContextProvider />
           <HeroText />
-          <SwapBuyTabs />
+          <PanelTabs />
         </div>
       </div>
       {/* Floating support button */}

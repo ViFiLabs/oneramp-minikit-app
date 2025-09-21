@@ -14,7 +14,7 @@ const SelectCountry = () => {
     useUserSelectionStore();
   const { amount, setIsValid, setFiatAmount } = useAmountStore();
 
-  // Use the optimized hook to get all exchange rates (same as SwapPanel)
+  // Use the optimized hook to get all exchange rates (same as withdrawPanel)
   const { data: allExchangeRates } = useAllCountryExchangeRates({
     orderType: "selling",
     providerType: paymentMethod || "momo", // Default to momo if no payment method

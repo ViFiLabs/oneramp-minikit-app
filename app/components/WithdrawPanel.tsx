@@ -41,7 +41,7 @@ import { ModalConnectButton } from "@/app/components/wallet/modal-connect-button
 
 const networks: Network[] = SUPPORTED_NETWORKS_WITH_RPC_URLS;
 
-export function SwapPanel() {
+export function WithdrawPanel() {
   const [withdrawLoading, setWithdrawLoading] = useState(false);
   const [stepMessage, setStepMessage] = useState("");
   const [showKYCModal, setShowKYCModal] = useState(false);

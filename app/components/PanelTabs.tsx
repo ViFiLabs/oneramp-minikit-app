@@ -4,7 +4,7 @@ import MainTabsSwitch from "@/app/components/main-tabs-switch";
 import { useUserSelectionStore } from "@/store/user-selection";
 import { motion } from "framer-motion";
 
-export function SwapBuyTabs() {
+export function PanelTabs() {
   const { country } = useUserSelectionStore();
 
   return (

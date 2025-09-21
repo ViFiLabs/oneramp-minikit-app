@@ -30,7 +30,7 @@ import { usePreFetchInstitutions } from "@/hooks/useExchangeRate";
 import { useKYCStore } from "@/store/kyc-store";
 import { toast } from "sonner";
 
-// Reuse the same country list from SwapPanel
+// Reuse the same country list from withdrawPanel
 export const countryCurrencies = [
   { name: "Nigeria", logo: "/logos/nigeria.png" },
   { name: "Kenya", logo: "/logos/kenya.png" },

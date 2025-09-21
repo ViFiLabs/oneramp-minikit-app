@@ -1,7 +1,7 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
-import { SwapPanel } from "@/app/components/SwapPanel";
+import { WithdrawPanel } from "@/app/components/WithdrawPanel";
 import { BuyPanel } from "@/app/components/BuyPanel";
 import { useUserSelectionStore } from "@/store/user-selection";
 import { useAmountStore } from "@/store/amount-store";
@@ -83,7 +83,7 @@ export function MainTabsSwitch() {
         <PayPanel />
       </TabsContent>
       <TabsContent value="Withdraw" className="w-full">
-        <SwapPanel />
+        <WithdrawPanel />
       </TabsContent>
       <TabsContent value="Deposit" className="w-full">
         <BuyPanel />

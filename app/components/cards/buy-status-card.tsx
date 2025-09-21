@@ -45,7 +45,7 @@ const BuyStatusCard: React.FC<BuyStatusCardProps> = ({
       setIsDesktop(isDesktopSize);
       
       // Try to find panel bounds for both desktop and mobile
-      // Multiple fallback strategies to find the SwapPanel container
+      // Multiple fallback strategies to find the withdrawPanel container
       let panelContainer: Element | null = null;
       
       // Strategy 1: Look for elements with specific background and rounded styles
@@ -64,7 +64,7 @@ const BuyStatusCard: React.FC<BuyStatusCardProps> = ({
         console.log('Found panel via style matching:', panelContainer);
       }
       
-      // Strategy 2: Look for SwapPanel by finding text content
+      // Strategy 2: Look for withdrawPanel by finding text content
       if (!panelContainer) {
         const swapHeaders = Array.from(document.querySelectorAll('*')).filter(el => 
           el.textContent && el.textContent.includes('buying') && 
