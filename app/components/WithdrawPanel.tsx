@@ -37,11 +37,18 @@ import { ToPanel } from "./panels/ToPanel";
 import SelectInstitution from "./select-institution";
 import { KYCVerificationModal } from "./modals/KYCVerificationModal";
 import { toast } from "sonner";
-import { ModalConnectButton } from "@/app/components/wallet/modal-connect-button";
+import { ModalConnectButton } from "@/components/modal-connect-button";
+// Standalone cNGN action picker now lives in CNGNActionPanel
+import { supportedAssetsUI } from "@/data/assets-ui";
+import { cNGNTabsUI } from "./cNGN/utils";
 
 const networks: Network[] = SUPPORTED_NETWORKS_WITH_RPC_URLS;
 
-export function WithdrawPanel() {
+export function SwapPanel({
+  mode = "withdraw",
+}: {
+  mode?: "withdraw" | "swap";
+}) {
   const [withdrawLoading, setWithdrawLoading] = useState(false);
   const [stepMessage, setStepMessage] = useState("");
   const [showKYCModal, setShowKYCModal] = useState(false);
@@ -68,13 +75,16 @@ export function WithdrawPanel() {
   const { setTransfer, setTransactionHash } = useTransferStore();
   const { kycData } = useKYCStore();
 
-  // Get available assets for the current network
+  // Get available assets for the current network (limit to USDC and cNGN)
   const availableAssets = useMemo(() => {
-    if (!currentNetwork) return assets;
+    const allowedSymbols = new Set(["USDC", "cNGN"]);
+    if (!currentNetwork) {
+      return assets.filter((a) => allowedSymbols.has(a.symbol));
+    }
 
     return assets.filter((asset) => {
       const networkConfig = asset.networks[currentNetwork.name];
-      return networkConfig && networkConfig.tokenAddress;
+      return !!networkConfig && allowedSymbols.has(asset.symbol);
     });
   }, [currentNetwork]);
 
@@ -120,18 +130,53 @@ export function WithdrawPanel() {
   const handleCurrencyChange = (currency: Asset) => {
     setSelectedCurrency(currency);
     // Update global store with selected currency
-    updateSelection({ asset: currency });
+    // Reset cNGN action whenever asset changes so the top UI prompts selection
+    updateSelection({
+      asset: currency,
+      cngnAction: undefined,
+      cngnActiveTab: undefined,
+    } as unknown as Record<string, unknown>);
   };
 
   // Sync selectedCurrency with global asset on mount
   useEffect(() => {
+    const allowedSymbols = new Set(["USDC", "cNGN"]);
+    // If global asset exists and differs, but is not allowed, coerce to first allowed
+    if (
+      asset &&
+      (!allowedSymbols.has(asset.symbol) ||
+        !availableAssets.find((a) => a.symbol === asset.symbol))
+    ) {
+      if (availableAssets.length > 0) {
+        // In swap mode, prefer cNGN as default asset
+        const preferred =
+          mode === "swap"
+            ? availableAssets.find((a) => a.symbol === "cNGN") ||
+              availableAssets[0]
+            : availableAssets[0];
+        setSelectedCurrency(preferred);
+        updateSelection({ asset: preferred });
+      }
+      return;
+    }
+
     if (asset && asset !== selectedCurrency) {
       setSelectedCurrency(asset);
-    } else if (!asset && selectedCurrency) {
-      // Set global asset to selectedCurrency if no global asset is set
-      updateSelection({ asset: selectedCurrency });
+    } else if (!asset) {
+      // Set global asset to a default allowed asset
+      const defaultAsset =
+        (mode === "swap"
+          ? availableAssets.find((a) => a.symbol === "cNGN")
+          : undefined) ||
+        availableAssets[0] ||
+        assets.find((a) => allowedSymbols.has(a.symbol)) ||
+        assets[0];
+      if (defaultAsset) {
+        setSelectedCurrency(defaultAsset);
+        updateSelection({ asset: defaultAsset });
+      }
     }
-  }, [asset, selectedCurrency]); // Removed updateSelection from dependencies
+  }, [asset, selectedCurrency, availableAssets, updateSelection, mode]);
 
   // Close wallet modal when wallet gets connected
   useEffect(() => {
@@ -328,7 +373,6 @@ export function WithdrawPanel() {
     };
 
     const quoteResponse = await createQuoteOut(quotePayload);
-    console.log("✅ Quote response:", quoteResponse);
 
     if (!quoteResponse?.quote?.quoteId) {
       throw new Error("No quote ID received from quote response");
@@ -341,8 +385,6 @@ export function WithdrawPanel() {
     const transferPayload = createTransferPayload(quoteResponse.quote.quoteId);
 
     const transferResponse = await createTransferOut(transferPayload);
-
-    console.log("✅ Transfer response:", transferResponse);
 
     return {
       quote: quoteResponse,
@@ -427,7 +469,6 @@ export function WithdrawPanel() {
     const contractAddress = asset.networks[networkName]?.tokenAddress;
 
     if (!contractAddress) {
-      console.log("No contract address found for network:", networkName);
       setWithdrawLoading(false);
       return;
     }
@@ -495,7 +536,6 @@ export function WithdrawPanel() {
   // Handle swipe to withdraw completion
   const handleWithdrawComplete = () => {
     if (!isAmountValid || !country || !institution || !accountNumber) {
-      console.log("Basic validation failed");
       return;
     }
 
@@ -562,7 +602,57 @@ export function WithdrawPanel() {
     !institution ||
     !accountNumber ||
     !evmConnected ||
-    stepMessage === "Transaction Complete!";
+    stepMessage === "Transaction Complete!" ||
+    // For cNGN ensure action is selected
+    (selectedCurrency.symbol === "cNGN" && !userSelectionStore.cngnAction);
+
+  // Resolve dynamic asset-specific UI component if any
+  const DynamicAssetUI = useMemo(() => {
+    const entry =
+      supportedAssetsUI[
+        selectedCurrency.symbol as keyof typeof supportedAssetsUI
+      ];
+    return entry?.component ?? null;
+  }, [selectedCurrency.symbol]);
+
+  // When user selects cNGN, default to showing the Withdraw-to-bank flow immediately
+  const activeCngnTab = (
+    userSelectionStore as unknown as {
+      cngnActiveTab?: keyof typeof cNGNTabsUI;
+    }
+  ).cngnActiveTab;
+
+  useEffect(() => {
+    if (selectedCurrency.symbol === "cNGN" && !activeCngnTab) {
+      updateSelection({
+        cngnActiveTab: mode === "swap" ? "swapToUSDC" : "withdraw",
+      } as unknown as Record<string, unknown>);
+    }
+  }, [selectedCurrency.symbol, activeCngnTab, updateSelection, mode]);
+
+  // Show dedicated asset intro screen inside the card when asset has a UI and prerequisites not met
+  const showDynamicIntro =
+    selectedCurrency.symbol === "cNGN" &&
+    !(
+      userSelectionStore as unknown as {
+        cngnActiveTab?: keyof typeof cNGNTabsUI;
+      }
+    ).cngnActiveTab;
+
+  // Render active cNGN tab panel if set in user selection via SelectCNGNAction
+  const ActiveCNGNPanel = useMemo(() => {
+    if (selectedCurrency.symbol !== "cNGN") return null;
+    const key = (
+      userSelectionStore as unknown as {
+        cngnActiveTab?: keyof typeof cNGNTabsUI;
+      }
+    ).cngnActiveTab;
+    if (!key) return null;
+    const entry = cNGNTabsUI[key];
+    return entry?.component ?? null;
+  }, [selectedCurrency.symbol, userSelectionStore]);
+
+  const isCustomCNGNView = !!ActiveCNGNPanel || showDynamicIntro;
 
   return (
     <div className="w-full max-w-md mx-auto min-h-[400px] bg-[#181818] rounded-3xl p-0 flex flex-col gap-0 md:shadow-lg md:border border-[#232323] relative">
@@ -577,132 +667,172 @@ export function WithdrawPanel() {
           onCurrencyChange={handleCurrencyChange}
           availableAssets={availableAssets}
           onSettingsClick={handleSettingsClick}
+          disableAssetSelection={mode === "swap"}
+          title={mode === "swap" ? "Swap" : "Withdraw"}
         />
       </motion.div>
 
-      {/* Animated Panel Container */}
+      {/* Asset-specific UI in-place under header */}
+      {showDynamicIntro && DynamicAssetUI && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        >
+          <div className="mx-3 md:mx-4 my-2 ">
+            <DynamicAssetUI />
+          </div>
+        </motion.div>
+      )}
+
+      {/* If a CNGN tab is active, render it just below header and hide default panels */}
       <AnimatePresence mode="wait">
-        {countryPanelOnTop ? (
+        {ActiveCNGNPanel && (
           <motion.div
-            key="country-top"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
+            key={`cngn-${activeCngnTab ?? "none"}`}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className="mx-3 md:mx-4 my-2"
           >
-            <motion.div
-              initial={{ y: 100 }}
-              animate={{ y: 0 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
-            >
-              <ToPanel
-                selectedCountryCurrency={selectedCountryCurrency}
-                onBeneficiarySelect={handleBeneficiarySelect}
-              />
-            </motion.div>
-
-            {/* Arrow in the middle */}
-            <SwapArrow
-              onClick={() => {
-                updateSelection({ countryPanelOnTop: !countryPanelOnTop });
-                setAmount("0");
-              }}
-            />
-
-            <motion.div
-              initial={{ y: -100 }}
-              animate={{ y: 0 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
-            >
-              <FromPanel
-                selectedCurrency={selectedCurrency}
-                networks={networks}
-                canSwitchNetwork={canSwitchNetwork}
-                onNetworkSelect={handleNetworkSelect}
-              />
-            </motion.div>
-          </motion.div>
-        ) : (
-          <motion.div
-            key="crypto-top"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-          >
-            <motion.div
-              initial={{ y: 100 }}
-              animate={{ y: 0 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
-            >
-              <FromPanel
-                selectedCurrency={selectedCurrency}
-                networks={networks}
-                canSwitchNetwork={canSwitchNetwork}
-                onNetworkSelect={handleNetworkSelect}
-              />
-            </motion.div>
-
-            {/* Arrow in the middle */}
-            <SwapArrow
-              onClick={() => {
-                updateSelection({ countryPanelOnTop: !countryPanelOnTop });
-                setAmount("0");
-              }}
-            />
-
-            <motion.div
-              initial={{ y: -100 }}
-              animate={{ y: 0 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
-            >
-              <ToPanel
-                selectedCountryCurrency={selectedCountryCurrency}
-                onBeneficiarySelect={handleBeneficiarySelect}
-              />
-            </motion.div>
+            <ActiveCNGNPanel />
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Swap Info */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.2, ease: "easeOut" }}
-      >
-        <ExchangeRateComponent />
-      </motion.div>
+      {/* Animated Panel Container */}
+      {!isCustomCNGNView && (
+        <AnimatePresence mode="wait">
+          {countryPanelOnTop ? (
+            <motion.div
+              key="country-top"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+            >
+              <motion.div
+                initial={{ y: 100 }}
+                animate={{ y: 0 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+              >
+                <ToPanel
+                  selectedCountryCurrency={selectedCountryCurrency}
+                  onBeneficiarySelect={handleBeneficiarySelect}
+                />
+              </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.3, ease: "easeOut" }}
-      >
-        {country ? (
-          <div className="px-3 md:px-4">
-            <SelectInstitution disableSubmit={true} />
-            <div className="mt-4">
-              <SwipeToWithdrawButton
-                onWithdrawComplete={handleWithdrawComplete}
-                isLoading={withdrawLoading}
-                disabled={isWithdrawDisabled}
-                stepMessage={stepMessage}
-                onSwapClick={handleSwapClick}
-                isWalletConnected={evmConnected}
-                hasKYC={!!kycData?.fullKYC}
-                onConnectWallet={handleConnectWallet}
-                onStartKYC={handleStartKYC}
-                reset={swipeButtonReset}
+              {/* Arrow in the middle */}
+              <SwapArrow
+                disabled
+                onClick={() => {
+                  updateSelection({ countryPanelOnTop: !countryPanelOnTop });
+                  setAmount("0");
+                }}
               />
-            </div>
-          </div>
-        ) : (
-          <div className="px-3 md:px-4 mt-4">
-            <SwapButton onClick={handleSwapClick} text="Swap" />
-          </div>
-        )}
-      </motion.div>
+
+              <motion.div
+                initial={{ y: -100 }}
+                animate={{ y: 0 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+              >
+                <FromPanel
+                  selectedCurrency={selectedCurrency}
+                  networks={networks}
+                  canSwitchNetwork={canSwitchNetwork}
+                  onNetworkSelect={handleNetworkSelect}
+                />
+              </motion.div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="crypto-top"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+            >
+              <motion.div
+                initial={{ y: 100 }}
+                animate={{ y: 0 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+              >
+                <FromPanel
+                  selectedCurrency={selectedCurrency}
+                  networks={networks}
+                  canSwitchNetwork={canSwitchNetwork}
+                  onNetworkSelect={handleNetworkSelect}
+                />
+              </motion.div>
+
+              {/* Arrow in the middle */}
+              <SwapArrow
+                disabled
+                onClick={() => {
+                  updateSelection({ countryPanelOnTop: !countryPanelOnTop });
+                  setAmount("0");
+                }}
+              />
+
+              <motion.div
+                initial={{ y: -100 }}
+                animate={{ y: 0 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+              >
+                <ToPanel
+                  selectedCountryCurrency={selectedCountryCurrency}
+                  onBeneficiarySelect={handleBeneficiarySelect}
+                />
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      )}
+
+      {/* Swap Info */}
+      {!isCustomCNGNView && (
+        <>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.2, ease: "easeOut" }}
+          >
+            <ExchangeRateComponent />
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.3, ease: "easeOut" }}
+          >
+            {country ? (
+              <div className="px-3 md:px-4">
+                <SelectInstitution disableSubmit={true} />
+                <div className="mt-4">
+                  <SwipeToWithdrawButton
+                    onWithdrawComplete={handleWithdrawComplete}
+                    isLoading={withdrawLoading}
+                    disabled={isWithdrawDisabled}
+                    stepMessage={stepMessage}
+                    onSwapClick={handleSwapClick}
+                    isWalletConnected={evmConnected}
+                    hasKYC={!!kycData?.fullKYC}
+                    onConnectWallet={handleConnectWallet}
+                    onStartKYC={handleStartKYC}
+                    reset={swipeButtonReset}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="px-3 md:px-4 mt-4">
+                <SwapButton onClick={handleSwapClick} text="Swap" />
+              </div>
+            )}
+          </motion.div>
+        </>
+      )}
+
+      {/* Hide the lower Swipe to Withdraw when rendering cNGN custom UI */}
 
       {/* KYC Verification Modal */}
       <KYCVerificationModal

@@ -114,6 +114,24 @@ export function PaymentInterface() {
     return allExchangeRates[country.countryCode];
   }, [country?.countryCode, allExchangeRates]);
 
+  // Defensive: ensure unsupported country/asset from other tabs don't bleed into Pay
+  const supportedCountryCodes = useMemo(
+    () => new Set(payEnabledCountries.map((c) => c.countryCode)),
+    []
+  );
+
+  useEffect(() => {
+    if (country && !supportedCountryCodes.has(country.countryCode)) {
+      updateSelection({
+        country: undefined,
+        institution: undefined,
+        accountNumber: undefined,
+      });
+    }
+  }, [country, supportedCountryCodes, updateSelection]);
+
+  // (moved below availableAssets declaration)
+
   // Pre-fetch institutions for all supported countries
   // This ensures institutions are ready when users select a country
 
@@ -285,6 +303,17 @@ export function PaymentInterface() {
       return networkConfig && networkConfig.tokenAddress;
     });
   }, [currentNetwork]);
+
+  // Enforce supported asset for Pay: avoid cNGN default bleed from other tabs
+  useEffect(() => {
+    if (asset?.symbol === "cNGN") {
+      const fallback =
+        availableAssets.find((a) => a.symbol === "USDC") || availableAssets[0];
+      if (fallback && asset.symbol !== fallback.symbol) {
+        updateSelection({ asset: fallback });
+      }
+    }
+  }, [asset?.symbol, availableAssets, updateSelection]);
 
   // Set default asset to first available asset for the current network
   useEffect(() => {

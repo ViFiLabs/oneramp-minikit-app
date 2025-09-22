@@ -30,23 +30,25 @@ export function TokenSelectModal({ open, onClose }: TokenSelectModalProps) {
   const { setCurrentNetwork } = useNetworkStore();
   const { updateSelection } = useUserSelectionStore();
 
+  // Limit to supported tokens for selection
+  const supportedSymbols = new Set(["USDC", "cNGN"]);
+
   // Filter tokens based on search query and selected network
-  const filteredTokens = assets.filter((token) => {
-    // Filter by search query
-    const matchesSearch =
-      searchQuery === "" ||
-      token.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      token.name.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredTokens = assets
+    .filter((token) => supportedSymbols.has(token.symbol))
+    .filter((token) => {
+      const matchesSearch =
+        searchQuery === "" ||
+        token.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        token.name.toLowerCase().includes(searchQuery.toLowerCase());
 
-    // Filter by network if a specific network is selected
-    const matchesNetwork =
-      selectedNetwork === "All Networks" ||
-      (selectedNetwork !== "All Networks" &&
-        token.networks[selectedNetwork] &&
-        token.networks[selectedNetwork].tokenAddress);
+      // For visibility, only require that the token declares the network; do not require tokenAddress
+      const matchesNetwork =
+        selectedNetwork === "All Networks" ||
+        (selectedNetwork !== "All Networks" && token.networks[selectedNetwork]);
 
-    return matchesSearch && matchesNetwork;
-  });
+      return matchesSearch && matchesNetwork;
+    });
 
   if (!open) return null;
 
@@ -191,11 +193,7 @@ export function TokenSelectModal({ open, onClose }: TokenSelectModalProps) {
                 // Show all tokens grouped by networks
                 SUPPORTED_NETWORKS_WITH_RPC_URLS.map((network) =>
                   filteredTokens
-                    .filter(
-                      (token) =>
-                        token.networks[network.name] &&
-                        token.networks[network.name].tokenAddress
-                    )
+                    .filter((token) => token.networks[network.name])
                     .map((token) => (
                       <AssetCard
                         key={`${token.symbol}-${network.name}`}
@@ -208,11 +206,7 @@ export function TokenSelectModal({ open, onClose }: TokenSelectModalProps) {
               ) : (
                 // Show tokens for selected network
                 filteredTokens
-                  .filter(
-                    (token) =>
-                      token.networks[selectedNetwork] &&
-                      token.networks[selectedNetwork].tokenAddress
-                  )
+                  .filter((token) => token.networks[selectedNetwork])
                   .map((token) => (
                     <AssetCard
                       key={`${token.symbol}-${selectedNetwork}`}
