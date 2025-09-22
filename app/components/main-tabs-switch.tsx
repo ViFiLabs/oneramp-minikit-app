@@ -105,7 +105,7 @@ export function MainTabsSwitch() {
         <PayPanel />
       </TabsContent>
       <TabsContent value="Withdraw" className="w-full">
-        {/* <WithdrawPanel /> */}
+        <SwapPanel />
       </TabsContent>
       <TabsContent value="Deposit" className="w-full">
         <BuyPanel />
@@ -134,9 +134,9 @@ export function MainTabsSwitch() {
               ease: "easeOut",
               delay: 0.2,
             }}
-            className="w-full max-w-md mx-auto text-center mt-6 px-4 py-4 bg-black rounded-lg"
+            className="text-center mt-6 px-4"
           >
-            <p className="text-base md:text-lg text-white font-light">
+            <p className="text-sm md:text-base text-neutral-400 font-light">
               Pay with crypto. Buy and sell instantly{" "}
               <br className="hidden sm:block" />
               on Base and other supported chains.

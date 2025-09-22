@@ -13,7 +13,13 @@ import { useNetworkStore } from "@/store/network";
 import { useQuoteStore } from "@/store/quote-store";
 import { useTransferStore } from "@/store/transfer-store";
 import { useUserSelectionStore } from "@/store/user-selection";
-import { AppState, Institution, OrderStep, QuoteRequest } from "@/types";
+import {
+  AppState,
+  Institution,
+  OrderStep,
+  QuoteRequest,
+  KYCVerificationResponse,
+} from "@/types";
 import { useMutation } from "@tanstack/react-query";
 import { Loader } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -118,11 +124,25 @@ const SelectInstitution = ({
       // Create the transfer here too...
       if (userPayLoad.paymentMethod === "momo") {
         const { institution, country } = userPayLoad;
-        const { fullKYC } = kycData || {};
+        const fullKYC = kycData?.fullKYC;
 
-        // if (!institution || !accountNumber || !country || !fullKYC) return;
-        if (!country || !fullKYC) return;
+        // Determine if KYC can be bypassed for MoMo under $100 (USDC based)
+        const isNigeriaOrSouthAfrican =
+          country?.countryCode === "NG" || country?.countryCode === "ZA";
+        const quoteCryptoAmount = parseFloat(
+          String(data?.quote?.cryptoAmount || 0)
+        );
+        const quoteCryptoType = String(data?.quote?.cryptoType || "");
+        const allowKycBypassForMomo =
+          quoteCryptoType === "USDC" &&
+          quoteCryptoAmount > 0 &&
+          quoteCryptoAmount < 100;
 
+        // Require KYC unless MoMo under $100 and not NG/ZA
+        if (!country || (!fullKYC && !allowKycBypassForMomo)) return;
+
+        const kycFields: KYCVerificationResponse["fullKYC"] | undefined =
+          fullKYC;
         const {
           fullName,
           nationality,
@@ -130,7 +150,7 @@ const SelectInstitution = ({
           documentNumber,
           documentType,
           documentSubType,
-        } = fullKYC;
+        } = kycFields || ({} as KYCVerificationResponse["fullKYC"]);
 
         // accountNumber withouth the leading 0
         const accountNumberWithoutLeadingZero = accountNumber.replace(
@@ -139,36 +159,35 @@ const SelectInstitution = ({
         );
 
         const fullPhoneNumber = `${country.phoneCode}${accountNumberWithoutLeadingZero}`;
-        let updatedDocumentType = documentType;
-        let updatedDocumentTypeSubType = documentSubType;
+        let updatedDocumentType = documentType || "";
+        let updatedDocumentTypeSubType = documentSubType || "";
         let payload;
-
-        const isNigeriaOrSouthAfrican =
-          country.countryCode === "NG" || country.countryCode === "ZA";
 
         if (country.countryCode === "NG") {
           updatedDocumentTypeSubType = "BVN";
           updatedDocumentType = "NIN";
         }
 
-        if (documentType === "ID") {
-          updatedDocumentType = "NIN";
-        } else if (documentType === "P") {
-          updatedDocumentType = "Passport";
-        } else {
-          updatedDocumentType = "License";
+        if (documentType) {
+          if (documentType === "ID") {
+            updatedDocumentType = "NIN";
+          } else if (documentType === "P") {
+            updatedDocumentType = "Passport";
+          } else {
+            updatedDocumentType = "License";
+          }
         }
 
         const userDetails = {
           name:
             country?.countryCode === "NG" && userPayLoad.accountName
               ? userPayLoad.accountName
-              : fullName,
+              : fullName || "",
           country: country?.countryCode || "",
           address: nationality || country?.name || "",
           phone: accountNumber,
-          dob: dateOfBirth,
-          idNumber: documentNumber,
+          dob: dateOfBirth || "",
+          idNumber: documentNumber || "",
           idType: updatedDocumentType,
           additionalIdType: updatedDocumentType,
           additionalIdNumber: updatedDocumentTypeSubType,
@@ -406,23 +425,39 @@ const SelectInstitution = ({
       selectedAsset = asset;
     }
 
-    // Verify KYC
-    if (kycData && kycData.kycStatus !== "VERIFIED") {
-      setShowKYCModal(true);
-      toast.error("KYC verification required");
-      return;
-    }
+    // Verify KYC – allow MoMo under $100 (USDC) to bypass, but never for bank
+    const isMomo = userPayLoad.paymentMethod === "momo";
+    const isNigeriaOrSouthAfrican =
+      userPayLoad?.country?.countryCode === "NG" ||
+      userPayLoad?.country?.countryCode === "ZA";
 
-    // Additional check for rejected or in-review KYC
-    if (
-      kycData?.kycStatus === "REJECTED" ||
-      kycData?.kycStatus === "IN_REVIEW"
-    ) {
-      setShowKYCModal(true);
-      toast.error(
-        "KYC verification is not complete. Please wait for verification to finish."
-      );
-      return;
+    // Amount here is in crypto terms for quote (USDC); rely on userAmountEntered
+    const enteredCryptoAmount = parseFloat(String(userAmountEntered || 0));
+    const allowKycBypassForMomo =
+      isMomo &&
+      !isNigeriaOrSouthAfrican &&
+      enteredCryptoAmount > 0 &&
+      enteredCryptoAmount < 100 &&
+      true; // Asset can vary; threshold is in USD terms
+
+    if (!allowKycBypassForMomo) {
+      // Default KYC gates
+      if (kycData && kycData.kycStatus !== "VERIFIED") {
+        setShowKYCModal(true);
+        toast.error("KYC verification required");
+        return;
+      }
+
+      if (
+        kycData?.kycStatus === "REJECTED" ||
+        kycData?.kycStatus === "IN_REVIEW"
+      ) {
+        setShowKYCModal(true);
+        toast.error(
+          "KYC verification is not complete. Please wait for verification to finish."
+        );
+        return;
+      }
     }
 
     let walletAddress;
@@ -571,7 +606,12 @@ const SelectInstitution = ({
                     placeholder="Account number"
                     onInput={(e) => {
                       // For Uganda, Kenya, Tanzania - prevent typing more than 10 characters
-                      if (userPayLoad?.country && ['UG', 'KE', 'TZ'].includes(userPayLoad.country.countryCode)) {
+                      if (
+                        userPayLoad?.country &&
+                        ["UG", "KE", "TZ"].includes(
+                          userPayLoad.country.countryCode
+                        )
+                      ) {
                         const target = e.target as HTMLInputElement;
                         if (target.value.length > 10) {
                           target.value = target.value.slice(0, 10);
@@ -584,13 +624,17 @@ const SelectInstitution = ({
                         validLength: (value) => {
                           if (!userPayLoad?.country?.accountNumberLength)
                             return true;
-                          
+
                           // Check for Uganda, Kenya, Tanzania - limit to 10 characters
-                          const isEastAfricanCountry = ['UG', 'KE', 'TZ'].includes(userPayLoad.country.countryCode);
+                          const isEastAfricanCountry = [
+                            "UG",
+                            "KE",
+                            "TZ",
+                          ].includes(userPayLoad.country.countryCode);
                           if (isEastAfricanCountry && value.length > 10) {
                             return "Account number cannot exceed 10 characters";
                           }
-                          
+
                           if (userPayLoad.paymentMethod === "bank") {
                             const minLength =
                               userPayLoad.country.accountNumberLength

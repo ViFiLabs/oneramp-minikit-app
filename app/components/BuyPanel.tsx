@@ -49,8 +49,14 @@ export function BuyPanel() {
   const [showKYCModal, setShowKYCModal] = useState(false);
   const [kycTriggered, setKycTriggered] = useState(false);
   const [swipeButtonReset, setSwipeButtonReset] = useState(false);
-  const { updateSelection, country, paymentMethod, asset, appState, institution } =
-    useUserSelectionStore();
+  const {
+    updateSelection,
+    country,
+    paymentMethod,
+    asset,
+    appState,
+    institution,
+  } = useUserSelectionStore();
   const { exchangeRate, setExchangeRate, setError } = useExchangeRateStore();
   const { currentNetwork } = useNetworkStore();
 
@@ -158,19 +164,26 @@ export function BuyPanel() {
         institution: inst,
         accountNumber: acctNum,
         accountName: acctName,
+        paymentMethod: pm,
       } = selectionStore.getState();
       const fullKYC = kycData?.fullKYC;
-      if (!fullKYC) throw new Error("KYC not available");
+
+      // Allow MoMo transactions under $100 to bypass full KYC
+      const allowKycBypassForMomo =
+        pm === "momo" &&
+        parseFloat(String(amount)) > 0 &&
+        parseFloat(String(amount)) < 100;
 
       const {
-        fullName,
-        nationality,
-        dateOfBirth,
-        documentNumber,
-        documentType,
-        documentSubType,
-        phoneNumber,
-      } = fullKYC;
+        fullName = "",
+        nationality = "",
+        dateOfBirth = "",
+        documentNumber = "",
+        documentType = "",
+        documentSubType = "",
+        phoneNumber = "",
+      } = fullKYC ||
+      ({} as unknown as import("@/types").KYCVerificationResponse["fullKYC"]);
 
       let updatedDocumentType = documentType;
       let updatedDocumentTypeSubType = documentSubType;
@@ -193,11 +206,13 @@ export function BuyPanel() {
         country: country.countryCode || "",
         address: nationality || country.name || "",
         phone: acctNum || phoneNumber || "",
-        dob: dateOfBirth,
-        idNumber: documentNumber,
-        idType: updatedDocumentType,
-        additionalIdType: updatedDocumentType,
-        additionalIdNumber: updatedDocumentTypeSubType,
+        dob: allowKycBypassForMomo ? "" : dateOfBirth,
+        idNumber: allowKycBypassForMomo ? "" : documentNumber,
+        idType: allowKycBypassForMomo ? "" : updatedDocumentType,
+        additionalIdType: allowKycBypassForMomo ? "" : updatedDocumentType,
+        additionalIdNumber: allowKycBypassForMomo
+          ? ""
+          : updatedDocumentTypeSubType,
       };
 
       let transferPayload:
@@ -333,8 +348,16 @@ export function BuyPanel() {
 
   // Handle buy completion with KYC verification
   const handleBuyComplete = () => {
-    // Verify KYC before proceeding with purchase
-    if (kycData && kycData.kycStatus !== "VERIFIED") {
+    // Allow MoMo under $100 to bypass KYC (Deposit flow uses USD input already)
+    const allowKycBypassForMomo =
+      paymentMethod === "momo" &&
+      country?.countryCode !== "NG" &&
+      country?.countryCode !== "ZA" &&
+      parseFloat(String(amount || 0)) > 0 &&
+      parseFloat(String(amount || 0)) < 100;
+
+    // Verify KYC before proceeding with purchase, unless bypass applies
+    if (!allowKycBypassForMomo && kycData && kycData.kycStatus !== "VERIFIED") {
       // Reset swipe button to roll back to initial position
       setSwipeButtonReset(true);
       setTimeout(() => setSwipeButtonReset(false), 100);
@@ -348,7 +371,7 @@ export function BuyPanel() {
 
     // Additional check for rejected or in-review KYC
     if (
-      kycData?.kycStatus === "REJECTED" ||
+      (!allowKycBypassForMomo && kycData?.kycStatus === "REJECTED") ||
       kycData?.kycStatus === "IN_REVIEW"
     ) {
       // Reset swipe button to roll back to initial position

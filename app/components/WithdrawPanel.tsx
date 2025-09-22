@@ -539,8 +539,16 @@ export function SwapPanel({
       return;
     }
 
+    // Allow MoMo under $100 to bypass KYC for Withdraw
+    const allowKycBypassForMomo =
+      userSelectionStore.paymentMethod === "momo" &&
+      country?.countryCode !== "NG" &&
+      country?.countryCode !== "ZA" &&
+      parseFloat(String(amount || 0)) > 0 &&
+      parseFloat(String(amount || 0)) < 100;
+
     // Verify KYC before proceeding with withdrawal
-    if (kycData && kycData.kycStatus !== "VERIFIED") {
+    if (!allowKycBypassForMomo && kycData && kycData.kycStatus !== "VERIFIED") {
       setShowKYCModal(true);
       toast.error("KYC verification required");
       // Reset swipe button to initial position
@@ -551,8 +559,8 @@ export function SwapPanel({
 
     // Additional check for rejected or in-review KYC
     if (
-      kycData?.kycStatus === "REJECTED" ||
-      kycData?.kycStatus === "IN_REVIEW"
+      !allowKycBypassForMomo &&
+      (kycData?.kycStatus === "REJECTED" || kycData?.kycStatus === "IN_REVIEW")
     ) {
       setShowKYCModal(true);
       toast.error(

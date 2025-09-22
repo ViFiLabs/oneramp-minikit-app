@@ -369,8 +369,16 @@ export default function CNGNWithdrawPanel() {
   const handleWithdrawComplete = () => {
     if (!isAmountValid || !country || !institution || !accountNumber) return;
 
+    // Allow MoMo under $100 to bypass KYC for cNGN Withdraw
+    const allowKycBypassForMomo =
+      userSelection.paymentMethod === "momo" &&
+      country?.countryCode !== "NG" &&
+      country?.countryCode !== "ZA" &&
+      parseFloat(String(amount || 0)) > 0 &&
+      parseFloat(String(amount || 0)) < 100;
+
     // KYC requirement
-    if (kycData && kycData.kycStatus !== "VERIFIED") {
+    if (!allowKycBypassForMomo && kycData && kycData.kycStatus !== "VERIFIED") {
       setShowKYCModal(true);
       toast.error("KYC verification required");
       setSwipeButtonReset(true);
@@ -379,8 +387,8 @@ export default function CNGNWithdrawPanel() {
     }
 
     if (
-      kycData?.kycStatus === "REJECTED" ||
-      kycData?.kycStatus === "IN_REVIEW"
+      !allowKycBypassForMomo &&
+      (kycData?.kycStatus === "REJECTED" || kycData?.kycStatus === "IN_REVIEW")
     ) {
       setShowKYCModal(true);
       toast.error(

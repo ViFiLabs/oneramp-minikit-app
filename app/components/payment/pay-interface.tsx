@@ -62,7 +62,11 @@ import { toast } from "sonner";
 import { getBusinessAccountName } from "@/actions/transfer";
 import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "@/hooks/useDebounce";
-import { calculateCashoutFee, supportsCashoutFees, getUgandaCashoutBreakdown } from "@/utils/cashout-fees";
+import {
+  calculateCashoutFee,
+  supportsCashoutFees,
+  getUgandaCashoutBreakdown,
+} from "@/utils/cashout-fees";
 
 export function PaymentInterface() {
   const {
@@ -75,7 +79,16 @@ export function PaymentInterface() {
     appState,
   } = useUserSelectionStore();
 
-  const { amount, setAmount, setIsValid, setFiatAmount, includeCashoutFees, cashoutFeeAmount, setIncludeCashoutFees, setCashoutFeeAmount } = useAmountStore();
+  const {
+    amount,
+    setAmount,
+    setIsValid,
+    setFiatAmount,
+    includeCashoutFees,
+    cashoutFeeAmount,
+    setIncludeCashoutFees,
+    setCashoutFeeAmount,
+  } = useAmountStore();
 
   const { currentNetwork, setCurrentNetwork } = useNetworkStore();
 
@@ -527,9 +540,9 @@ export function PaymentInterface() {
   const handleEVMPayFailed = (error: Error) => {
     console.error("❌ EVM payment transaction failed:", error);
     setBlockchainLoading(false);
-    updateSelection({ 
+    updateSelection({
       appState: AppState.Idle,
-      orderStep: OrderStep.PaymentFailed
+      orderStep: OrderStep.PaymentFailed,
     });
     return error;
   };
@@ -558,8 +571,16 @@ export function PaymentInterface() {
       return;
     }
 
+    // Allow MoMo under $100 to bypass KYC for Pay
+    const allowKycBypassForMomo =
+      paymentMethod === "momo" &&
+      country?.countryCode !== "NG" &&
+      country?.countryCode !== "ZA" &&
+      parseFloat(String(amount || 0)) > 0 &&
+      parseFloat(String(amount || 0)) < 100;
+
     // Verify KYC before proceeding with payment
-    if (kycData && kycData.kycStatus !== "VERIFIED") {
+    if (!allowKycBypassForMomo && kycData && kycData.kycStatus !== "VERIFIED") {
       // Reset transaction state immediately to prevent SwipeToPayButton from staying in submission mode
       updateSelection({
         appState: AppState.Idle,
@@ -581,8 +602,8 @@ export function PaymentInterface() {
 
     // Additional check for rejected or in-review KYC
     if (
-      kycData?.kycStatus === "REJECTED" ||
-      kycData?.kycStatus === "IN_REVIEW"
+      !allowKycBypassForMomo &&
+      (kycData?.kycStatus === "REJECTED" || kycData?.kycStatus === "IN_REVIEW")
     ) {
       // Reset transaction state immediately
       updateSelection({
@@ -700,9 +721,10 @@ export function PaymentInterface() {
     if (isNaN(numericAmount)) return "0.00";
 
     // Add cashout fees if enabled for Tanzania
-    const totalAmount = includeCashoutFees && supportsCashoutFees(country.name) 
-      ? numericAmount + cashoutFeeAmount 
-      : numericAmount;
+    const totalAmount =
+      includeCashoutFees && supportsCashoutFees(country.name)
+        ? numericAmount + cashoutFeeAmount
+        : numericAmount;
 
     // Use the exchange rate from API if available, otherwise use fallback from country data
     const rate = exchangeRate?.exchange || country.exchangeRate;
@@ -837,7 +859,10 @@ export function PaymentInterface() {
                 type="number"
                 onInput={(e) => {
                   // For Uganda, Kenya, Tanzania - prevent typing more than 10 characters
-                  if (country && ['UG', 'KE', 'TZ'].includes(country.countryCode)) {
+                  if (
+                    country &&
+                    ["UG", "KE", "TZ"].includes(country.countryCode)
+                  ) {
                     const target = e.target as HTMLInputElement;
                     if (target.value.length > 10) {
                       target.value = target.value.slice(0, 10);
@@ -847,7 +872,11 @@ export function PaymentInterface() {
                 onChange={(e) => {
                   const value = e.target.value;
                   // For Uganda, Kenya, Tanzania - limit to 10 characters
-                  if (country && ['UG', 'KE', 'TZ'].includes(country.countryCode) && value.length > 10) {
+                  if (
+                    country &&
+                    ["UG", "KE", "TZ"].includes(country.countryCode) &&
+                    value.length > 10
+                  ) {
                     return; // Don't update if exceeds 10 characters
                   }
                   updateBillTillPayout({ tillNumber: value });
@@ -874,7 +903,6 @@ export function PaymentInterface() {
                   </div>
                 )}
             </div>
-         
           </div>
         );
 
@@ -891,7 +919,10 @@ export function PaymentInterface() {
                   type="number"
                   onInput={(e) => {
                     // For Uganda, Kenya, Tanzania - prevent typing more than 10 characters
-                    if (country && ['UG', 'KE', 'TZ'].includes(country.countryCode)) {
+                    if (
+                      country &&
+                      ["UG", "KE", "TZ"].includes(country.countryCode)
+                    ) {
                       const target = e.target as HTMLInputElement;
                       if (target.value.length > 10) {
                         target.value = target.value.slice(0, 10);
@@ -901,7 +932,11 @@ export function PaymentInterface() {
                   onChange={(e) => {
                     const value = e.target.value;
                     // For Uganda, Kenya, Tanzania - limit to 10 characters
-                    if (country && ['UG', 'KE', 'TZ'].includes(country.countryCode) && value.length > 10) {
+                    if (
+                      country &&
+                      ["UG", "KE", "TZ"].includes(country.countryCode) &&
+                      value.length > 10
+                    ) {
                       return; // Don't update if exceeds 10 characters
                     }
                     updateBillTillPayout({ billNumber: value });
@@ -928,7 +963,6 @@ export function PaymentInterface() {
                     </div>
                   )}
               </div>
-           
             </div>
 
             <div className="space-y-3">
@@ -941,7 +975,10 @@ export function PaymentInterface() {
                   type="number"
                   onInput={(e) => {
                     // For Uganda, Kenya, Tanzania - prevent typing more than 10 characters
-                    if (country && ['UG', 'KE', 'TZ'].includes(country.countryCode)) {
+                    if (
+                      country &&
+                      ["UG", "KE", "TZ"].includes(country.countryCode)
+                    ) {
                       const target = e.target as HTMLInputElement;
                       if (target.value.length > 10) {
                         target.value = target.value.slice(0, 10);
@@ -951,7 +988,11 @@ export function PaymentInterface() {
                   onChange={(e) => {
                     const value = e.target.value;
                     // For Uganda, Kenya, Tanzania - limit to 10 characters
-                    if (country && ['UG', 'KE', 'TZ'].includes(country.countryCode) && value.length > 10) {
+                    if (
+                      country &&
+                      ["UG", "KE", "TZ"].includes(country.countryCode) &&
+                      value.length > 10
+                    ) {
                       return; // Don't update if exceeds 10 characters
                     }
                     updateBillTillPayout({ accountNumber: value });
@@ -1012,7 +1053,10 @@ export function PaymentInterface() {
                   type="tel"
                   onInput={(e) => {
                     // For Uganda, Kenya, Tanzania - prevent typing more than 10 characters
-                    if (country && ['UG', 'KE', 'TZ'].includes(country.countryCode)) {
+                    if (
+                      country &&
+                      ["UG", "KE", "TZ"].includes(country.countryCode)
+                    ) {
                       const target = e.target as HTMLInputElement;
                       if (target.value.length > 10) {
                         target.value = target.value.slice(0, 10);
@@ -1022,7 +1066,11 @@ export function PaymentInterface() {
                   onChange={(e) => {
                     const value = e.target.value;
                     // For Uganda, Kenya, Tanzania - limit to 10 characters
-                    if (country && ['UG', 'KE', 'TZ'].includes(country.countryCode) && value.length > 10) {
+                    if (
+                      country &&
+                      ["UG", "KE", "TZ"].includes(country.countryCode) &&
+                      value.length > 10
+                    ) {
                       return; // Don't update if exceeds 10 characters
                     }
                     updateBillTillPayout({ phoneNumber: value });
@@ -1264,14 +1312,17 @@ export function PaymentInterface() {
                 <Checkbox
                   id="includeCashoutFees"
                   checked={includeCashoutFees}
-                  onCheckedChange={(checked) => setIncludeCashoutFees(checked as boolean)}
+                  onCheckedChange={(checked) =>
+                    setIncludeCashoutFees(checked as boolean)
+                  }
                   className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                 />
                 <label
                   htmlFor="includeCashoutFees"
                   className="text-sm text-gray-300 cursor-pointer"
                 >
-                  Include cashout fees ({cashoutFeeAmount.toLocaleString()} {country.currency})
+                  Include cashout fees ({cashoutFeeAmount.toLocaleString()}{" "}
+                  {country.currency})
                 </label>
               </div>
               {includeCashoutFees && (
@@ -1279,18 +1330,34 @@ export function PaymentInterface() {
                   {country.name.toLowerCase() === "uganda" ? (
                     // Uganda breakdown
                     (() => {
-                      const breakdown = getUgandaCashoutBreakdown(parseFloat(amount) || 0);
+                      const breakdown = getUgandaCashoutBreakdown(
+                        parseFloat(amount) || 0
+                      );
                       return (
                         <>
-                          <p>Withdraw from Agent: {breakdown.withdrawFee.toLocaleString()} {country.currency}</p>
-                          <p>Tax (0.5%): {breakdown.taxAmount.toLocaleString()} {country.currency}</p>
-                          <p className="font-medium">Total cashout fee: {breakdown.total.toLocaleString()} {country.currency}</p>
+                          <p>
+                            Withdraw from Agent:{" "}
+                            {breakdown.withdrawFee.toLocaleString()}{" "}
+                            {country.currency}
+                          </p>
+                          <p>
+                            Tax (0.5%): {breakdown.taxAmount.toLocaleString()}{" "}
+                            {country.currency}
+                          </p>
+                          <p className="font-medium">
+                            Total cashout fee:{" "}
+                            {breakdown.total.toLocaleString()}{" "}
+                            {country.currency}
+                          </p>
                         </>
                       );
                     })()
                   ) : (
                     // Tanzania breakdown
-                    <p>Cashout fee: {cashoutFeeAmount.toLocaleString()} {country.currency}</p>
+                    <p>
+                      Cashout fee: {cashoutFeeAmount.toLocaleString()}{" "}
+                      {country.currency}
+                    </p>
                   )}
                 </div>
               )}
@@ -1362,49 +1429,57 @@ export function PaymentInterface() {
             </div>
 
             {/* Amount Breakdown - Show when cashout fees are included */}
-            {includeCashoutFees && country && supportsCashoutFees(country.name) && (
-              <div className="bg-neutral-800/50 rounded-lg p-3 space-y-2">
-                <div className="flex items-center justify-between text-xs text-gray-400">
-                  <span>Total {country.currency}</span>
-                  <span>{(parseFloat(amount) + cashoutFeeAmount).toLocaleString()}</span>
-                </div>
-                <div className="flex items-center justify-between text-xs text-gray-400">
-                  <span>Amount in {country.currency}</span>
-                  <span>{parseFloat(amount).toLocaleString()}</span>
-                </div>
-                
-                {country.name.toLowerCase() === "uganda" ? (
-                  // Uganda detailed breakdown
-                  (() => {
-                    const breakdown = getUgandaCashoutBreakdown(parseFloat(amount) || 0);
-                    return (
-                      <>
-                        <div className="flex items-center justify-between text-xs text-gray-400">
-                          <span>Withdraw from Agent</span>
-                          <span>{breakdown.withdrawFee.toLocaleString()}</span>
-                        </div>
-                        <div className="flex items-center justify-between text-xs text-gray-400">
-                          <span>Tax (0.5%)</span>
-                          <span>{breakdown.taxAmount.toLocaleString()}</span>
-                        </div>
-                      </>
-                    );
-                  })()
-                ) : (
-                  // Tanzania simple breakdown
+            {includeCashoutFees &&
+              country &&
+              supportsCashoutFees(country.name) && (
+                <div className="bg-neutral-800/50 rounded-lg p-3 space-y-2">
                   <div className="flex items-center justify-between text-xs text-gray-400">
-                    <span>Cashout Fee</span>
-                    <span>{cashoutFeeAmount.toLocaleString()}</span>
+                    <span>Total {country.currency}</span>
+                    <span>
+                      {(parseFloat(amount) + cashoutFeeAmount).toLocaleString()}
+                    </span>
                   </div>
-                )}
-                
-                <div className="h-px bg-gray-700"></div>
-                <div className="flex items-center justify-between text-xs text-white">
-                  <span>Amount in {asset?.symbol || "USDC"}</span>
-                  <span>{Number(calculatedCryptoAmount).toFixed(2)}</span>
+                  <div className="flex items-center justify-between text-xs text-gray-400">
+                    <span>Amount in {country.currency}</span>
+                    <span>{parseFloat(amount).toLocaleString()}</span>
+                  </div>
+
+                  {country.name.toLowerCase() === "uganda" ? (
+                    // Uganda detailed breakdown
+                    (() => {
+                      const breakdown = getUgandaCashoutBreakdown(
+                        parseFloat(amount) || 0
+                      );
+                      return (
+                        <>
+                          <div className="flex items-center justify-between text-xs text-gray-400">
+                            <span>Withdraw from Agent</span>
+                            <span>
+                              {breakdown.withdrawFee.toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between text-xs text-gray-400">
+                            <span>Tax (0.5%)</span>
+                            <span>{breakdown.taxAmount.toLocaleString()}</span>
+                          </div>
+                        </>
+                      );
+                    })()
+                  ) : (
+                    // Tanzania simple breakdown
+                    <div className="flex items-center justify-between text-xs text-gray-400">
+                      <span>Cashout Fee</span>
+                      <span>{cashoutFeeAmount.toLocaleString()}</span>
+                    </div>
+                  )}
+
+                  <div className="h-px bg-gray-700"></div>
+                  <div className="flex items-center justify-between text-xs text-white">
+                    <span>Amount in {asset?.symbol || "USDC"}</span>
+                    <span>{Number(calculatedCryptoAmount).toFixed(2)}</span>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {isExchangeRateLoading ? (
               <ExchangeRateSkeleton />
