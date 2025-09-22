@@ -8,9 +8,9 @@ import {
   DialogPortal,
   DialogOverlay,
   VisuallyHidden,
-} from "@/components/ui/dialog";
+} from "@/app/components/ui/dialog";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/app/components/ui/button";
 import { cNGNTabsUI } from "./utils";
 import { Globe, HandCoins, Landmark } from "lucide-react";
 import Image from "next/image";

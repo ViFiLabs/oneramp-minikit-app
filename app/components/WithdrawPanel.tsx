@@ -37,7 +37,7 @@ import { ToPanel } from "./panels/ToPanel";
 import SelectInstitution from "./select-institution";
 import { KYCVerificationModal } from "./modals/KYCVerificationModal";
 import { toast } from "sonner";
-import { ModalConnectButton } from "@/components/modal-connect-button";
+import { ModalConnectButton } from "@/app/components/wallet/modal-connect-button";
 // Standalone cNGN action picker now lives in CNGNActionPanel
 import { supportedAssetsUI } from "@/data/assets-ui";
 import { cNGNTabsUI } from "./cNGN/utils";

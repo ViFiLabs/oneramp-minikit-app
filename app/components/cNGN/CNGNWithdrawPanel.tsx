@@ -18,7 +18,7 @@ import { createQuoteOut } from "@/actions/quote";
 import { createTransferOut } from "@/actions/transfer";
 import useEVMPay from "@/onchain/useEVMPay";
 import { KYCVerificationModal } from "@/app/components/modals/KYCVerificationModal";
-import { ModalConnectButton } from "@/components/modal-connect-button";
+import { ModalConnectButton } from "@/app/components/wallet/modal-connect-button";
 import { toast } from "sonner";
 import {
   AppState,
