@@ -81,6 +81,23 @@ export function SwapPanel() {
   const fromBalance = useTokenBalance(selectedCurrency?.symbol || "");
   const toBalance = useTokenBalance(selectedToCurrency?.symbol || "");
 
+  // Refetch balances when currency changes (especially for CNGN)
+  useEffect(() => {
+    if (selectedCurrency?.symbol === "CNGN") {
+      console.log("🔄 CNGN selected, refreshing balance...");
+      fromBalance.refetch();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCurrency?.symbol]);
+
+  useEffect(() => {
+    if (selectedToCurrency?.symbol === "CNGN") {
+      console.log("🔄 CNGN selected as To currency, refreshing balance...");
+      toBalance.refetch();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedToCurrency?.symbol]);
+
   // Initialize currencies after availableAssets is calculated
   useEffect(() => {
     if (availableAssets.length > 0 && (!selectedCurrency || !selectedToCurrency)) {
@@ -302,7 +319,8 @@ export function SwapPanel() {
               onAmountChange={setAmount}
               excludeCurrency={selectedToCurrency || undefined}
               onMaxClick={() => {
-                // Set amount to the full balance
+                // Refresh balance first, then set amount to the full balance
+                fromBalance.refetch();
                 if (fromBalance.formatted && fromBalance.formatted !== "--") {
                   const maxAmount = fromBalance.formatted.replace(/,/g, ''); // Remove commas if any
                   setAmount(maxAmount);

@@ -1,5 +1,3 @@
-import { ChainTypes } from "@/types";
-
 export interface TokenConfig {
   symbol: string;
   decimals: number;
@@ -37,12 +35,23 @@ export const TOKEN_CONFIGS: Record<string, TokenConfig> = {
       42220: "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e",
     },
   },
+  CNGN: {
+    symbol: "CNGN",
+    decimals: 6, // CNGN uses 6 decimals, not 18
+    addresses: {
+      // Base - primary network for CNGN
+      8453: "0x46C85152bFe9f96829aA94755D9f915F9B10EF5F",
+    },
+  },
 };
 
-// Special case for USDT decimals on Ethereum mainnet
+// Special case for token decimals
 export const getTokenDecimals = (symbol: string, chainId: number): number => {
   if (symbol === "USDT" && chainId === 1) {
     return 6; // USDT on Ethereum is 6 decimals
+  }
+  if (symbol === "CNGN") {
+    return 6; // CNGN uses 6 decimals
   }
   return TOKEN_CONFIGS[symbol]?.decimals || 18;
 };
@@ -66,8 +75,8 @@ export const getSupportedTokens = (chainId: number): string[] => {
 
 // Network-specific token support
 export const NETWORK_TOKEN_SUPPORT = {
-  // Base - only USDC
-  8453: ["USDC"],
+  // Base - USDC and CNGN
+  8453: ["USDC", "CNGN"],
   // Ethereum - USDC and USDT
   1: ["USDC", "USDT"],
   // Polygon - USDC and USDT

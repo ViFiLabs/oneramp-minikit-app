@@ -101,7 +101,7 @@ export const assets: Asset[] = [
     name: "CNGN",
     logo: "/logos/CNGN.svg",
     symbol: "CNGN",
-    network: "Ethereum",
+    network: "Base", // Primary network for CNGN
     networks: {
       Ethereum: {
         ...mainnet,
@@ -110,7 +110,7 @@ export const assets: Asset[] = [
         chainId: 1,
         chainNamespace: "eip155",
         caipNetworkId: "eip155:1",
-        tokenAddress: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+        tokenAddress: "", // CNGN not available on Ethereum yet
       },
       Polygon: {
         ...polygon,
@@ -119,7 +119,7 @@ export const assets: Asset[] = [
         chainId: 137,
         chainNamespace: "eip155",
         caipNetworkId: "eip155:137",
-        tokenAddress: "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+        tokenAddress: "", // CNGN not available on Polygon yet
       },
       Celo: {
         ...celo,
@@ -128,7 +128,7 @@ export const assets: Asset[] = [
         chainId: 42220,
         chainNamespace: "eip155",
         caipNetworkId: "eip155:42220",
-        tokenAddress: "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e",
+        tokenAddress: "", // CNGN not available on Celo yet
       },
       Base: {
         ...base,
