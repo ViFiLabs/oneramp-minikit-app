@@ -26,6 +26,7 @@ const networks: Network[] = SUPPORTED_NETWORKS_WITH_RPC_URLS;
 
 export function SwapPanel() {
   const [showWalletModal, setShowWalletModal] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const userSelectionStore = useUserSelectionStore();
   const {
     updateSelection,
@@ -160,6 +161,9 @@ export function SwapPanel() {
     if (isSwapSuccess) {
       console.log("✅ Swap completed successfully");
       
+      // Show success message
+      setShowSuccessMessage(true);
+      
       // Mark success as handled to prevent infinite loop
       markSuccessHandled();
       
@@ -173,6 +177,11 @@ export function SwapPanel() {
         toBalance.refetch();
         console.log("🎉 Swap completed - balances refreshed");
       }, 1000);
+      
+      // Hide success message after 5 seconds
+      setTimeout(() => {
+        setShowSuccessMessage(false);
+      }, 5000);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSwapSuccess]);
@@ -345,6 +354,12 @@ export function SwapPanel() {
 
   // Handle swap button click
   const handleSwapClick = async () => {
+    // If showing success message, reset it and allow new swap
+    if (showSuccessMessage) {
+      setShowSuccessMessage(false);
+      return;
+    }
+
     if (!selectedCurrency || !selectedToCurrency || !amount || amount === "0") {
       console.log("Missing required swap parameters");
       return;
@@ -373,7 +388,7 @@ export function SwapPanel() {
   };
 
   // Determine if swap should be disabled
-  const isSwapDisabled = !isAmountValid || 
+  const isSwapDisabled = !showSuccessMessage && (!isAmountValid || 
     !evmConnected || 
     !selectedCurrency || 
     !selectedToCurrency ||
@@ -382,10 +397,13 @@ export function SwapPanel() {
     amount === "0" ||
     swapState.isLoading ||
     swapState.isApproving ||
-    swapState.isSwapping;
+    swapState.isSwapping);
 
   // Determine swap button text based on state
   const getSwapButtonText = () => {
+    if (showSuccessMessage) {
+      return "Try Another Transaction";
+    }
     if (swapState.isApproving) {
       return "Approving Token...";
     }
@@ -532,6 +550,72 @@ export function SwapPanel() {
         transition={{ duration: 0.4, delay: 0.3, ease: "easeOut" }}
       >
         <div className="px-3 md:px-4 mt-4">
+          {/* Success Message */}
+          <AnimatePresence>
+            {showSuccessMessage && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="mb-4 p-4 bg-green-500/10 border border-green-500/20 rounded-2xl backdrop-blur-sm"
+              >
+                <div className="flex items-center justify-center space-x-3">
+                  <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                    <svg 
+                      width="14" 
+                      height="14" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="3" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      className="text-white"
+                    >
+                      <polyline points="20,6 9,17 4,12" />
+                    </svg>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-green-400 font-semibold text-sm">
+                      Transaction Successful!
+                    </p>
+                    <p className="text-green-300/80 text-xs mt-1">
+                      Your swap has been completed successfully
+                    </p>
+                  </div>
+                </div>
+                
+                {swapState.swapHash && (
+                  <div className="mt-3 text-center">
+                    <a
+                      href={`https://basescan.org/tx/${swapState.swapHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center space-x-2 text-green-400 hover:text-green-300 text-xs transition-colors"
+                    >
+                      <span>View on BaseScan</span>
+                      <svg 
+                        width="12" 
+                        height="12" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2" 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round"
+                      >
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                        <polyline points="15,3 21,3 21,9" />
+                        <line x1="10" y1="14" x2="21" y2="3" />
+                      </svg>
+                    </a>
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {!evmConnected ? (
             <SwapButton 
               onClick={handleConnectWallet} 
