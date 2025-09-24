@@ -310,7 +310,8 @@ export function useAerodromeSwap() {
         
       } catch (parseUnitsError) {
         console.error("❌ Error in parseUnits or swap execution:", parseUnitsError);
-        throw new Error(`Failed to process swap amounts: ${parseUnitsError.message}`);
+        const errorMessage = parseUnitsError instanceof Error ? parseUnitsError.message : String(parseUnitsError);
+        throw new Error(`Failed to process swap amounts: ${errorMessage}`);
       }
 
     } catch (error) {
