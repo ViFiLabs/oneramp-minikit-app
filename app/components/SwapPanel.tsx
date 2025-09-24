@@ -4,6 +4,7 @@ import { assets } from "@/data/currencies";
 import { SUPPORTED_NETWORKS_WITH_RPC_URLS } from "@/data/networks";
 import useWalletGetInfo from "@/hooks/useWalletGetInfo";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
+import { useAerodromeSwap } from "@/hooks/useAerodromeSwap";
 import { useAmountStore } from "@/store/amount-store";
 import { useNetworkStore } from "@/store/network";
 import { useUserSelectionStore } from "@/store/user-selection";
@@ -77,9 +78,22 @@ export function SwapPanel() {
   // Add amount state for the "to" currency
   const [toAmount, setToAmount] = useState("0.00");
 
+  // Add exchange rate state
+  const [exchangeRate, setExchangeRate] = useState("0");
+
   // Fetch balances for the selected currencies
   const fromBalance = useTokenBalance(selectedCurrency?.symbol || "");
   const toBalance = useTokenBalance(selectedToCurrency?.symbol || "");
+
+  // Aerodrome swap functionality
+  const { 
+    swap, 
+    getQuote, 
+    swapState, 
+    isApprovalSuccess, 
+    isSwapSuccess,
+    markSuccessHandled
+  } = useAerodromeSwap();
 
   // Refetch balances when currency changes (especially for CNGN)
   useEffect(() => {
@@ -97,6 +111,71 @@ export function SwapPanel() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedToCurrency?.symbol]);
+
+  // Get quote and update "To" amount when inputs change
+  useEffect(() => {
+    const fetchQuote = async () => {
+      if (
+        selectedCurrency && 
+        selectedToCurrency && 
+        amount && 
+        amount !== "0" && 
+        !isNaN(parseFloat(amount))
+      ) {
+        try {
+          const quote = await getQuote(selectedCurrency.symbol, selectedToCurrency.symbol, amount);
+          if (quote) {
+            setToAmount(parseFloat(quote.amountOut).toFixed(2));
+            // Calculate the exchange rate (how much "to currency" per 1 "from currency")
+            const rate = parseFloat(quote.amountOut) / parseFloat(amount);
+            setExchangeRate(rate.toFixed(0)); // Use whole number for readability
+            console.log(`💱 Quote: ${amount} ${selectedCurrency.symbol} = ${quote.amountOut} ${selectedToCurrency.symbol}, Rate: 1 ${selectedCurrency.symbol} = ${rate.toFixed(0)} ${selectedToCurrency.symbol}`);
+          }
+        } catch (error) {
+          console.error("Error fetching quote:", error);
+          setToAmount("0.00");
+          setExchangeRate("0");
+        }
+      } else {
+        setToAmount("0.00");
+        setExchangeRate("0");
+      }
+    };
+
+    // Debounce the quote fetching to avoid too many API calls
+    const debounceTimer = setTimeout(fetchQuote, 500);
+    return () => clearTimeout(debounceTimer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCurrency, selectedToCurrency, amount]);
+
+  // Handle successful approval
+  useEffect(() => {
+    if (isApprovalSuccess) {
+      console.log("✅ Token approval successful");
+    }
+  }, [isApprovalSuccess]);
+
+  // Handle successful swap and refresh balances
+  useEffect(() => {
+    if (isSwapSuccess) {
+      console.log("✅ Swap completed successfully");
+      
+      // Mark success as handled to prevent infinite loop
+      markSuccessHandled();
+      
+      // Reset amounts first
+      setAmount("0");
+      setToAmount("0.00");
+      
+      // Refresh balances after successful swap with a small delay
+      setTimeout(() => {
+        fromBalance.refetch();
+        toBalance.refetch();
+        console.log("🎉 Swap completed - balances refreshed");
+      }, 1000);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSwapSuccess]);
 
   // Initialize currencies after availableAssets is calculated
   useEffect(() => {
@@ -265,9 +344,27 @@ export function SwapPanel() {
   };
 
   // Handle swap button click
-  const handleSwapClick = () => {
-    console.log("Swap functionality to be implemented");
-    // Add swap logic here
+  const handleSwapClick = async () => {
+    if (!selectedCurrency || !selectedToCurrency || !amount || amount === "0") {
+      console.log("Missing required swap parameters");
+      return;
+    }
+
+    try {
+      console.log("🔄 Starting swap:", selectedCurrency.symbol, "→", selectedToCurrency.symbol, "Amount:", amount);
+      
+      await swap({
+        tokenASymbol: selectedCurrency.symbol,
+        tokenBSymbol: selectedToCurrency.symbol,
+        amountIn: amount,
+        slippage: 2.5, // 2.5% slippage tolerance
+        deadline: 20, // 20 minutes
+      });
+
+      console.log("✅ Swap initiated successfully");
+    } catch (error) {
+      console.error("❌ Swap failed:", error);
+    }
   };
 
   // Handle wallet connection
@@ -282,7 +379,24 @@ export function SwapPanel() {
     !selectedToCurrency ||
     selectedCurrency.symbol === selectedToCurrency.symbol || // Prevent same token swap
     !amount || 
-    amount === "0";
+    amount === "0" ||
+    swapState.isLoading ||
+    swapState.isApproving ||
+    swapState.isSwapping;
+
+  // Determine swap button text based on state
+  const getSwapButtonText = () => {
+    if (swapState.isApproving) {
+      return "Approving Token...";
+    }
+    if (swapState.isSwapping) {
+      return "Swapping...";
+    }
+    if (swapState.error) {
+      return "Try Again";
+    }
+    return "Swap";
+  };
 
   return (
     <div className="w-full max-w-md mx-auto min-h-[400px] bg-[#181818] rounded-3xl p-0 flex flex-col gap-0 md:shadow-lg md:border border-[#232323] relative">
@@ -368,9 +482,46 @@ export function SwapPanel() {
           <ExchangeRateDisplay
             fromCurrency={selectedCurrency.symbol}
             toCurrency={selectedToCurrency.symbol}
-            rate="0"
+            rate={exchangeRate}
             slippage="2.5%"
           />
+        </motion.div>
+      )}
+
+      {/* Swap Status Messages */}
+      {(swapState.error || swapState.isApproving || swapState.isSwapping) && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mx-3 md:mx-4 mb-2"
+        >
+          <div className={`p-3 rounded-lg text-sm ${
+            swapState.error 
+              ? "bg-red-900/20 border border-red-500/30 text-red-400"
+              : "bg-blue-900/20 border border-blue-500/30 text-blue-400"
+          }`}>
+            {swapState.error && (
+              <>
+                <div className="flex items-center gap-2 mb-1">
+                  <span>❌</span>
+                  <span className="font-medium">Swap Error</span>
+                </div>
+                <div className="text-xs opacity-80">{swapState.error}</div>
+              </>
+            )}
+            {swapState.isApproving && (
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+                <span>Approving {selectedCurrency?.symbol} for swapping...</span>
+              </div>
+            )}
+            {swapState.isSwapping && (
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+                <span>Executing swap: {selectedCurrency?.symbol} → {selectedToCurrency?.symbol}</span>
+              </div>
+            )}
+          </div>
         </motion.div>
       )}
 
@@ -389,7 +540,7 @@ export function SwapPanel() {
           ) : (
             <SwapButton 
               onClick={handleSwapClick} 
-              text="Swap" 
+              text={getSwapButtonText()}
               disabled={isSwapDisabled}
             />
           )}

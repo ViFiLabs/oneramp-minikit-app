@@ -9,7 +9,10 @@
     "lint": "next lint",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "rate:fetch": "node --experimental-modules scripts/fetch-exchange-rate.js",
+    "rate:test": "node --experimental-modules scripts/test-exchange-rate.js",
+    "rate:watch": "node --experimental-modules scripts/fetch-exchange-rate.js watch"
   },
   "dependencies": {
     "@coinbase/onchainkit": "^0.38.14",
