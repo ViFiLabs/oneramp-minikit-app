@@ -14,16 +14,23 @@ const customJestConfig = {
   },
   testMatch: [
     '**/__tests__/**/*.test.ts',
-    '**/__tests__/**/*.test.tsx',
+    '**/__tests__/**/*.test.tsx', 
+    '**/__tests__/**/*.test.js',
     '**/*.test.ts',
-    '**/*.test.tsx'
+    '**/*.test.tsx',
+    '**/*.test.js'
   ],
   collectCoverageFrom: [
     'utils/**/*.{ts,tsx}',
     'app/**/*.{ts,tsx}',
     'components/**/*.{ts,tsx}',
+    'hooks/**/*.{ts,tsx}',
     '!**/*.d.ts',
     '!**/node_modules/**'
+  ],
+  testTimeout: 30000, // 30 seconds for integration tests
+  transformIgnorePatterns: [
+    'node_modules/(?!(viem|@noble|@scure)/)'
   ]
 }
 
