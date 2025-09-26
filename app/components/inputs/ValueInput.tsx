@@ -1,6 +1,6 @@
 import { Input } from "@/app/components/ui/input";
 import { GLOBAL_MIN_MAX } from "@/data/countries";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { useAmountStore } from "@/store/amount-store";
 import { useUserSelectionStore } from "@/store/user-selection";
@@ -27,7 +27,7 @@ const ValueInput: React.FC<ValueInputProps> = ({
   } = useAmountStore();
   const [isInvalid, setIsInvalid] = useState(false);
   const [balanceExceeded, setBalanceExceeded] = useState(false);
-  const { country, countryPanelOnTop } = useUserSelectionStore();
+  const { country, countryPanelOnTop, asset } = useUserSelectionStore();
   const { exchangeRate } = useExchangeRateStore();
 
   const calculatedAmount = useMemo(() => {
@@ -42,14 +42,12 @@ const ValueInput: React.FC<ValueInputProps> = ({
     return convertedAmount.toFixed(4);
   }, [amount, country, exchangeRate]);
 
-   // Update crypto amount when calculated amount changes
-   useEffect(() => {
+  // Update crypto amount when calculated amount changes
+  useEffect(() => {
     if (calculatedAmount) {
       setCryptoAmount(calculatedAmount);
     }
   }, [calculatedAmount, setCryptoAmount]);
-
-
 
   const formatNumber = (num: string) => {
     // Remove any non-digit characters except decimal point and first decimal only
@@ -73,52 +71,73 @@ const ValueInput: React.FC<ValueInputProps> = ({
     return cleanNum.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
 
-  const validateAmount = (amount: string) => {
-    if (!amount || amount === "") return false;
-    setMessage("");
+  const validateAmount = useCallback(
+    (amount: string) => {
+      if (!amount || amount === "") return false;
+      setMessage("");
 
-    if (countryPanelOnTop) {
-      const amountInUSD = calculatedAmount;
-      if (!amountInUSD) return false;
-      const numericValue = parseFloat(amountInUSD);
-      return !isNaN(numericValue) && numericValue >= GLOBAL_MIN_MAX.min;
-    }
-
-    const numericValue = parseFloat(amount);
-
-    // Basic validation - always use global min/max for basic validation
-    const isValidNumber =
-      !isNaN(numericValue) &&
-      numericValue >= GLOBAL_MIN_MAX.min &&
-      numericValue <= GLOBAL_MIN_MAX.max &&
-      // Check if decimal places are valid (max 2)
-      (amount.includes(".") ? amount.split(".")[1].length <= 2 : true);
-
-    // Balance validation (only if wallet is connected)
-    if (isWalletConnected && isValidNumber) {
-      const maxBalanceNumber = parseFloat(maxBalance);
-      const exceedsBalance = numericValue > maxBalanceNumber;
-      setBalanceExceeded(exceedsBalance);
-
-      if (country) {
-        const countryMinMax = country.cryptoMinMax;
-        const exceedsMin = numericValue < countryMinMax.min;
-        const exceedsMax = numericValue > countryMinMax.max;
-        setBalanceExceeded(exceedsMin || exceedsMax);
-        setMessage(
-          exceedsMin
-            ? `Minimum is ${countryMinMax.min} `
-            : `Maximum is ${countryMinMax.max} `
-        );
-        return isValidNumber && !exceedsBalance && !exceedsMin && !exceedsMax;
+      if (countryPanelOnTop) {
+        const amountInUSD = calculatedAmount;
+        if (!amountInUSD) return false;
+        const numericValue = parseFloat(amountInUSD);
+        return !isNaN(numericValue) && numericValue >= GLOBAL_MIN_MAX.min;
       }
 
-      return isValidNumber && !exceedsBalance;
-    }
+      const numericValue = parseFloat(amount);
 
-    setBalanceExceeded(false);
-    return isValidNumber;
-  };
+      // cNGN-specific min/max overrides (these amounts are in token units)
+      const CNGN_MIN = 1_508;
+      const CNGN_MAX = 3_769_775;
+      const baseMin = asset?.symbol === "cNGN" ? CNGN_MIN : GLOBAL_MIN_MAX.min;
+      const baseMax = asset?.symbol === "cNGN" ? CNGN_MAX : GLOBAL_MIN_MAX.max;
+
+      // Basic validation - always use global min/max for basic validation
+      const isValidNumber =
+        !isNaN(numericValue) &&
+        numericValue >= baseMin &&
+        numericValue <= baseMax &&
+        // Check if decimal places are valid (max 2)
+        (amount.includes(".") ? amount.split(".")[1].length <= 2 : true);
+
+      // Balance validation (only if wallet is connected)
+      if (isWalletConnected && isValidNumber) {
+        const maxBalanceNumber = parseFloat(maxBalance);
+        const exceedsBalance = numericValue > maxBalanceNumber;
+        setBalanceExceeded(exceedsBalance);
+
+        if (country) {
+          // Use cNGN-specific bounds when asset is cNGN; otherwise use country crypto bounds
+          const effectiveMin =
+            asset?.symbol === "cNGN" ? CNGN_MIN : country.cryptoMinMax.min;
+          const effectiveMax =
+            asset?.symbol === "cNGN" ? CNGN_MAX : country.cryptoMinMax.max;
+          const exceedsMin = numericValue < effectiveMin;
+          const exceedsMax = numericValue > effectiveMax;
+          setBalanceExceeded(exceedsMin || exceedsMax);
+          setMessage(
+            exceedsMin
+              ? `Minimum is ${effectiveMin} `
+              : `Maximum is ${effectiveMax} `
+          );
+          return isValidNumber && !exceedsBalance && !exceedsMin && !exceedsMax;
+        }
+
+        return isValidNumber && !exceedsBalance;
+      }
+
+      setBalanceExceeded(false);
+      return isValidNumber;
+    },
+    [
+      countryPanelOnTop,
+      calculatedAmount,
+      isWalletConnected,
+      maxBalance,
+      country,
+      asset,
+      setMessage,
+    ]
+  );
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawValue = e.target.value.replace(/,/g, "");
@@ -139,7 +158,7 @@ const ValueInput: React.FC<ValueInputProps> = ({
       setIsInvalid(!isValidAmount);
       setIsValid(isValidAmount);
     }
-  }, [maxBalance, isWalletConnected, amount]);
+  }, [maxBalance, isWalletConnected, amount, setIsValid, validateAmount]);
 
   const getWidth = () => {
     if (amount.length > 3) return "w-2/3";

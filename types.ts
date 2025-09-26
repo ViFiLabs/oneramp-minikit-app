@@ -193,14 +193,16 @@ export interface TransferStatus {
   };
 }
 
-export interface QuoteRequest {
+export type QuoteRequest = {
   fiatType: string;
   cryptoType: string;
   network: string;
-  cryptoAmount: string;
   country: string;
   address: string;
-}
+} & (
+  | { cryptoAmount: string; fiatAmount?: never }
+  | { fiatAmount: string; cryptoAmount?: never }
+);
 
 // {
 //   "fiatType": "NGN",

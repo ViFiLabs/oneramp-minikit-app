@@ -75,6 +75,10 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
       ? transferStatus.cryptoType
       : transferStatus.fiatType;
 
+  console.log("====================================");
+  console.log("transferStatus", transferStatus);
+  console.log("====================================");
+
   return (
     <div className="min-h-screen text-white flex items-center w-full md:w-1/3 justify-center bg-black">
       <div className="w-full h-full max-w-lg">

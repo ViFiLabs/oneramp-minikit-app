@@ -1,14 +1,15 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useRef, useEffect } from "react";
 import { useUserSelectionStore } from "@/store/user-selection";
 import useWalletGetInfo from "@/hooks/useWalletGetInfo";
 import { useAmountStore } from "@/store/amount-store";
 import { SwapArrow } from "@/app/components/panels/SwapArrow";
 import SelectInstitution from "@/app/components/select-institution";
 import { SwipeToWithdrawButton } from "@/app/components/payment/swipe-to-withdraw";
-import { countries } from "@/data/countries";
+//
+import SelectCountry from "../select-country";
 import { useQuoteStore } from "@/store/quote-store";
 import { useTransferStore } from "@/store/transfer-store";
 import { useKYCStore } from "@/store/kyc-store";
@@ -28,11 +29,11 @@ import {
   Transfer,
   TransferType,
 } from "@/types";
+import { useTokenBalance } from "@/hooks/useTokenBalance";
 
 export default function CNGNWithdrawPanel() {
   const userSelection = useUserSelectionStore();
-  const { country, institution, accountNumber, asset, updateSelection } =
-    userSelection;
+  const { country, institution, accountNumber, asset } = userSelection;
   const { isConnected: evmConnected, address, chainId } = useWalletGetInfo();
   const { isValid: isAmountValid, amount, setAmount } = useAmountStore();
   const { currentNetwork } = useNetworkStore();
@@ -46,24 +47,88 @@ export default function CNGNWithdrawPanel() {
   const [showKYCModal, setShowKYCModal] = useState(false);
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [swipeButtonReset, setSwipeButtonReset] = useState(false);
-  // cNGN is NGN-pegged (1:1). Show amount directly as NGN without FX conversion
-  const computedToValue = useMemo(() => {
-    const a = parseFloat(String(amount || 0));
-    if (!a) return "0.00";
-    return a.toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-  }, [amount]);
+  // Allow selecting any supported country when cNGN is selected (no lock)
 
-  // Lock country to Nigeria for cNGN withdraw as well
-  useEffect(() => {
-    const nigeria = countries.find((c) => c.name === "Nigeria");
-    if (nigeria && (!country || country.name !== "Nigeria")) {
-      updateSelection({ country: nigeria });
+  // Token balance for current asset (cNGN), like SwapPanel's FromPanel
+  const {
+    formatted: tokenBalance,
+    isLoading: balanceLoading,
+    allNetworkBalances,
+  } = useTokenBalance(asset?.symbol || "cNGN");
+
+  const isCurrentTokenSupported = !!(
+    asset?.networks &&
+    currentNetwork?.name &&
+    asset.networks[currentNetwork.name as keyof typeof asset.networks]
+  );
+
+  const getCurrentBalance = () => {
+    if (balanceLoading) return "...";
+    const currentChainId = currentNetwork?.chainId;
+    let balance = "0";
+
+    if (
+      isCurrentTokenSupported &&
+      currentChainId &&
+      allNetworkBalances?.[currentChainId]
+    ) {
+      if (allNetworkBalances[currentChainId].isLoading) return "...";
+      balance = allNetworkBalances[currentChainId].formatted;
+    } else {
+      // Fallback: show first non-zero balance across networks if available
+      const firstNonZero = Object.values(allNetworkBalances || {}).find(
+        (b) => parseFloat(b.formatted) > 0
+      );
+      balance = firstNonZero ? firstNonZero.formatted : tokenBalance;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+
+    const balanceNumber = parseFloat(balance || "0");
+    const gasBuffer = 0.01;
+    const adjustedBalance = Math.max(0, balanceNumber - gasBuffer);
+    return adjustedBalance.toFixed(2);
+  };
+
+  const getMaxBalance = () => {
+    const currentChainId = currentNetwork?.chainId;
+    let balance = "0";
+    if (
+      isCurrentTokenSupported &&
+      currentChainId &&
+      allNetworkBalances?.[currentChainId]
+    ) {
+      balance = allNetworkBalances[currentChainId].formatted;
+    } else {
+      const firstNonZero = Object.values(allNetworkBalances || {}).find(
+        (b) => parseFloat(b.formatted) > 0
+      );
+      balance = firstNonZero ? firstNonZero.formatted : tokenBalance;
+    }
+    const balanceNumber = parseFloat(balance || "0");
+    const gasBuffer = 0.01;
+    const adjustedBalance = Math.max(0, balanceNumber - gasBuffer);
+    return adjustedBalance.toFixed(2);
+  };
+
+  const canClickMax = () => {
+    return evmConnected && parseFloat(getCurrentBalance()) > 0;
+  };
+
+  const handleMaxClick = () => {
+    if (!canClickMax()) return;
+    setAmount(getMaxBalance());
+  };
+
+  // Auto-resize input width based on content (Uniswap-like)
+  const mirrorRef = useRef<HTMLSpanElement | null>(null);
+  const [inputWidth, setInputWidth] = useState<number>(112);
+  useEffect(() => {
+    if (!mirrorRef.current) return;
+    const text = amount && amount.length > 0 ? amount : "0.00";
+    mirrorRef.current.textContent = text;
+    const measured = mirrorRef.current.offsetWidth + 8; // small padding
+    const clamped = Math.min(Math.max(measured, 112), 320);
+    setInputWidth(clamped);
+  }, [amount]);
 
   const isWithdrawDisabled = useMemo(
     () =>
@@ -78,30 +143,67 @@ export default function CNGNWithdrawPanel() {
   // Create transfer payload (same logic as SwapPanel)
   const createTransferPayload = useCallback(
     (quoteId: string) => {
-      if (!country || !kycData?.fullKYC) {
-        throw new Error("Missing country or KYC data");
+      if (!country) {
+        throw new Error("Missing country");
       }
 
-      const { fullKYC } = kycData;
+      // Allow MoMo transactions under the asset-specific ~$100 threshold to bypass full KYC
+      const numericAmount = parseFloat(String(amount || 0));
+      const cngnThreshold = 1_507_908; // ~ $100 in NGN
+      const usdThreshold = 100;
+      const isCngn = (asset?.symbol || "") === "cNGN";
+      const threshold = isCngn ? cngnThreshold : usdThreshold;
+      const allowKycBypassForMomo =
+        userSelection.paymentMethod === "momo" &&
+        country?.countryCode !== "NG" &&
+        country?.countryCode !== "ZA" &&
+        numericAmount > 0 &&
+        numericAmount < threshold;
+
+      if (!kycData?.fullKYC && !allowKycBypassForMomo) {
+        throw new Error("KYC required");
+      }
+
+      const fullKYCObj: {
+        fullName?: string;
+        nationality?: string;
+        dateOfBirth?: string;
+        documentNumber?: string;
+        documentType?: string;
+        documentSubType?: string;
+        phoneNumber?: string;
+      } = (kycData?.fullKYC as unknown as Record<string, unknown>) || {};
       const {
-        fullName,
-        nationality,
+        fullName = "",
+        nationality = country.name || "",
         dateOfBirth,
         documentNumber,
         documentType,
         documentSubType,
-        phoneNumber,
-      } = fullKYC;
+        phoneNumber = "",
+      } = fullKYCObj;
 
-      let updatedDocumentType = documentType;
-      let updatedDocumentTypeSubType = documentSubType;
+      // Blank out ID fields if bypassing KYC
+      const effectiveDOB = allowKycBypassForMomo ? "" : dateOfBirth || "";
+      const effectiveDocumentType = allowKycBypassForMomo
+        ? ""
+        : documentType || "";
+      const effectiveDocumentSubType = allowKycBypassForMomo
+        ? ""
+        : documentSubType || "";
+      const effectiveDocumentNumber = allowKycBypassForMomo
+        ? ""
+        : documentNumber || "";
+
+      let updatedDocumentType = effectiveDocumentType;
+      let updatedDocumentTypeSubType = effectiveDocumentSubType;
 
       if (country.countryCode === "NG") {
         updatedDocumentTypeSubType = "BVN";
         updatedDocumentType = "NIN";
-      } else if (documentType === "ID") {
+      } else if (effectiveDocumentType === "ID") {
         updatedDocumentType = "NIN";
-      } else if (documentType === "P") {
+      } else if (effectiveDocumentType === "P") {
         updatedDocumentType = "Passport";
       } else {
         updatedDocumentType = "License";
@@ -114,8 +216,8 @@ export default function CNGNWithdrawPanel() {
             : fullName,
         country: country.countryCode || "",
         address: nationality || country.name || "",
-        dob: dateOfBirth,
-        idNumber: documentNumber,
+        dob: effectiveDOB,
+        idNumber: effectiveDocumentNumber,
         idType: updatedDocumentType,
         additionalIdType: updatedDocumentType,
         additionalIdNumber: updatedDocumentTypeSubType,
@@ -218,7 +320,7 @@ export default function CNGNWithdrawPanel() {
 
       throw new Error("No valid payment method found");
     },
-    [country, kycData, userSelection, institution, accountNumber]
+    [country, kycData, userSelection, institution, accountNumber, amount, asset]
   );
 
   const handleWithdrawTransfer = useCallback(async () => {
@@ -229,8 +331,7 @@ export default function CNGNWithdrawPanel() {
       !asset ||
       !currentNetwork ||
       !amount ||
-      !address ||
-      !kycData?.fullKYC
+      !address
     ) {
       throw new Error("Missing required data for withdrawal");
     }
@@ -240,7 +341,9 @@ export default function CNGNWithdrawPanel() {
     const quotePayload = {
       address: address,
       cryptoType: asset.symbol,
-      cryptoAmount: amount,
+      ...(asset.symbol === "cNGN"
+        ? { fiatAmount: amount }
+        : { cryptoAmount: amount }),
       fiatType: country.currency,
       country: country.countryCode,
       network: currentNetwork.name.toLowerCase(),
@@ -267,7 +370,6 @@ export default function CNGNWithdrawPanel() {
     currentNetwork,
     amount,
     address,
-    kycData,
     createTransferPayload,
   ]);
 
@@ -369,13 +471,17 @@ export default function CNGNWithdrawPanel() {
   const handleWithdrawComplete = () => {
     if (!isAmountValid || !country || !institution || !accountNumber) return;
 
-    // Allow MoMo under $100 to bypass KYC for cNGN Withdraw
+    // Allow MoMo under the asset-specific ~$100 threshold to bypass KYC
+    const numericAmount = parseFloat(String(amount || 0));
+    const cngnThreshold = 1_507_908; // ~ $100 in NGN
+    const usdThreshold = 100;
+    const threshold = asset?.symbol === "cNGN" ? cngnThreshold : usdThreshold;
     const allowKycBypassForMomo =
       userSelection.paymentMethod === "momo" &&
       country?.countryCode !== "NG" &&
       country?.countryCode !== "ZA" &&
-      parseFloat(String(amount || 0)) > 0 &&
-      parseFloat(String(amount || 0)) < 100;
+      numericAmount > 0 &&
+      numericAmount < threshold;
 
     // KYC requirement
     if (!allowKycBypassForMomo && kycData && kycData.kycStatus !== "VERIFIED") {
@@ -423,7 +529,17 @@ export default function CNGNWithdrawPanel() {
             From
           </span>
           <span className="text-neutral-400 text-xs md:text-sm">
-            Balance: -- <span className="text-red-400 ml-1">Max</span>
+            Balance: {getCurrentBalance()}{" "}
+            <span
+              className={`ml-1 cursor-pointer ${
+                canClickMax()
+                  ? "text-red-400 hover:text-red-300"
+                  : "text-neutral-500 cursor-not-allowed"
+              }`}
+              onClick={handleMaxClick}
+            >
+              Max
+            </span>
           </span>
         </div>
         <div className="flex items-center justify-between gap-3 ">
@@ -437,12 +553,20 @@ export default function CNGNWithdrawPanel() {
             />
             <span className="text-white text-lg font-medium">cNGN</span>
           </div>
+          {/* Hidden mirror for measuring input width */}
+          <span
+            ref={mirrorRef}
+            className="fixed -left-[9999px] top-0 font-semibold !text-4xl leading-tight whitespace-pre"
+          >
+            {amount || "0.00"}
+          </span>
           <input
             type="text"
             inputMode="decimal"
             value={amount || ""}
             onChange={(e) => setAmount(e.target.value)}
-            className="text-right pr-2 !leading-tight py-4 font-semibold !text-4xl outline-none bg-transparent border-none focus:ring-0 focus:border-0 focus-visible:ring-0 focus-visible:border-transparent focus:outline-none text-white w-28 md:w-40"
+            className="text-right pr-2 !leading-tight py-4 font-semibold !text-4xl outline-none bg-transparent border-none focus:ring-0 focus:border-0 focus-visible:ring-0 focus-visible:border-transparent focus:outline-none text-white"
+            style={{ width: inputWidth }}
             placeholder="0.00"
           />
         </div>
@@ -450,22 +574,12 @@ export default function CNGNWithdrawPanel() {
 
       <SwapArrow disabled />
 
-      {/* To (custom NGN display with Nigeria locked) */}
-      <div className="bg-[#232323] rounded-2xl p-4 md:p-5 flex flex-col relative h-[115px]">
+      {/* To (allow selecting any country) */}
+      <div className="bg-[#232323] rounded-2xl p-4 md:p-5 flex flex-col relative">
         <div className="text-neutral-300 text-base mb-2">To</div>
         <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center bg-black rounded-full px-5 py-2">
-            <Image
-              src="/logos/nigeria.png"
-              alt="Nigeria"
-              width={25}
-              height={25}
-              className="rounded-full mr-2"
-            />
-            <span className="text-white text-lg font-medium">Nigeria</span>
-          </div>
-          <div className="text-white !text-4xl font-semibold tracking-tight ">
-            {computedToValue}
+          <div className="flex-1">
+            <SelectCountry />
           </div>
         </div>
       </div>

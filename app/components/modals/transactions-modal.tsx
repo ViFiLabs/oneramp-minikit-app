@@ -294,9 +294,13 @@ const TransactionsModal = () => {
           {tx.currency}
         </p>
         <p className="text-gray-400 font-normal text-xl">→</p>
-        <p>
-          {Number(tx.cryptoAmount).toFixed(2)} {tx.cryptoCurrency}
-        </p>
+        {tx.cryptoCurrency === "cNGN" ? (
+          <p>cNGN</p>
+        ) : (
+          <p>
+            {Number(tx.cryptoAmount).toFixed(2)} {tx.cryptoCurrency}
+          </p>
+        )}
       </div>
 
       {/* Network and Date Row */}
@@ -334,7 +338,10 @@ const TransactionsModal = () => {
           <div className="flex items-center justify-between">
             <p className="text-gray-400 text-sm">You&apos;ll receive</p>
             <p className="font-medium text-sm">
-              {Number(tx.cryptoAmount).toFixed(2)} {tx.cryptoCurrency}
+              {tx.cryptoCurrency === "cNGN"
+                ? "cNGN"
+                : Number(tx.cryptoAmount).toFixed(2)}{" "}
+              {tx.cryptoCurrency}
             </p>
           </div>
           <div className="flex items-center justify-between">

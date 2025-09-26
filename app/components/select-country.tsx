@@ -8,9 +8,11 @@ import { Country } from "@/types";
 import { useEffect, useMemo } from "react";
 import SelectCountryModal from "./modals/select-country-modal";
 import CurrencyValueInput from "./inputs/CurrencyValueInput";
+import { countries } from "@/data/countries";
+import { getNgnToLocalRate } from "@/lib/exchange-rates-data";
 
 const SelectCountry = () => {
-  const { country, updateSelection, paymentMethod, countryPanelOnTop } =
+  const { country, updateSelection, paymentMethod, countryPanelOnTop, asset } =
     useUserSelectionStore();
   const { amount, setIsValid, setFiatAmount } = useAmountStore();
 
@@ -26,16 +28,34 @@ const SelectCountry = () => {
     return allExchangeRates[country.countryCode];
   }, [country?.countryCode, allExchangeRates]);
 
+  // Compute effective rate: if asset is cNGN, do NGN->Local using fixed overrides
+  const effectiveRate = useMemo(() => {
+    if (!exchangeRate) return null;
+    const isCngn = (asset?.symbol || "").toUpperCase() === "CNGN";
+    if (!isCngn) return exchangeRate.exchange;
+
+    const fixed = country?.countryCode
+      ? getNgnToLocalRate(country.countryCode)
+      : undefined;
+    if (fixed && fixed > 0) return fixed;
+
+    const nigeriaAPI = allExchangeRates?.NG?.exchange;
+    const nigeriaFallback = countries.find(
+      (c) => c.countryCode === "NG"
+    )?.exchangeRate;
+    const ngRate = nigeriaAPI || nigeriaFallback;
+    if (!ngRate || ngRate <= 0) return exchangeRate.exchange;
+    return exchangeRate.exchange / ngRate;
+  }, [exchangeRate, asset?.symbol, country?.countryCode, allExchangeRates]);
+
   const calculatedAmount = useMemo(() => {
-    if (!country || !amount || !exchangeRate) return null;
+    if (!country || !amount || !effectiveRate) return null;
     const numericAmount = parseFloat(amount);
     if (isNaN(numericAmount)) return null;
 
-    // Use the exchange rate from the API response
-    const rate = exchangeRate.exchange;
-    const convertedAmount = numericAmount * rate;
+    const convertedAmount = numericAmount * effectiveRate;
     return convertedAmount.toFixed(2);
-  }, [amount, country, exchangeRate]);
+  }, [amount, country, effectiveRate]);
 
   const isAmountValid = useMemo(() => {
     if (!calculatedAmount || !country) return true;
@@ -57,8 +77,9 @@ const SelectCountry = () => {
   }, [isAmountValid, calculatedAmount, setIsValid, setFiatAmount]);
 
   const handleCountrySelect = (selectedCountry: Country) => {
-    // Use the exchange rate from allExchangeRates if available, otherwise fallback to country default
-    const rate = exchangeRate?.exchange ?? selectedCountry.exchangeRate;
+    // Use effective rate when present, otherwise fallback to selected country default
+    const rate =
+      effectiveRate ?? exchangeRate?.exchange ?? selectedCountry.exchangeRate;
 
     updateSelection({
       country: {

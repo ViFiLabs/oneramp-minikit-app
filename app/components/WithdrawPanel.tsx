@@ -74,6 +74,7 @@ export function SwapPanel({
   const { setQuote } = useQuoteStore();
   const { setTransfer, setTransactionHash } = useTransferStore();
   const { kycData } = useKYCStore();
+  const fullKYC = kycData?.fullKYC;
 
   // Get available assets for the current network (limit to USDC and cNGN)
   const availableAssets = useMemo(() => {
@@ -136,6 +137,15 @@ export function SwapPanel({
       cngnAction: undefined,
       cngnActiveTab: undefined,
     } as unknown as Record<string, unknown>);
+
+    // Prefill minimum for selected asset on selection
+    const minByAsset: Record<string, number> = {
+      cNGN: 1508,
+      USDC: 1,
+      USDT: 1,
+    };
+    const min = minByAsset[currency.symbol] ?? 1;
+    setAmount(String(min));
   };
 
   // Sync selectedCurrency with global asset on mount
@@ -187,6 +197,17 @@ export function SwapPanel({
     }
   }, [evmConnected, showWalletModal]);
 
+  // Prefill minimum amount once when switching assets (don't override user typing)
+  useEffect(() => {
+    const minByAsset: Record<string, number> = {
+      cNGN: 1508,
+      USDC: 1,
+      USDT: 1,
+    };
+    const min = minByAsset[selectedCurrency.symbol] ?? 1;
+    setAmount(String(min));
+  }, [selectedCurrency.symbol, setAmount]);
+
   const handleSettingsClick = () => {
     // Settings functionality to be implemented
   };
@@ -197,51 +218,93 @@ export function SwapPanel({
 
   const createTransferPayload = useCallback(
     (quoteId: string) => {
-      if (!country || !kycData?.fullKYC) {
-        throw new Error("Missing country or KYC data");
+      if (!country) {
+        throw new Error("Missing country");
       }
-
-      const { fullKYC } = kycData;
-      const {
-        fullName,
-        nationality,
-        dateOfBirth,
-        documentNumber,
-        documentType,
-        documentSubType,
-        phoneNumber,
-      } = fullKYC;
-
-      let updatedDocumentType = documentType;
-      let updatedDocumentTypeSubType = documentSubType;
-
-      if (country.countryCode === "NG") {
-        updatedDocumentTypeSubType = "BVN";
-        updatedDocumentType = "NIN";
-      } else if (documentType === "ID") {
-        updatedDocumentType = "NIN";
-      } else if (documentType === "P") {
-        updatedDocumentType = "Passport";
-      } else {
-        updatedDocumentType = "License";
-      }
-
-      const baseUserDetails = {
-        name:
-          country.countryCode === "NG" && userSelectionStore.accountName
-            ? userSelectionStore.accountName
-            : fullName,
-        country: country.countryCode || "",
-        address: nationality || country.name || "",
-        dob: dateOfBirth,
-        idNumber: documentNumber,
-        idType: updatedDocumentType,
-        additionalIdType: updatedDocumentType,
-        additionalIdNumber: updatedDocumentTypeSubType,
-      };
 
       const isNigeriaOrSouthAfrican =
         country.countryCode === "NG" || country.countryCode === "ZA";
+
+      const numericAmount = parseFloat(String(amount || 0));
+      const cngnThreshold = 1_507_908; // ~ $100 in NGN
+      const usdThreshold = 100;
+      const threshold =
+        selectedCurrency.symbol === "cNGN" ? cngnThreshold : usdThreshold;
+
+      const allowKycBypassForMomo =
+        userSelectionStore.paymentMethod === "momo" &&
+        !isNigeriaOrSouthAfrican &&
+        numericAmount > 0 &&
+        numericAmount < threshold;
+
+      if (!fullKYC && !allowKycBypassForMomo) {
+        throw new Error("Missing country or KYC data");
+      }
+
+      let phoneNumber: string | undefined;
+      let baseUserDetails: {
+        name: string;
+        country: string;
+        address: string;
+        dob: string;
+        idNumber: string;
+        idType: string;
+        additionalIdType: string;
+        additionalIdNumber: string;
+      };
+
+      if (fullKYC) {
+        const {
+          fullName,
+          nationality,
+          dateOfBirth,
+          documentNumber,
+          documentType,
+          documentSubType,
+          phoneNumber: kycPhoneNumber,
+        } = fullKYC;
+
+        phoneNumber = kycPhoneNumber;
+
+        let updatedDocumentType = documentType;
+        let updatedDocumentTypeSubType = documentSubType;
+
+        if (country.countryCode === "NG") {
+          updatedDocumentTypeSubType = "BVN";
+          updatedDocumentType = "NIN";
+        } else if (documentType === "ID") {
+          updatedDocumentType = "NIN";
+        } else if (documentType === "P") {
+          updatedDocumentType = "Passport";
+        } else {
+          updatedDocumentType = "License";
+        }
+
+        baseUserDetails = {
+          name:
+            country.countryCode === "NG" && userSelectionStore.accountName
+              ? userSelectionStore.accountName
+              : fullName || "",
+          country: country.countryCode || "",
+          address: nationality || country.name || "",
+          dob: dateOfBirth || "",
+          idNumber: documentNumber || "",
+          idType: updatedDocumentType,
+          additionalIdType: updatedDocumentType,
+          additionalIdNumber: updatedDocumentTypeSubType || "",
+        };
+      } else {
+        baseUserDetails = {
+          name: "",
+          country: country.countryCode || "",
+          address: country.name || "",
+          dob: "",
+          idNumber: "",
+          idType: "License",
+          additionalIdType: "License",
+          additionalIdNumber: "",
+        };
+      }
 
       if (userSelectionStore.paymentMethod === "momo") {
         if (isNigeriaOrSouthAfrican) {
@@ -287,8 +350,8 @@ export function SwapPanel({
       if (userSelectionStore.paymentMethod === "bank") {
         const accountName =
           userSelectionStore.accountName === "OK"
-            ? fullName
-            : userSelectionStore.accountName || fullName;
+            ? fullKYC?.fullName ?? ""
+            : userSelectionStore.accountName || fullKYC?.fullName || "";
 
         if (isNigeriaOrSouthAfrican) {
           if (!phoneNumber)
@@ -311,7 +374,7 @@ export function SwapPanel({
             quoteId,
             userDetails: {
               ...baseUserDetails,
-              phone: phoneNumber, // Use phoneNumber from KYC for Nigeria, not accountNumber
+              phone: phoneNumber,
             },
           };
 
@@ -339,7 +402,15 @@ export function SwapPanel({
 
       throw new Error("No valid payment method found");
     },
-    [country, kycData, userSelectionStore, institution, accountNumber]
+    [
+      country,
+      fullKYC,
+      userSelectionStore,
+      institution,
+      accountNumber,
+      selectedCurrency,
+      amount,
+    ]
   );
 
   const handleWithdrawTransfer = useCallback(async () => {
@@ -352,8 +423,8 @@ export function SwapPanel({
       !asset ||
       !currentNetwork ||
       !amount ||
-      !address ||
-      !kycData?.fullKYC
+      !address
+      // !kycData?.fullKYC
     ) {
       console.log("❌ Missing required data - stopping withdrawal");
       throw new Error("Missing required data for withdrawal");
@@ -366,7 +437,10 @@ export function SwapPanel({
     const quotePayload = {
       address: address,
       cryptoType: asset.symbol,
-      cryptoAmount: amount,
+      // cryptoAmount: amount,
+      ...(asset.symbol === "cNGN"
+        ? { fiatAmount: amount }
+        : { cryptoAmount: amount }),
       fiatType: country.currency,
       country: country.countryCode,
       network: currentNetwork.name.toLowerCase(),
@@ -398,7 +472,6 @@ export function SwapPanel({
     currentNetwork,
     amount,
     address,
-    kycData,
     createTransferPayload,
   ]);
 
@@ -540,12 +613,17 @@ export function SwapPanel({
     }
 
     // Allow MoMo under $100 to bypass KYC for Withdraw
+    const numericAmount = parseFloat(String(amount || 0));
+    const cngnThreshold = 1_507_908; // ~ $100 in NGN
+    const usdThreshold = 100;
+    const threshold =
+      selectedCurrency.symbol === "cNGN" ? cngnThreshold : usdThreshold;
     const allowKycBypassForMomo =
       userSelectionStore.paymentMethod === "momo" &&
       country?.countryCode !== "NG" &&
       country?.countryCode !== "ZA" &&
-      parseFloat(String(amount || 0)) > 0 &&
-      parseFloat(String(amount || 0)) < 100;
+      numericAmount > 0 &&
+      numericAmount < threshold;
 
     // Verify KYC before proceeding with withdrawal
     if (!allowKycBypassForMomo && kycData && kycData.kycStatus !== "VERIFIED") {

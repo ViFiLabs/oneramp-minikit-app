@@ -33,7 +33,6 @@ export function SwipeToWithdrawButton({
   isWalletConnected = false,
   hasKYC = false,
   onConnectWallet,
-  onStartKYC,
   reset = false,
 }: SwipeToWithdrawButtonProps) {
   // Trigger completion once user drags past ~55% of the track (mobile-friendly)
@@ -57,7 +56,7 @@ export function SwipeToWithdrawButton({
 
     // Check wallet connection
     if (!isWalletConnected) return "Connect Wallet";
-    
+
     // Always show "Swipe to Withdraw" if wallet is connected, regardless of KYC status
     return "Swipe to Withdraw";
   };
@@ -67,7 +66,7 @@ export function SwipeToWithdrawButton({
 
     // Check wallet connection
     if (!isWalletConnected) return "Connect your wallet to continue";
-    
+
     // Always show withdrawal-related helper text, regardless of KYC status
     if (disabled) return "Complete form details to continue";
     return "Drag the slider to confirm withdrawal";
@@ -263,12 +262,7 @@ export function SwipeToWithdrawButton({
       document.removeEventListener("touchmove", handleGlobalTouchMove);
       document.removeEventListener("touchend", handleGlobalTouchEnd);
     };
-  }, [
-    isDragging,
-    isCompleted,
-    onWithdrawComplete,
-    isWalletConnected,
-  ]);
+  }, [isDragging, isCompleted, onWithdrawComplete, isWalletConnected]);
 
   // Reset when loading changes or when KYC/wallet state changes
   useEffect(() => {
