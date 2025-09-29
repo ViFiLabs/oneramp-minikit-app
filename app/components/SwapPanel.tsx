@@ -129,7 +129,7 @@ export function SwapPanel() {
             setToAmount(parseFloat(quote.amountOut).toFixed(2));
             // Calculate the exchange rate (how much "to currency" per 1 "from currency")
             const rate = parseFloat(quote.amountOut) / parseFloat(amount);
-            setExchangeRate(rate.toFixed(0)); // Use whole number for readability
+            setExchangeRate(rate.toFixed(4)); // Use whole number for readability
             console.log(`💱 Quote: ${amount} ${selectedCurrency.symbol} = ${quote.amountOut} ${selectedToCurrency.symbol}, Rate: 1 ${selectedCurrency.symbol} = ${rate.toFixed(0)} ${selectedToCurrency.symbol}`);
           }
         } catch (error) {
@@ -372,7 +372,7 @@ export function SwapPanel() {
         tokenASymbol: selectedCurrency.symbol,
         tokenBSymbol: selectedToCurrency.symbol,
         amountIn: amount,
-        slippage: 2.5, // 2.5% slippage tolerance
+        slippage: 0.5, // 0.5% slippage tolerance
         deadline: 20, // 20 minutes
       });
 
@@ -501,7 +501,7 @@ export function SwapPanel() {
             fromCurrency={selectedCurrency.symbol}
             toCurrency={selectedToCurrency.symbol}
             rate={exchangeRate}
-            slippage="2.5%"
+            slippage="0.5%"
           />
         </motion.div>
       )}

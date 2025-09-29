@@ -177,7 +177,7 @@ export function useAerodromeSwap() {
     tokenASymbol, 
     tokenBSymbol, 
     amountIn, 
-    slippage = 2.5,
+    slippage = 0.5,
     deadline = 20 
   }: SwapParams): Promise<string> => {
     const tokenAAddress = getTokenAddress(tokenASymbol, base.id);
