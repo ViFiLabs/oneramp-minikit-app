@@ -178,10 +178,10 @@ export function SwapPanel() {
         console.log("🎉 Swap completed - balances refreshed");
       }, 1000);
       
-      // Hide success message after 5 seconds
+      // Hide success message after 15 seconds
       setTimeout(() => {
         setShowSuccessMessage(false);
-      }, 5000);
+      }, 15000);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSwapSuccess]);
