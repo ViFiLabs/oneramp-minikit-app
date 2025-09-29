@@ -4,6 +4,7 @@ import { base, celo, mainnet, polygon } from "@reown/appkit/networks";
 export const currencies = [
   { symbol: "USDC", logo: "/logos/USDC.svg" },
   { symbol: "USDT", logo: "/logos/USDT.svg" },
+  { symbol: "CNGN", logo: "/logos/CNGN.svg" },
 ];
 
 export const assets: Asset[] = [
@@ -96,4 +97,48 @@ export const assets: Asset[] = [
       },
     },
   },
+   {
+    name: "CNGN",
+    logo: "/logos/CNGN.svg",
+    symbol: "CNGN",
+    network: "Base", // Primary network for CNGN
+    networks: {
+      Ethereum: {
+        ...mainnet,
+        logo: "/logos/ethereum.png",
+        type: ChainTypes.EVM,
+        chainId: 1,
+        chainNamespace: "eip155",
+        caipNetworkId: "eip155:1",
+        tokenAddress: "", // CNGN not available on Ethereum yet
+      },
+      Polygon: {
+        ...polygon,
+        logo: "/logos/polygon.png",
+        type: ChainTypes.EVM,
+        chainId: 137,
+        chainNamespace: "eip155",
+        caipNetworkId: "eip155:137",
+        tokenAddress: "", // CNGN not available on Polygon yet
+      },
+      Celo: {
+        ...celo,
+        logo: "/logos/celo-logo.png",
+        type: ChainTypes.EVM,
+        chainId: 42220,
+        chainNamespace: "eip155",
+        caipNetworkId: "eip155:42220",
+        tokenAddress: "", // CNGN not available on Celo yet
+      },
+      Base: {
+        ...base,
+        logo: "/logos/base.png",
+        type: ChainTypes.EVM,
+        chainId: 8453,
+        chainNamespace: "eip155",
+        caipNetworkId: "eip155:8453",
+        tokenAddress: "0x46C85152bFe9f96829aA94755D9f915F9B10EF5F", // cNGN token address on Base
+      },
+    },
+  }
 ];

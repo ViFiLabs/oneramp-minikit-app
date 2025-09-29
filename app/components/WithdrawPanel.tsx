@@ -573,9 +573,6 @@ export function WithdrawPanel() {
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
         <SwapHeader
-          selectedCurrency={selectedCurrency}
-          onCurrencyChange={handleCurrencyChange}
-          availableAssets={availableAssets}
           onSettingsClick={handleSettingsClick}
         />
       </motion.div>

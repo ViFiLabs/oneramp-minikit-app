@@ -52,11 +52,12 @@ export function SwapArrow({
         }}
       >
         <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+          {/* Double vertical arrows pointing up and down */}
           <path
-            d="M12 5v14m0 0l-5-5m5 5l5-5"
+            d="M8 7l4-4 4 4M8 17l4 4 4-4"
             stroke="#fff"
             strokeWidth="2"
-            strokeLinecap="square"
+            strokeLinecap="round"
             strokeLinejoin="round"
           />
         </svg>

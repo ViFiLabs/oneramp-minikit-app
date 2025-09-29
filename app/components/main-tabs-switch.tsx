@@ -3,6 +3,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
 import { WithdrawPanel } from "@/app/components/WithdrawPanel";
 import { BuyPanel } from "@/app/components/BuyPanel";
+import { SwapPanel } from "./SwapPanel";
 import { useUserSelectionStore } from "@/store/user-selection";
 import { useAmountStore } from "@/store/amount-store";
 import { AnimatePresence, motion } from "framer-motion";
@@ -77,6 +78,13 @@ export function MainTabsSwitch() {
         >
           Deposit
         </TabsTrigger>
+        <TabsTrigger
+          value="Swap"
+          onClick={() => washTheseFields(true, false)}
+          className="data-[state=active]:!bg-neutral-600 data-[state=active]:!text-white text-sm data-[state=active]:font-semibold text-neutral-300 rounded-full transition-all"
+        >
+          Swap
+        </TabsTrigger>
       </TabsList>
       </div>
       <TabsContent value="Pay" className="w-full">
@@ -87,6 +95,9 @@ export function MainTabsSwitch() {
       </TabsContent>
       <TabsContent value="Deposit" className="w-full">
         <BuyPanel />
+      </TabsContent>
+      <TabsContent value="Swap" className="w-full">
+        <SwapPanel />
       </TabsContent>
 
       {/* Descriptive text that animates out when country is selected */}
