@@ -196,8 +196,8 @@ export function useAerodromeSwap() {
       const deadlineTimestamp = Math.floor(Date.now() / 1000) + (deadline * 60);
       
       // V3 doesn't use routes - it uses direct token pairs with tick spacing
-      // FOUND: Correct tick spacing is 10 for USDC/cNGN pool
-      const tickSpacing = 10; // ✅ Confirmed working tick spacing
+      // Using correct tick spacing for USDC/CNGN pool with 0.05% fee tier
+      const tickSpacing = 10; // ✅ Confirmed working tick spacing for 0.05% fee tier
       
       // Get live exchange rate instead of hardcoding
       console.log("🔍 Fetching live V3 exchange rate...");
@@ -384,9 +384,11 @@ export function useAerodromeSwap() {
       try {
         // Use live V3 rate fetcher instead of hardcoded rate
         console.log("🔍 Getting live V3 quote...");
+        console.log("📝 Quote params:", { amountIn, tokenASymbol, tokenBSymbol });
+        
         const quote = await getV3Quote(amountIn, tokenASymbol, tokenBSymbol);
         
-        console.log("✅ Live V3 quote:", amountIn, tokenASymbol, "=>", quote.amountOut, tokenBSymbol);
+        console.log("✅ Live V3 quote SUCCESS:", amountIn, tokenASymbol, "=>", quote.amountOut, tokenBSymbol);
         console.log("📈 Live exchange rate:", 1, tokenASymbol, "=", quote.rate, tokenBSymbol);
         console.log("🔧 Source:", quote.source);
         
@@ -400,7 +402,12 @@ export function useAerodromeSwap() {
         };
         
       } catch (routerError) {
-        console.error("❌ Live V3 quote failed:", routerError);
+        console.error("❌ Live V3 quote FAILED with error:", routerError);
+        console.error("❌ Error details:", {
+          message: routerError instanceof Error ? routerError.message : String(routerError),
+          stack: routerError instanceof Error ? routerError.stack : undefined,
+          cause: routerError instanceof Error ? routerError.cause : undefined
+        });
         
         // Fallback - handle both directions
         const fallbackRate = 1505.36; // USDC to cNGN rate

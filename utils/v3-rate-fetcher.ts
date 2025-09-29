@@ -8,29 +8,39 @@ import { base } from 'viem/chains';
 
 const TOKENS = {
   USDC: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-  cNGN: "0x46C85152bFe9f96829aA94755D9f915F9B10EF5F"
+  CNGN: "0x46C85152bFe9f96829aA94755D9f915F9B10EF5F"
 } as const;
 
 const V3_CONFIG = {
   POOL_ADDRESS: "0x0206B696a410277eF692024C2B64CcF4EaC78589",
   TICK_SPACING: 10,
-  QUOTERS: [
-    "0x3d4e44Eb1374240CE5F1B871ab261CD16335B76a",
-    "0xB048Bbc1Ee6b733FFfCFb9e9CeF7375518e25997"
-  ]
+  FEE: 500, // 0.05% tier
+  MIXED_QUOTER: "0x0A5aA5D3a4d28014f967Bf0f29EAA3FF9807D5c6"
 } as const;
 
-const QUOTER_ABI = [
+const MIXED_QUOTER_ABI = [
   {
     "inputs": [
-      { "internalType": "address", "name": "tokenIn", "type": "address" },
-      { "internalType": "address", "name": "tokenOut", "type": "address" },
-      { "internalType": "int24", "name": "tickSpacing", "type": "int24" },
-      { "internalType": "uint256", "name": "amountIn", "type": "uint256" },
-      { "internalType": "uint160", "name": "sqrtPriceLimitX96", "type": "uint160" }
+      {
+        "components": [
+          { "internalType": "address", "name": "tokenIn", "type": "address" },
+          { "internalType": "address", "name": "tokenOut", "type": "address" },
+          { "internalType": "uint256", "name": "amountIn", "type": "uint256" },
+          { "internalType": "int24", "name": "tickSpacing", "type": "int24" },
+          { "internalType": "uint160", "name": "sqrtPriceLimitX96", "type": "uint160" }
+        ],
+        "internalType": "struct IMixedRouteQuoterV1.QuoteExactInputSingleV3Params",
+        "name": "params",
+        "type": "tuple"
+      }
     ],
-    "name": "quoteExactInputSingle",
-    "outputs": [{ "internalType": "uint256", "name": "amountOut", "type": "uint256" }],
+    "name": "quoteExactInputSingleV3",
+    "outputs": [
+      { "internalType": "uint256", "name": "amountOut", "type": "uint256" },
+      { "internalType": "uint160", "name": "sqrtPriceX96After", "type": "uint160" },
+      { "internalType": "uint32", "name": "initializedTicksCrossed", "type": "uint32" },
+      { "internalType": "uint256", "name": "gasEstimate", "type": "uint256" }
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   }
@@ -54,44 +64,54 @@ interface ExchangeRate {
 }
 
 /**
- * Method 1: Try quoter contracts
+ * Method 1: Try MixedQuoter contract for on-chain rate
  */
-async function tryQuoterRate(): Promise<ExchangeRate | null> {
+async function tryMixedQuoterRate(): Promise<ExchangeRate | null> {
   const testAmount = parseUnits('1', 6); // 1 USDC
   
-  for (const quoter of V3_CONFIG.QUOTERS) {
-    try {
-      const amountOut = await publicClient.readContract({
-        address: quoter as `0x${string}`,
-        abi: QUOTER_ABI,
-        functionName: "quoteExactInputSingle",
-        args: [
-          TOKENS.USDC as `0x${string}`,
-          TOKENS.cNGN as `0x${string}`,
-          V3_CONFIG.TICK_SPACING,
-          testAmount,
-          BigInt(0)
-        ],
-      }) as bigint;
+  try {
+    console.log('🔍 Querying MixedQuoter for USDC/CNGN rate...');
+    
+    const quoteParams = {
+      tokenIn: TOKENS.USDC as `0x${string}`,
+      tokenOut: TOKENS.CNGN as `0x${string}`,
+      amountIn: testAmount,
+      tickSpacing: V3_CONFIG.TICK_SPACING,
+      sqrtPriceLimitX96: BigInt(0) // No slippage cap as requested
+    };
 
-      if (amountOut > 0) {
-        const outputAmount = formatUnits(amountOut, 6);
-        const rate = parseFloat(outputAmount);
-        
-        console.log(`✅ Quoter rate: 1 USDC = ${rate.toFixed(4)} cNGN`);
-        
-        return {
-          usdcTocNGN: parseFloat(rate.toFixed(4)),
-          cNGNToUSDC: parseFloat((1 / rate).toFixed(8)),
-          source: `V3 Quoter (${quoter.slice(0, 8)}...)`,
-          timestamp: new Date().toISOString(),
-          success: true
-        };
-      }
-    } catch (error) {
-      console.log(`Quoter ${quoter.slice(0, 8)} failed:`, error instanceof Error ? error.message.split('.')[0] : 'Unknown error');
-      continue;
+    const result = await publicClient.readContract({
+      address: V3_CONFIG.MIXED_QUOTER as `0x${string}`,
+      abi: MIXED_QUOTER_ABI,
+      functionName: "quoteExactInputSingleV3",
+      args: [quoteParams],
+    }) as [bigint, bigint, number, bigint];
+
+    const [amountOut, sqrtPriceX96After, initializedTicksCrossed, gasEstimate] = result;
+
+    if (amountOut > 0) {
+      const outputAmount = formatUnits(amountOut, 6); // cNGN has 6 decimals
+      const rate = parseFloat(outputAmount);
+      
+      console.log(`✅ MixedQuoter rate: 1 USDC = ${rate.toFixed(4)} cNGN`);
+      console.log(`📊 Quote details:`, {
+        amountOut: amountOut.toString(),
+        sqrtPriceX96After: sqrtPriceX96After.toString(),
+        initializedTicksCrossed,
+        gasEstimate: gasEstimate.toString()
+      });
+      
+      return {
+        usdcTocNGN: parseFloat(rate.toFixed(4)),
+        cNGNToUSDC: parseFloat((1 / rate).toFixed(8)),
+        source: `MixedQuoter V3 (${V3_CONFIG.MIXED_QUOTER.slice(0, 8)}...)`,
+        timestamp: new Date().toISOString(),
+        success: true
+      };
     }
+  } catch (error) {
+    console.error('❌ MixedQuoter failed:', error instanceof Error ? error.message : 'Unknown error');
+    return null;
   }
   
   return null;
@@ -131,8 +151,8 @@ export async function getLiveExchangeRate(): Promise<ExchangeRate> {
   console.log('🔍 Fetching live V3 exchange rate...');
   
   try {
-    // Method 1: Try quoter contracts
-    const quoterRate = await tryQuoterRate();
+    // Method 1: Try MixedQuoter contract
+    const quoterRate = await tryMixedQuoterRate();
     if (quoterRate) {
       return quoterRate;
     }
@@ -162,30 +182,102 @@ export async function getLiveExchangeRate(): Promise<ExchangeRate> {
 }
 
 /**
- * Get quote for specific amount (replaces hardcoded rate in getQuote)
+ * Get quote for specific amount using MixedQuoter
  */
-export async function getV3Quote(amountIn: string, fromSymbol: string = 'USDC', toSymbol: string = 'cNGN') {
-  const rate = await getLiveExchangeRate();
+export async function getV3Quote(amountIn: string, fromSymbol: string = 'USDC', toSymbol: string = 'CNGN') {
+  console.log(`🔍 Getting MixedQuoter quote: ${amountIn} ${fromSymbol} → ${toSymbol}`);
   
-  if (fromSymbol === 'USDC' && toSymbol === 'cNGN') {
-    const output = parseFloat(amountIn) * rate.usdcTocNGN;
-    return {
-      amountOut: output.toFixed(4),
-      rate: rate.usdcTocNGN.toFixed(4),
-      source: rate.source,
-      timestamp: rate.timestamp,
-      success: rate.success
-    };
-  } else if (fromSymbol === 'cNGN' && toSymbol === 'USDC') {
-    const output = parseFloat(amountIn) * rate.cNGNToUSDC;
-    return {
-      amountOut: output.toFixed(8),
-      rate: rate.cNGNToUSDC.toFixed(8),
-      source: rate.source,
-      timestamp: rate.timestamp,
-      success: rate.success
-    };
+  if (!amountIn || amountIn === "0" || isNaN(parseFloat(amountIn))) {
+    throw new Error(`Invalid amount input: ${amountIn}`);
   }
-  
-  throw new Error(`Unsupported pair: ${fromSymbol}/${toSymbol}`);
+
+  try {
+    let tokenIn: string, tokenOut: string, inputDecimals: number, outputDecimals: number;
+    
+    if (fromSymbol === 'USDC' && toSymbol === 'CNGN') {
+      tokenIn = TOKENS.USDC;
+      tokenOut = TOKENS.CNGN;
+      inputDecimals = 6;
+      outputDecimals = 6;
+    } else if (fromSymbol === 'CNGN' && toSymbol === 'USDC') {
+      tokenIn = TOKENS.CNGN;
+      tokenOut = TOKENS.USDC;
+      inputDecimals = 6;
+      outputDecimals = 6;
+    } else {
+      throw new Error(`Unsupported pair: ${fromSymbol}/${toSymbol}`);
+    }
+
+    const amountInBigInt = parseUnits(amountIn, inputDecimals);
+    
+    const quoteParams = {
+      tokenIn: tokenIn as `0x${string}`,
+      tokenOut: tokenOut as `0x${string}`,
+      amountIn: amountInBigInt,
+      tickSpacing: V3_CONFIG.TICK_SPACING,
+      sqrtPriceLimitX96: BigInt(0) // No slippage cap
+    };
+
+    const result = await publicClient.readContract({
+      address: V3_CONFIG.MIXED_QUOTER as `0x${string}`,
+      abi: MIXED_QUOTER_ABI,
+      functionName: "quoteExactInputSingleV3",
+      args: [quoteParams],
+    }) as [bigint, bigint, number, bigint];
+
+    const [amountOut] = result;
+    
+    if (amountOut > 0) {
+      const outputAmount = formatUnits(amountOut, outputDecimals);
+      const rate = parseFloat(outputAmount) / parseFloat(amountIn);
+      
+      console.log(`✅ MixedQuoter quote: ${amountIn} ${fromSymbol} = ${outputAmount} ${toSymbol}`);
+      console.log(`📈 Rate: 1 ${fromSymbol} = ${rate.toFixed(fromSymbol === 'USDC' ? 4 : 8)} ${toSymbol}`);
+      
+      return {
+        amountOut: parseFloat(outputAmount).toFixed(toSymbol === 'USDC' ? 8 : 4),
+        rate: rate.toFixed(fromSymbol === 'USDC' ? 4 : 8),
+        source: `MixedQuoter V3 (${V3_CONFIG.MIXED_QUOTER.slice(0, 8)}...)`,
+        timestamp: new Date().toISOString(),
+        success: true
+      };
+    } else {
+      throw new Error('Quote returned 0 amount out');
+    }
+    
+  } catch (error) {
+    console.error('❌ MixedQuoter quote failed with detailed error:', {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      cause: error instanceof Error ? error.cause : undefined,
+      name: error instanceof Error ? error.name : undefined
+    });
+    console.error('❌ Full error object:', error);
+    
+    // Fallback to rate-based calculation
+    console.log('⚠️ Falling back to rate-based calculation...');
+    const rate = await getLiveExchangeRate();
+    
+    if (fromSymbol === 'USDC' && toSymbol === 'CNGN') {
+      const output = parseFloat(amountIn) * rate.usdcTocNGN;
+      return {
+        amountOut: output.toFixed(4),
+        rate: rate.usdcTocNGN.toFixed(4),
+        source: `${rate.source} (Fallback)`,
+        timestamp: rate.timestamp,
+        success: false
+      };
+    } else if (fromSymbol === 'CNGN' && toSymbol === 'USDC') {
+      const output = parseFloat(amountIn) * rate.cNGNToUSDC;
+      return {
+        amountOut: output.toFixed(8),
+        rate: rate.cNGNToUSDC.toFixed(8),
+        source: `${rate.source} (Fallback)`,
+        timestamp: rate.timestamp,
+        success: false
+      };
+    }
+    
+    throw error;
+  }
 }
