@@ -402,10 +402,10 @@ const BuyStatusCard: React.FC<BuyStatusCardProps> = ({
       <div
         className={`fixed z-[60] flex ${
           isDesktop
-            ? panelBounds
+            ? panelBounds && !showNigeriaInstructions
               ? ""
               : "items-center justify-center inset-0"
-            : panelBounds
+            : panelBounds && !showNigeriaInstructions
             ? ""
             : "items-end justify-center inset-0"
         }`}
@@ -413,7 +413,7 @@ const BuyStatusCard: React.FC<BuyStatusCardProps> = ({
           position: "fixed",
           zIndex: 60,
           // Use detected panel boundaries on desktop when available
-          ...(isDesktop && panelBounds
+          ...(isDesktop && panelBounds && !showNigeriaInstructions
             ? {
                 left: `${panelBounds.left}px`,
                 top: `${panelBounds.top}px`,
@@ -432,7 +432,7 @@ const BuyStatusCard: React.FC<BuyStatusCardProps> = ({
                 bottom: 0,
                 padding: "1rem",
               }
-            : panelBounds
+            : panelBounds && !showNigeriaInstructions
             ? {
                 // Mobile positioning with panel bounds - slide from panel base
                 left: `${panelBounds.left}px`,
@@ -454,24 +454,24 @@ const BuyStatusCard: React.FC<BuyStatusCardProps> = ({
       >
         <div
           ref={modalRef}
-          className={`overflow-hidden shadow-2xl transition-all duration-500 ease-out ${
-            isDesktop && panelBounds
-              ? `bg-gray-900 rounded-3xl w-full h-[60vh] ${
+          className={`shadow-2xl transition-all duration-500 ease-out ${
+            isDesktop && panelBounds && !showNigeriaInstructions
+              ? `bg-gray-900 rounded-3xl w-full h-full max-h-full overflow-y-auto ${
                   isVisible
                     ? "translate-y-0 opacity-100"
                     : "translate-y-full opacity-0"
                 }`
               : isDesktop
-              ? `bg-gray-900 rounded-2xl max-w-md w-full h-[60vh] ${
+              ? `bg-gray-900 rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto ${
                   isVisible ? "scale-100 opacity-100" : "scale-95 opacity-0"
                 }`
-              : panelBounds
-              ? `bg-gray-900 rounded-3xl w-full h-[60vh] ${
+              : panelBounds && !showNigeriaInstructions
+              ? `bg-gray-900 rounded-3xl w-full h-full max-h-full overflow-y-auto ${
                   isVisible
                     ? "translate-y-0 opacity-100"
                     : "translate-y-full opacity-0"
                 }`
-              : `bg-gray-900 w-full h-[60vh] rounded-t-3xl ${
+              : `bg-gray-900 w-full max-h-[90vh] rounded-t-3xl overflow-y-auto ${
                   isVisible ? "translate-y-0" : "translate-y-full"
                 }`
           }`}
@@ -521,7 +521,11 @@ const BuyStatusCard: React.FC<BuyStatusCardProps> = ({
             </button>
           </div>
 
-          <div className="px-6 pb-24 md:pb-20 flex flex-col items-center space-y-6 flex-1 justify-center">
+          <div
+            className={`${
+              showNigeriaInstructions ? "pb-10 md:pb-12" : "pb-24 md:pb-20"
+            } px-6 flex flex-col items-center space-y-6 justify-start`}
+          >
             <div className="flex items-center justify-center min-h-[80px]">
               {isProcessing ? (
                 <div
