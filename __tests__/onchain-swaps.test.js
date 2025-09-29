@@ -3,8 +3,8 @@ const { createPublicClient, createWalletClient, http, parseUnits, formatUnits } 
 const { base } = require('viem/chains');
 const { privateKeyToAccount } = require('viem/accounts');
 
-// Import rate fetcher
-const { getLiveExchangeRate } = require('../utils/v3-rate-fetcher');
+// Import rate fetcher and quote functions
+const { getLiveExchangeRate, getV3Quote } = require('../utils/v3-rate-fetcher');
 
 describe('USDC ↔ CNGN On-Chain Swap Tests', () => {
   
@@ -155,15 +155,16 @@ describe('USDC ↔ CNGN On-Chain Swap Tests', () => {
       console.log('💰 Initial USDC:', formatUnits(initialUsdcBalance, 6));
       console.log('💰 Initial CNGN:', formatUnits(initialCngnBalance, 6));
 
-      // Get dynamic exchange rate
-      const rateData = await getLiveExchangeRate();
-      const usdcToCngnRate = rateData.usdcTocNGN;
-      console.log('📊 Exchange Rate:', usdcToCngnRate, 'CNGN per USDC');
-
-      // Prepare swap parameters
+      // Get precise quote from MixedQuoter
       const swapAmountUSDC = 0.01; // 0.01 USDC
+      const quoteResult = await getV3Quote(swapAmountUSDC.toString(), 'USDC', 'CNGN');
+      
+      console.log('📊 MixedQuoter Quote:', quoteResult);
+      console.log('📊 Exchange Rate:', quoteResult.rate, 'CNGN per USDC');
+
+      // Prepare swap parameters using precise quote
       const swapAmountWei = parseUnits(swapAmountUSDC.toString(), 6);
-      const expectedCngnOutput = swapAmountUSDC * usdcToCngnRate;
+      const expectedCngnOutput = parseFloat(quoteResult.amountOut);
       const minAmountOut = parseUnits((expectedCngnOutput * 0.98).toFixed(6), 6); // 2% slippage
 
       console.log('📈 Expected CNGN output:', expectedCngnOutput.toFixed(6));
@@ -249,15 +250,16 @@ describe('USDC ↔ CNGN On-Chain Swap Tests', () => {
       console.log('💰 Initial CNGN:', formatUnits(initialCngnBalance, 6));
       console.log('💰 Initial USDC:', formatUnits(initialUsdcBalance, 6));
 
-      // Get dynamic exchange rate
-      const rateData = await getLiveExchangeRate();
-      const cngnToUsdcRate = rateData.cNGNToUSDC;
-      console.log('📊 Exchange Rate:', cngnToUsdcRate, 'USDC per CNGN');
-
-      // Prepare swap parameters
+      // Get precise quote from MixedQuoter
       const swapAmountCNGN = 10; // 10 CNGN
+      const quoteResult = await getV3Quote(swapAmountCNGN.toString(), 'CNGN', 'USDC');
+      
+      console.log('📊 MixedQuoter Quote:', quoteResult);
+      console.log('📊 Exchange Rate:', quoteResult.rate, 'USDC per CNGN');
+
+      // Prepare swap parameters using precise quote
       const swapAmountWei = parseUnits(swapAmountCNGN.toString(), 6);
-      const expectedUsdcOutput = swapAmountCNGN * cngnToUsdcRate;
+      const expectedUsdcOutput = parseFloat(quoteResult.amountOut);
       const minAmountOut = parseUnits((expectedUsdcOutput * 0.98).toFixed(6), 6); // 2% slippage
 
       console.log('📈 Expected USDC output:', expectedUsdcOutput.toFixed(6));
