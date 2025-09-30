@@ -1,5 +1,3 @@
-import { ChainTypes } from "@/types";
-
 export interface TokenConfig {
   symbol: string;
   decimals: number;
