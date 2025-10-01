@@ -14,7 +14,7 @@ import {
 } from "@/types";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState, useEffect, useMemo } from "react";
-import { SwapButton } from "./buttons/SwapButton";
+import { SwipeToSwapButton } from "./payment/swipe-to-swap";
 import { FromPanel } from "./panels/FromPanel";
 import { SwapArrow } from "./panels/SwapArrow";
 import { SwapHeader } from "./panels/SwapHeader";
@@ -399,22 +399,25 @@ export function SwapPanel() {
     swapState.isApproving ||
     swapState.isSwapping);
 
-  // Determine swap button text based on state
-  const getSwapButtonText = () => {
+  // Determine swap step message based on state
+  const getSwapStepMessage = () => {
     if (showSuccessMessage) {
-      return "Try Another Transaction";
+      return "Swap Complete!";
     }
     if (swapState.isApproving) {
-      return "Approving Token...";
+      return "Approving token...";
     }
     if (swapState.isSwapping) {
-      return "Swapping...";
+      return "Processing swap...";
     }
     if (swapState.error) {
-      return "Try Again";
+      return "Retry swap";
     }
-    return "Swap";
+    return "Processing...";
   };
+
+  // Determine if swap is in loading state
+  const isSwapLoading = swapState.isLoading || swapState.isApproving || swapState.isSwapping;
 
   return (
     <div className="w-full max-w-md mx-auto min-h-[400px] bg-[#181818] rounded-3xl p-0 flex flex-col gap-0 md:shadow-lg md:border border-[#232323] relative">
@@ -617,15 +620,18 @@ export function SwapPanel() {
           </AnimatePresence>
 
           {!evmConnected ? (
-            <SwapButton 
-              onClick={handleConnectWallet} 
-              text="Connect Wallet to Swap" 
+            <SwipeToSwapButton 
+              onSwapComplete={handleConnectWallet} 
+              disabled={true}
+              disabledMessage="Connect Wallet to Swap"
             />
           ) : (
-            <SwapButton 
-              onClick={handleSwapClick} 
-              text={getSwapButtonText()}
+            <SwipeToSwapButton 
+              onSwapComplete={handleSwapClick} 
+              stepMessage={getSwapStepMessage()}
               disabled={isSwapDisabled}
+              isLoading={isSwapLoading}
+              disabledMessage="Complete form to enable swap"
             />
           )}
         </div>
