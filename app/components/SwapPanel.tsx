@@ -597,7 +597,7 @@ export function SwapPanel() {
                       rel="noopener noreferrer"
                       className="inline-flex items-center space-x-2 text-green-400 hover:text-green-300 text-xs transition-colors"
                     >
-                      <span>View on BaseScan</span>
+                      <span className="text-white">View on BaseScan</span>
                       <svg 
                         width="12" 
                         height="12" 
