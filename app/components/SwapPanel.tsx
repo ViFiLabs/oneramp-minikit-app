@@ -372,7 +372,7 @@ export function SwapPanel() {
         tokenASymbol: selectedCurrency.symbol,
         tokenBSymbol: selectedToCurrency.symbol,
         amountIn: amount,
-        slippage: 0.5, // 0.5% slippage tolerance
+        slippage: 2.5, // 0.5% slippage tolerance
         deadline: 20, // 20 minutes
       });
 
@@ -504,7 +504,7 @@ export function SwapPanel() {
             fromCurrency={selectedCurrency.symbol}
             toCurrency={selectedToCurrency.symbol}
             rate={exchangeRate}
-            slippage="0.5%"
+            slippage="2.5%"
           />
         </motion.div>
       )}
