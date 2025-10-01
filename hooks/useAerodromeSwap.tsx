@@ -79,6 +79,48 @@ const publicClient = createPublicClient({
   ),
 });
 
+// Convert technical error messages to user-friendly messages
+const getUserFriendlyError = (error: any): string => {
+  if (!error) return "Transaction failed";
+  
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  const lowerMessage = errorMessage.toLowerCase();
+  
+  // Check for user rejection/denial patterns
+  if (lowerMessage.includes('user rejected') || 
+      lowerMessage.includes('user denied') || 
+      lowerMessage.includes('user cancelled') ||
+      lowerMessage.includes('transaction rejected') ||
+      lowerMessage.includes('denied transaction signature')) {
+    return "Approval rejected";
+  }
+  
+  // Check for approval-related errors
+  if (lowerMessage.includes('approval') && 
+      (lowerMessage.includes('rejected') || lowerMessage.includes('failed'))) {
+    return "Approval rejected";
+  }
+  
+  // Generic transaction failures
+  if (lowerMessage.includes('transaction failed') ||
+      lowerMessage.includes('execution reverted') ||
+      lowerMessage.includes('insufficient funds') ||
+      lowerMessage.includes('gas') ||
+      lowerMessage.includes('revert')) {
+    return "Transaction failed";
+  }
+  
+  // Network or connection issues
+  if (lowerMessage.includes('network') || 
+      lowerMessage.includes('connection') ||
+      lowerMessage.includes('timeout')) {
+    return "Network error";
+  }
+  
+  // Fallback for any other errors
+  return "Transaction failed";
+};
+
 export function useAerodromeSwap() {
   const { address, isConnected } = useWalletGetInfo();
   const [swapState, setSwapState] = useState<SwapState>({
@@ -163,10 +205,11 @@ export function useAerodromeSwap() {
       return hash;
     } catch (error) {
       console.error("Error approving token:", error);
+      const userFriendlyError = getUserFriendlyError(error);
       setSwapState(prev => ({ 
         ...prev, 
         isApproving: false, 
-        error: error instanceof Error ? error.message : "Approval failed" 
+        error: userFriendlyError
       }));
       throw error;
     }
@@ -310,16 +353,17 @@ export function useAerodromeSwap() {
         
       } catch (parseUnitsError) {
         console.error("❌ Error in parseUnits or swap execution:", parseUnitsError);
-        const errorMessage = parseUnitsError instanceof Error ? parseUnitsError.message : String(parseUnitsError);
-        throw new Error(`Failed to process swap amounts: ${errorMessage}`);
+        // Use user-friendly error instead of technical details
+        throw new Error(getUserFriendlyError(parseUnitsError));
       }
 
     } catch (error) {
       console.error("Error executing swap:", error);
+      const userFriendlyError = getUserFriendlyError(error);
       setSwapState(prev => ({ 
         ...prev, 
         isSwapping: false, 
-        error: error instanceof Error ? error.message : "Swap failed" 
+        error: userFriendlyError
       }));
       throw error;
     }

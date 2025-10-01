@@ -37,14 +37,23 @@ export function SwipeToSwapButton({
   const getButtonText = () => {
     if (isLoading && stepMessage) return stepMessage;
     if (disabled) return disabledMessage;
-    if (stepMessage && stepMessage.toLowerCase().includes('retry')) return "Try Again";
+    if (stepMessage && (stepMessage.toLowerCase().includes('retry') || 
+                        stepMessage === "Approval rejected" || 
+                        stepMessage === "Transaction failed")) return "Try Again";
     return "Swipe to Swap";
   };
 
   const getHelperText = () => {
     if (disabled) return "Complete the form to enable swap";
     if (isLoading) return "Please wait while we process your swap...";
-    if (stepMessage && stepMessage.toLowerCase().includes('retry')) return "Drag the slider to retry the swap";
+    if (stepMessage && (stepMessage.toLowerCase().includes('retry') || 
+                        stepMessage === "Approval rejected" || 
+                        stepMessage === "Transaction failed")) {
+      if (stepMessage === "Approval rejected") {
+        return "Drag the slider to try approval again";
+      }
+      return "Drag the slider to retry the swap";
+    }
     return "Drag the slider to confirm swap";
   };
 
@@ -107,6 +116,25 @@ export function SwipeToSwapButton({
     
     // Handle retry case when not loading
     if (stepMessage && stepMessage.toLowerCase().includes('retry')) {
+      return (
+        <div className="flex items-center gap-2 text-sm">
+          <RefreshCw className="w-5 h-5 text-red-400" />
+          <span>Try Again</span>
+        </div>
+      );
+    }
+    
+    // Handle specific error messages when not loading
+    if (stepMessage === "Approval rejected") {
+      return (
+        <div className="flex items-center gap-2 text-sm">
+          <RefreshCw className="w-5 h-5 text-red-400" />
+          <span>Try Again</span>
+        </div>
+      );
+    }
+    
+    if (stepMessage === "Transaction failed") {
       return (
         <div className="flex items-center gap-2 text-sm">
           <RefreshCw className="w-5 h-5 text-red-400" />
@@ -243,12 +271,16 @@ export function SwipeToSwapButton({
         style={{
           background: disabled
             ? "linear-gradient(135deg, #6b7280, #4b5563)"
-            : stepMessage && stepMessage.toLowerCase().includes('retry')
+            : stepMessage && (stepMessage.toLowerCase().includes('retry') || 
+                             stepMessage === "Approval rejected" || 
+                             stepMessage === "Transaction failed")
             ? "linear-gradient(135deg, #dc2626, #b91c1c)"
             : "linear-gradient(135deg, #3b82f6, #1d4ed8)",
           boxShadow: disabled 
             ? "none" 
-            : stepMessage && stepMessage.toLowerCase().includes('retry')
+            : stepMessage && (stepMessage.toLowerCase().includes('retry') || 
+                             stepMessage === "Approval rejected" || 
+                             stepMessage === "Transaction failed")
             ? "0 4px 12px rgba(220, 38, 38, 0.3)"
             : "0 4px 12px rgba(59, 130, 246, 0.3)",
         }}
@@ -258,7 +290,9 @@ export function SwipeToSwapButton({
           className="absolute left-0 top-0 h-full rounded-full transition-all duration-300 ease-out"
           style={{
             width: `${Math.max(64, dragX + 64)}px`,
-            background: stepMessage && stepMessage.toLowerCase().includes('retry')
+            background: stepMessage && (stepMessage.toLowerCase().includes('retry') || 
+                                       stepMessage === "Approval rejected" || 
+                                       stepMessage === "Transaction failed")
               ? "linear-gradient(135deg, #b91c1c, #991b1b)"
               : "linear-gradient(135deg, #2563eb, #1e40af)",
             opacity: dragX > 0 ? 0.7 : 0,
