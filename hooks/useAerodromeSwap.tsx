@@ -385,6 +385,11 @@ export function useAerodromeSwap() {
         console.log("🔐 Token approval needed, requesting approval...");
         await approveToken(params.tokenASymbol, params.amountIn);
         console.log("✅ Token approved successfully");
+        
+        // Wait 1.5 seconds for the approve transaction to settle onchain
+        console.log("⏳ Waiting 1.5 seconds for approval transaction to settle...");
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        console.log("⌛ Approval settlement wait completed");
       }
 
       // Execute the swap
