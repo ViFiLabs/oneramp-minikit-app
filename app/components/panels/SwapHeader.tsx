@@ -2,7 +2,7 @@
 
 import { Button } from "@/app/components/ui/button";
 import { Asset } from "@/types";
-import { CurrencySelector } from "./CurrencySwapPanelSelector";
+import { CurrencySelector } from "./CurrencySelector";
 import Image from "next/image";
 import { useNetworkStore } from "@/store/network";
 

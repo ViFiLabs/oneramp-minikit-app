@@ -8,19 +8,19 @@ import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { useState } from "react";
 
-interface CurrencySelectorProps {
+interface CurrencySwapPanelSelectorProps {
   selectedCurrency: Asset;
   onCurrencyChange: (currency: Asset) => void;
   availableAssets?: Asset[];
   className?: string;
 }
 
-export function CurrencySelector({
+export function CurrencySwapPanelSelector({
   selectedCurrency,
   onCurrencyChange,
   availableAssets = assets,
   className = "",
-}: CurrencySelectorProps) {
+}: CurrencySwapPanelSelectorProps) {
   const [showDropdown, setShowDropdown] = useState(false);
   const { updateSelection } = useUserSelectionStore();
 
