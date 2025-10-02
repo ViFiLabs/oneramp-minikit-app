@@ -100,7 +100,7 @@ export const assets: Asset[] = [
 
   {
     name: "cNGN",
-    logo: "/logos/cngn.png",
+    logo: "/logos/cngn.svg",
     symbol: "cNGN",
     network: "Ethereum",
     networks: {
@@ -138,7 +138,7 @@ export const assets: Asset[] = [
 
   {
     name: "CNGN",
-    logo: "/logos/CNGN.svg",
+    logo: "/logos/cngn.svg",
     symbol: "CNGN",
     network: "Base", // Primary network for CNGN
     networks: {
