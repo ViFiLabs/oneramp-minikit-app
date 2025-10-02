@@ -4,7 +4,7 @@ import { base, celo, mainnet, polygon } from "@reown/appkit/networks";
 export const currencies = [
   { symbol: "USDC", logo: "/logos/USDC.svg" },
   { symbol: "USDT", logo: "/logos/USDT.svg" },
-  { symbol: "CNGN", logo: "/logos/CNGN.svg" },
+  { symbol: "CNGN", logo: "/logos/cngn.png" },
 ];
 
 export const assets: Asset[] = [
@@ -100,7 +100,7 @@ export const assets: Asset[] = [
 
   {
     name: "cNGN",
-    logo: "/logos/cngn.svg",
+    logo: "/logos/cngn.png",
     symbol: "cNGN",
     network: "Ethereum",
     networks: {
@@ -138,7 +138,7 @@ export const assets: Asset[] = [
 
   {
     name: "CNGN",
-    logo: "/logos/cngn.svg",
+    logo: "/logos/cngn.png",
     symbol: "CNGN",
     network: "Base", // Primary network for CNGN
     networks: {
