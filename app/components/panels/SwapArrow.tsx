@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowUpDown } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
 
@@ -7,12 +8,14 @@ interface SwapArrowProps {
   onClick?: () => void;
   disabled?: boolean;
   className?: string;
+  double?: boolean; // show double chevrons for swap screens
 }
 
 export function SwapArrow({
   onClick,
   disabled = false,
   className = "",
+  double = false,
 }: SwapArrowProps) {
   const [isRotating, setIsRotating] = useState(false);
 
@@ -51,16 +54,19 @@ export function SwapArrow({
           ease: "easeInOut",
         }}
       >
-        <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-          {/* Double vertical arrows pointing up and down */}
-          <path
-            d="M8 7l4-4 4 4M8 17l4 4 4-4"
-            stroke="#fff"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        {double ? (
+          <ArrowUpDown className="size-6 text-white" />
+        ) : (
+          <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+            <path
+              d="M12 5v14m0 0l-5-5m5 5l5-5"
+              stroke="#fff"
+              strokeWidth="2"
+              strokeLinecap="square"
+              strokeLinejoin="round"
+            />
+          </svg>
+        )}
       </motion.div>
     </div>
   );

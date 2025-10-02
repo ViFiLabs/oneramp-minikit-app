@@ -32,6 +32,11 @@ export function TokenSelectModal({ open, onClose }: TokenSelectModalProps) {
 
   // Filter tokens based on search query and selected network
   const filteredTokens = assets.filter((token) => {
+    // Hide CNGN (capital C) from the dropdown - only show cNGN (lowercase c)
+    if (token.symbol === "CNGN") {
+      return false;
+    }
+
     // Filter by search query
     const matchesSearch =
       searchQuery === "" ||

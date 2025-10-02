@@ -20,7 +20,6 @@ export const TOKEN_CONFIGS: Record<string, TokenConfig> = {
       137: "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
       // Celo
       42220: "0xcebA9300f2b948710d2653dD7B07f33A8B32118C",
-
     },
   },
   USDT: {
@@ -35,6 +34,19 @@ export const TOKEN_CONFIGS: Record<string, TokenConfig> = {
       42220: "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e",
     },
   },
+  cNGN: {
+    symbol: "cNGN",
+    decimals: 6,
+    addresses: {
+      // Ethereum
+      1: "0x17CDB2a01e7a34CbB3DD4b83260B05d0274C8dab",
+      // Polygon
+      137: "0x52828daa48C1a9A06F37500882b42daf0bE04C3B",
+      // Base
+      8453: "0x46C85152bFe9f96829aA94755D9f915F9B10EF5F",
+    },
+  },
+
   CNGN: {
     symbol: "CNGN",
     decimals: 6, // CNGN uses 6 decimals, not 18
@@ -57,7 +69,10 @@ export const getTokenDecimals = (symbol: string, chainId: number): number => {
 };
 
 // Get token address for a specific network
-export const getTokenAddress = (symbol: string, chainId: number): string | undefined => {
+export const getTokenAddress = (
+  symbol: string,
+  chainId: number
+): string | undefined => {
   return TOKEN_CONFIGS[symbol]?.addresses[chainId];
 };
 
@@ -68,7 +83,7 @@ export const isTokenSupported = (symbol: string, chainId: number): boolean => {
 
 // Get supported tokens for a network
 export const getSupportedTokens = (chainId: number): string[] => {
-  return Object.keys(TOKEN_CONFIGS).filter(token => 
+  return Object.keys(TOKEN_CONFIGS).filter((token) =>
     isTokenSupported(token, chainId)
   );
 };
@@ -83,4 +98,4 @@ export const NETWORK_TOKEN_SUPPORT = {
   137: ["USDC", "USDT"],
   // Celo - USDC and USDT
   42220: ["USDC", "USDT"],
-}; 
+};

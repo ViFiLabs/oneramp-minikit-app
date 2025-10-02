@@ -1,47 +1,56 @@
 "use client";
 
 import { Button } from "@/app/components/ui/button";
-import { Network } from "@/types";
+import { Asset } from "@/types";
+import { CurrencySelector } from "./CurrencySelector";
+import Image from "next/image";
+import { useNetworkStore } from "@/store/network";
 
 interface SwapHeaderProps {
-  selectedNetwork?: Network;
-  onNetworkChange?: (network: Network) => void;
-  availableNetworks?: Network[];
+  selectedCurrency: Asset;
+  onCurrencyChange: (currency: Asset) => void;
+  availableAssets?: Asset[];
   onSettingsClick?: () => void;
+  disableAssetSelection?: boolean;
+  title?: string;
 }
 
 export function SwapHeader({
-  selectedNetwork,
-  onNetworkChange,
-  availableNetworks,
+  selectedCurrency,
+  onCurrencyChange,
+  availableAssets,
   onSettingsClick,
+  disableAssetSelection,
+  title = "Swap",
 }: SwapHeaderProps) {
+  const { currentNetwork } = useNetworkStore();
   return (
     <div className="flex items-center justify-between px-4 md:px-6 pt-6 pb-2">
       <div className="flex items-center gap-3">
-        <span className="text-xl md:text-2xl font-bold text-white">Swap</span>
-        {selectedNetwork && (
-          <Button
-            variant="outline"
-            className="bg-[#1E40AF] border-none rounded-full px-3 py-1 h-auto flex items-center gap-2"
-            onClick={() => {
-              // Toggle between available networks (simplified for demo)
-              if (availableNetworks && onNetworkChange) {
-                const currentIndex = availableNetworks.findIndex(net => net.name === selectedNetwork.name);
-                const nextIndex = (currentIndex + 1) % availableNetworks.length;
-                onNetworkChange(availableNetworks[nextIndex]);
-              }
-            }}
-          >
-            <img 
-              src={selectedNetwork.logo} 
-              alt={selectedNetwork.name} 
-              className="w-5 h-5"
-            />
-            <span className="text-white font-medium text-sm">
-              {selectedNetwork.name}
+        <span className="text-xl md:text-2xl font-bold text-white">
+          {title}
+        </span>
+        {disableAssetSelection ? (
+          <div className="flex items-center bg-black rounded-full px-3 py-1 select-none opacity-90">
+            {currentNetwork?.logo ? (
+              <Image
+                src={currentNetwork.logo}
+                alt={currentNetwork.name}
+                width={18}
+                height={18}
+                className="rounded-full mr-2"
+              />
+            ) : null}
+            <span className="text-white text-sm font-medium">
+              {currentNetwork?.name || "Network"}
             </span>
-          </Button>
+          </div>
+        ) : (
+          <CurrencySelector
+            selectedCurrency={selectedCurrency}
+            onCurrencyChange={onCurrencyChange}
+            availableAssets={availableAssets}
+          />
         )}
       </div>
       <Button

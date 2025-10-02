@@ -4,6 +4,8 @@ import { useAllCountryExchangeRates } from "@/hooks/useExchangeRate";
 import { useAmountStore } from "@/store/amount-store";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/app/components/ui/skeleton";
+import { countries } from "@/data/countries";
+import { getNgnToLocalRate } from "@/lib/exchange-rates-data";
 
 const ExchangeRateComponent = ({
   default: isDefault,
@@ -30,12 +32,31 @@ const ExchangeRateComponent = ({
     return allExchangeRates[country.countryCode];
   }, [country?.countryCode, allExchangeRates]);
 
+  // Derive effective rate: if asset is cNGN, convert NGN -> local using cross-rate
+  const effectiveRate = useMemo(() => {
+    if (!exchangeRate || !country) return undefined;
+    const isCngn = (asset?.symbol || "").toUpperCase() === "CNGN";
+    if (!isCngn) return exchangeRate.exchange;
+
+    const fixed = getNgnToLocalRate(country.countryCode);
+    if (fixed && fixed > 0) return fixed;
+
+    const nigeriaAPI = allExchangeRates?.NG?.exchange;
+    const nigeriaFallback = countries.find(
+      (c) => c.countryCode === "NG"
+    )?.exchangeRate;
+    const ngRate = nigeriaAPI || nigeriaFallback;
+    if (!ngRate || ngRate <= 0) return undefined;
+    // exchangeRate.exchange is USD->Local, ngRate is USD->NGN, so NGN->Local = Local/USD / NGN/USD
+    return exchangeRate.exchange / ngRate;
+  }, [exchangeRate, asset?.symbol, allExchangeRates, country]);
+
   // Calculate the equivalent amount in local currency
   const localCurrencyAmount = useMemo(() => {
-    if (!exchangeRate || !amount) return 0;
+    if (!effectiveRate || !amount) return 0;
     const numericAmount = parseFloat(amount) || 0;
-    return numericAmount * exchangeRate.exchange;
-  }, [exchangeRate, amount]);
+    return numericAmount * effectiveRate;
+  }, [effectiveRate, amount]);
 
   return (
     <div
@@ -70,12 +91,12 @@ const ExchangeRateComponent = ({
                     )}
                   </>
                 ) : (
-                  // Standard rate display: "1 USD ~ 129.2 KES" (for all other components)
+                  // Standard rate display using effective rate
                   <>
                     1 {asset?.symbol ? asset.symbol : "USD"} ~{" "}
-                    {exchangeRate ? (
+                    {effectiveRate ? (
                       <>
-                        {exchangeRate.exchange.toLocaleString()} {country.currency}
+                        {effectiveRate.toLocaleString()} {country.currency}
                       </>
                     ) : (
                       <>-- {country.currency}</>

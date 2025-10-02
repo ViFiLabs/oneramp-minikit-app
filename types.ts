@@ -60,9 +60,9 @@ export interface Asset {
   name: string;
   logo: string;
   symbol: string;
-  networks: {
+  networks: Partial<{
     [key in (typeof SUPPORTED_NETWORK_NAMES)[number]]: Network;
-  };
+  }>;
 }
 
 export interface Institution {
@@ -118,6 +118,12 @@ export interface UserSelectionGlobalState {
   countryPanelOnTop?: boolean;
   billTillPayout?: UserBillTillPayout;
   isPayout?: boolean;
+  /**
+   * Optional action required when working with cNGN token flows.
+   * Example values: "fiat_withdrawal" | "onchain_transfer". When undefined,
+   * UI should prompt the user to pick one before proceeding.
+   */
+  cngnAction?: "fiat_withdrawal" | "onchain_transfer";
 }
 
 export interface UserBillTillPayout {
@@ -187,14 +193,16 @@ export interface TransferStatus {
   };
 }
 
-export interface QuoteRequest {
+export type QuoteRequest = {
   fiatType: string;
   cryptoType: string;
   network: string;
-  cryptoAmount: string;
   country: string;
   address: string;
-}
+} & (
+  | { cryptoAmount: string; fiatAmount?: never }
+  | { fiatAmount: string; cryptoAmount?: never }
+);
 
 // {
 //   "fiatType": "NGN",

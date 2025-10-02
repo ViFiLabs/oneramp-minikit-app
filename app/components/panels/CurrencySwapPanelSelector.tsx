@@ -38,7 +38,7 @@ export function CurrencySelector({
         variant="default"
         className="flex items-center gap-2 bg-[#232323] border-none px-3 md:px-4 py-2 rounded-full min-w-[80px] md:min-w-[90px]"
         onClick={() => setShowDropdown((v) => !v)}
-        disabled={false}
+        disabled={true}
         type="button"
       >
         <Image

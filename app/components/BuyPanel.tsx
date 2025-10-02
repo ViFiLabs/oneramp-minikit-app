@@ -49,8 +49,14 @@ export function BuyPanel() {
   const [showKYCModal, setShowKYCModal] = useState(false);
   const [kycTriggered, setKycTriggered] = useState(false);
   const [swipeButtonReset, setSwipeButtonReset] = useState(false);
-  const { updateSelection, country, paymentMethod, asset, appState, institution } =
-    useUserSelectionStore();
+  const {
+    updateSelection,
+    country,
+    paymentMethod,
+    asset,
+    appState,
+    institution,
+  } = useUserSelectionStore();
   const { exchangeRate, setExchangeRate, setError } = useExchangeRateStore();
   const { currentNetwork } = useNetworkStore();
 
@@ -138,10 +144,13 @@ export function BuyPanel() {
         fiatType: country.currency,
         cryptoType: asset.symbol,
         network: currentNetwork.name.toLowerCase(),
-        cryptoAmount: amount,
+        ...(asset.symbol === "cNGN"
+          ? { fiatAmount: amount }
+          : { cryptoAmount: amount }),
         country: country.countryCode,
         address: address as string,
       };
+
       const quoteResp = await createQuoteIn(payload);
       if (!quoteResp?.quote?.quoteId) {
         throw new Error("No quote ID received");
@@ -158,19 +167,28 @@ export function BuyPanel() {
         institution: inst,
         accountNumber: acctNum,
         accountName: acctName,
+        paymentMethod: pm,
       } = selectionStore.getState();
       const fullKYC = kycData?.fullKYC;
-      if (!fullKYC) throw new Error("KYC not available");
+
+      // Allow MoMo transactions under the asset-specific ~$100 threshold to bypass full KYC
+      const numericAmount = parseFloat(String(amount));
+      const cngnThreshold = 1_507_908; // ~ $100 in NGN
+      const usdThreshold = 100;
+      const threshold = asset.symbol === "cNGN" ? cngnThreshold : usdThreshold;
+      const allowKycBypassForMomo =
+        pm === "momo" && numericAmount > 0 && numericAmount < threshold;
 
       const {
-        fullName,
-        nationality,
-        dateOfBirth,
-        documentNumber,
-        documentType,
-        documentSubType,
-        phoneNumber,
-      } = fullKYC;
+        fullName = "",
+        nationality = "",
+        dateOfBirth = "",
+        documentNumber = "",
+        documentType = "",
+        documentSubType = "",
+        phoneNumber = "",
+      } = fullKYC ||
+      ({} as unknown as import("@/types").KYCVerificationResponse["fullKYC"]);
 
       let updatedDocumentType = documentType;
       let updatedDocumentTypeSubType = documentSubType;
@@ -193,11 +211,13 @@ export function BuyPanel() {
         country: country.countryCode || "",
         address: nationality || country.name || "",
         phone: acctNum || phoneNumber || "",
-        dob: dateOfBirth,
-        idNumber: documentNumber,
-        idType: updatedDocumentType,
-        additionalIdType: updatedDocumentType,
-        additionalIdNumber: updatedDocumentTypeSubType,
+        dob: allowKycBypassForMomo ? "" : dateOfBirth,
+        idNumber: allowKycBypassForMomo ? "" : documentNumber,
+        idType: allowKycBypassForMomo ? "" : updatedDocumentType,
+        additionalIdType: allowKycBypassForMomo ? "" : updatedDocumentType,
+        additionalIdNumber: allowKycBypassForMomo
+          ? ""
+          : updatedDocumentTypeSubType,
       };
 
       let transferPayload:
@@ -325,6 +345,17 @@ export function BuyPanel() {
     }
   }, [kycTriggered, kycData, createBuyFlow]);
 
+  // Prefill minimum amount when switching assets (reset per-asset floor)
+  useEffect(() => {
+    if (!asset?.symbol) return;
+    const minByAsset: Record<string, string> = {
+      cNGN: "1508",
+      USDC: "1",
+      USDT: "1",
+    };
+    setAmount(minByAsset[asset.symbol] ?? "1");
+  }, [asset?.symbol, setAmount]);
+
   // Reset buy state function (similar to resetPaymentState in payment interface)
   const resetBuyState = () => {
     setShowKYCModal(false);
@@ -333,8 +364,20 @@ export function BuyPanel() {
 
   // Handle buy completion with KYC verification
   const handleBuyComplete = () => {
-    // Verify KYC before proceeding with purchase
-    if (kycData && kycData.kycStatus !== "VERIFIED") {
+    // Allow MoMo under $100 to bypass KYC (Deposit flow uses USD input already)
+    const numericAmount = parseFloat(String(amount || 0));
+    const cngnThreshold = 1_507_908; // ~ $100 in NGN
+    const usdThreshold = 100;
+    const threshold = asset?.symbol === "cNGN" ? cngnThreshold : usdThreshold;
+    const allowKycBypassForMomo =
+      paymentMethod === "momo" &&
+      country?.countryCode !== "NG" &&
+      country?.countryCode !== "ZA" &&
+      numericAmount > 0 &&
+      numericAmount < threshold;
+
+    // Verify KYC before proceeding with purchase, unless bypass applies
+    if (!allowKycBypassForMomo && kycData && kycData.kycStatus !== "VERIFIED") {
       // Reset swipe button to roll back to initial position
       setSwipeButtonReset(true);
       setTimeout(() => setSwipeButtonReset(false), 100);
@@ -348,7 +391,7 @@ export function BuyPanel() {
 
     // Additional check for rejected or in-review KYC
     if (
-      kycData?.kycStatus === "REJECTED" ||
+      (!allowKycBypassForMomo && kycData?.kycStatus === "REJECTED") ||
       kycData?.kycStatus === "IN_REVIEW"
     ) {
       // Reset swipe button to roll back to initial position
