@@ -69,38 +69,38 @@ export function MainTabsSwitch() {
   }
 
   return (
-    <Tabs defaultValue="Pay" className="w-full ">
-      <div className="w-full flex items-center justify-between gap-3 sm:max-w-lg sm:mx-auto ">
-        <TabsList className="flex w-full p-1 rounded-full h-12 bg-transparent">
+  <Tabs defaultValue="Pay" className="w-full ">
+      <div className="w-full max-w-md mx-auto">
+        <TabsList className="inline-flex bg-black w-fit p-1 h-12 gap-4">
           <TabsTrigger
             value="Pay"
-            onClick={() => washTheseFields(false, true)}
-            className="flex-1 data-[state=active]:!bg-neutral-600 data-[state=active]:!text-white text-sm data-[state=active]:font-semibold text-neutral-300 rounded-full transition-all"
-          >
-            Pay
-          </TabsTrigger>
-          <TabsTrigger
-            value="Withdraw"
-            onClick={() => washTheseFields(false, false)}
-            className="flex-1 data-[state=active]:!bg-neutral-600 data-[state=active]:!text-white text-sm data-[state=active]:font-semibold text-neutral-300 rounded-full transition-all"
-          >
-            Withdraw
-          </TabsTrigger>
-          <TabsTrigger
-            value="Deposit"
-            onClick={() => washTheseFields(true, false)}
-            className="flex-1 data-[state=active]:!bg-neutral-600 data-[state=active]:!text-white text-sm data-[state=active]:font-semibold text-neutral-300 rounded-full transition-all"
-          >
-            Deposit
-          </TabsTrigger>
-          <TabsTrigger
-            value="Swap"
-            onClick={switchToSwap}
-            className="flex-1 data-[state=active]:!bg-neutral-600 data-[state=active]:!text-white text-sm data-[state=active]:font-semibold text-neutral-300 rounded-full transition-all"
-          >
-            Swap
-          </TabsTrigger>
-        </TabsList>
+          onClick={() => washTheseFields(false, true)}
+          className="data-[state=active]:!bg-neutral-600 data-[state=active]:!text-white text-sm data-[state=active]:font-semibold text-neutral-300 rounded-2xl transition-all"
+        >
+          Pay
+        </TabsTrigger>
+        <TabsTrigger
+          value="Withdraw"
+          onClick={() => washTheseFields(false, false)}
+          className="data-[state=active]:!bg-neutral-600 data-[state=active]:!text-white text-sm data-[state=active]:font-semibold text-neutral-300 rounded-full transition-all"
+        >
+          Withdraw
+        </TabsTrigger>
+        <TabsTrigger
+          value="Deposit"
+          onClick={() => washTheseFields(true, false)}
+          className="data-[state=active]:!bg-neutral-600 data-[state=active]:!text-white text-sm data-[state=active]:font-semibold text-neutral-300 rounded-full transition-all"
+        >
+          Deposit
+        </TabsTrigger>
+        <TabsTrigger
+          value="Swap"
+          onClick={() => washTheseFields(true, false)}
+          className="data-[state=active]:!bg-neutral-600 data-[state=active]:!text-white text-sm data-[state=active]:font-semibold text-neutral-300 rounded-full transition-all"
+        >
+          Swap
+        </TabsTrigger>
+      </TabsList>
       </div>
       <TabsContent value="Pay" className="w-full">
         <PayPanel />
@@ -112,7 +112,6 @@ export function MainTabsSwitch() {
         <BuyPanel />
       </TabsContent>
       <TabsContent value="Swap" className="w-full">
-        {/* Default to cNGN swap UI */}
         <SwapPanel />
       </TabsContent>
 
