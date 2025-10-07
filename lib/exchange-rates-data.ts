@@ -1,6 +1,6 @@
 // Client-side exchange rates data for instant access
 export const exchangeRatesData = {
-  lastUpdated: "2025-09-25T00:00:00.000Z",
+  lastUpdated: "2025-10-07T08:08:51.785Z",
   exchangeRates: {
     NG: {
       buying: {
