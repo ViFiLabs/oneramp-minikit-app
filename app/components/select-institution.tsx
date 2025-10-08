@@ -29,6 +29,7 @@ import { AccountStatusIndicator, AccountNameDisplay } from "./account-details";
 import SubmitButton from "./buttons/submit-button";
 import { InstitutionModal } from "./modals/InstitutionModal";
 import { KYCVerificationModal } from "./modals/KYCVerificationModal";
+import { useRecipientStore } from "@/store/recipient-store";
 
 interface FormInputs {
   accountNumber: string;
@@ -44,6 +45,7 @@ const SelectInstitution = ({
 }) => {
   const { institution, country, updateSelection, countryPanelOnTop } =
     useUserSelectionStore();
+  const { saveRecipient, getRecipient } = useRecipientStore();
   const [showInstitutionModal, setShowInstitutionModal] = useState(false);
   const [showKYCModal, setShowKYCModal] = useState(false);
   const [buttonDisabled, setButtonDisabled] = useState(true);
@@ -98,6 +100,32 @@ const SelectInstitution = ({
     }
   }, [accountNumber, updateSelection]);
 
+  // Prefill institution and account number when country changes
+  useEffect(() => {
+    if (country?.countryCode) {
+      const savedData = getRecipient(country.countryCode);
+
+      if (savedData) {
+        // Prefill institution if saved and not already selected
+        if (savedData.institution && !institution) {
+          updateSelection({ institution: savedData.institution });
+        }
+
+        // Prefill account number if saved
+        if (savedData.accountNumber) {
+          setValue("accountNumber", savedData.accountNumber);
+          updateSelection({ accountNumber: savedData.accountNumber });
+        }
+      }
+    }
+  }, [
+    country?.countryCode,
+    getRecipient,
+    institution,
+    setValue,
+    updateSelection,
+  ]);
+
   // Previously toggled a Nigeria/SA flag for conditional rendering. We now
   // always render the recipient section and rely on runtime branching where needed.
 
@@ -110,6 +138,16 @@ const SelectInstitution = ({
     });
     return () => subscription.unsubscribe();
   }, [watch, updateSelection]);
+
+  // Save institution and account number to persist store when they change
+  useEffect(() => {
+    if (country?.countryCode && (institution || accountNumber)) {
+      saveRecipient(country.countryCode, {
+        institution: institution || undefined,
+        accountNumber: accountNumber || undefined,
+      });
+    }
+  }, [country?.countryCode, institution, accountNumber, saveRecipient]);
 
   const createMutation = useMutation({
     mutationFn: async (payload: QuoteRequest) =>
@@ -400,13 +438,30 @@ const SelectInstitution = ({
       instType = "momo";
     }
 
+    // Check if we have saved data for this country
+    const savedData = country?.countryCode
+      ? getRecipient(country.countryCode)
+      : null;
+
+    // Use saved account number if it exists, otherwise leave blank
+    const prefillAccountNumber = savedData?.accountNumber || "";
+
     updateSelection({
       institution: inst,
       paymentMethod: instType as "bank" | "momo",
-      accountNumber: "", // Clear account number when institution changes
+      accountNumber: prefillAccountNumber,
     });
+
+    // Save the selected institution immediately
+    if (country?.countryCode) {
+      saveRecipient(country.countryCode, {
+        institution: inst,
+        accountNumber: savedData?.accountNumber,
+      });
+    }
+
     setShowInstitutionModal(false);
-    setValue("accountNumber", "");
+    setValue("accountNumber", prefillAccountNumber);
     trigger("accountNumber");
   };
 
