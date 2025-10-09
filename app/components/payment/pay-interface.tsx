@@ -67,6 +67,7 @@ import {
   supportsCashoutFees,
   getUgandaCashoutBreakdown,
 } from "@/utils/cashout-fees";
+import { usePayRecipientStore } from "@/store/pay-recipient-store";
 
 export function PaymentInterface() {
   const {
@@ -78,6 +79,9 @@ export function PaymentInterface() {
     institution,
     appState,
   } = useUserSelectionStore();
+
+  const { savePaybill, saveBuyGoods, saveSendMoney, getPaymentData } =
+    usePayRecipientStore();
 
   const {
     amount,
@@ -397,14 +401,92 @@ export function PaymentInterface() {
     }
   }, [country, setIncludeCashoutFees, setCashoutFeeAmount]);
 
+  // Prefill payment data when country or payment type changes
+  useEffect(() => {
+    if (country?.countryCode) {
+      const savedData = getPaymentData(country.countryCode);
+
+      if (savedData) {
+        switch (selectedPaymentType) {
+          case "Paybill":
+            if (savedData.paybill) {
+              updateBillTillPayout({
+                billNumber: savedData.paybill.billNumber || "",
+                accountNumber: savedData.paybill.accountNumber || "",
+              });
+            }
+            break;
+
+          case "Buy Goods":
+            if (savedData.buyGoods) {
+              updateBillTillPayout({
+                tillNumber: savedData.buyGoods.tillNumber || "",
+              });
+            }
+            break;
+
+          case "Send Money":
+            if (savedData.sendMoney) {
+              updateBillTillPayout({
+                phoneNumber: savedData.sendMoney.phoneNumber || "",
+                accountName: savedData.sendMoney.accountName || "",
+              });
+              if (savedData.sendMoney.institution) {
+                updateSelection({
+                  institution: savedData.sendMoney.institution,
+                  paymentMethod: "momo",
+                });
+              }
+            }
+            break;
+        }
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [country?.countryCode, selectedPaymentType, getPaymentData]);
+
   // Helper function to update bill/till payout data
   const updateBillTillPayout = (updates: Partial<typeof billTillPayout>) => {
+    const newData = {
+      ...billTillPayout,
+      ...updates,
+    };
+
     updateSelection({
-      billTillPayout: {
-        ...billTillPayout,
-        ...updates,
-      },
+      billTillPayout: newData,
     });
+
+    // Save to persist store based on payment type and country
+    if (country?.countryCode) {
+      switch (selectedPaymentType) {
+        case "Paybill":
+          if (newData.billNumber || newData.accountNumber) {
+            savePaybill(country.countryCode, {
+              billNumber: newData.billNumber,
+              accountNumber: newData.accountNumber,
+            });
+          }
+          break;
+
+        case "Buy Goods":
+          if (newData.tillNumber) {
+            saveBuyGoods(country.countryCode, {
+              tillNumber: newData.tillNumber,
+            });
+          }
+          break;
+
+        case "Send Money":
+          if (newData.phoneNumber || newData.accountName) {
+            saveSendMoney(country.countryCode, {
+              phoneNumber: newData.phoneNumber,
+              accountName: newData.accountName,
+              institution: institution,
+            });
+          }
+          break;
+      }
+    }
   };
 
   // Helper function to set amount for a specific country
@@ -811,11 +893,21 @@ export function PaymentInterface() {
     }
   };
 
-  const handleInstitutionSelect = (institution: Institution) => {
+  const handleInstitutionSelect = (selectedInstitution: Institution) => {
     updateSelection({
-      institution: institution,
+      institution: selectedInstitution,
       paymentMethod: "momo",
     });
+
+    // Save institution for Send Money payment type
+    if (country?.countryCode && selectedPaymentType === "Send Money") {
+      saveSendMoney(country.countryCode, {
+        institution: selectedInstitution,
+        phoneNumber: billTillPayout?.phoneNumber,
+        accountName: billTillPayout?.accountName,
+      });
+    }
+
     setShowInstitutionModal(false);
   };
 

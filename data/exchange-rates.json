@@ -1,64 +1,64 @@
 {
-  "lastUpdated": "2025-10-07T08:08:51.785Z",
+  "lastUpdated": "2025-10-09T08:32:03.708Z",
   "exchangeRates": {
     "NG": {
       "buying": {
         "momo": {
           "country": "NG",
-          "exchange": 1615,
+          "exchange": 1472.57,
           "conversionResponse": {
             "success": true,
-            "chargeFeeInFiat": 403.75,
+            "chargeFeeInFiat": 368.1425,
             "chargeFeeInUsd": 0.25,
-            "exchangeRate": 1615,
+            "exchangeRate": 1472.57,
             "cryptoAmount": 1,
-            "fiatAmount": 1615,
-            "providerPayoutAmount": 1615,
-            "gasFeeInFiat": 32.3
+            "fiatAmount": 1472.57,
+            "providerPayoutAmount": 1472.57,
+            "gasFeeInFiat": 29.4514
           }
         },
         "bank": {
           "country": "NG",
-          "exchange": 1615,
+          "exchange": 1472.57,
           "conversionResponse": {
             "success": true,
-            "chargeFeeInFiat": 403.75,
+            "chargeFeeInFiat": 368.1425,
             "chargeFeeInUsd": 0.25,
-            "exchangeRate": 1615,
+            "exchangeRate": 1472.57,
             "cryptoAmount": 1,
-            "fiatAmount": 1615,
-            "providerPayoutAmount": 1615,
-            "gasFeeInFiat": 32.3
+            "fiatAmount": 1472.57,
+            "providerPayoutAmount": 1472.57,
+            "gasFeeInFiat": 29.4514
           }
         }
       },
       "selling": {
         "momo": {
           "country": "NG",
-          "exchange": 1508.65,
+          "exchange": 1472.57,
           "conversionResponse": {
             "success": true,
-            "chargeFeeInFiat": 181.038,
+            "chargeFeeInFiat": 176.70839999999998,
             "chargeFeeInUsd": 0.12,
-            "exchangeRate": 1508.65,
+            "exchangeRate": 1472.57,
             "cryptoAmount": 1,
-            "fiatAmount": 1508.65,
-            "providerPayoutAmount": 1508.65,
-            "gasFeeInFiat": 30.173000000000002
+            "fiatAmount": 1472.57,
+            "providerPayoutAmount": 1472.57,
+            "gasFeeInFiat": 29.4514
           }
         },
         "bank": {
           "country": "NG",
-          "exchange": 1508.65,
+          "exchange": 1472.57,
           "conversionResponse": {
             "success": true,
-            "chargeFeeInFiat": 181.038,
+            "chargeFeeInFiat": 176.70839999999998,
             "chargeFeeInUsd": 0.12,
-            "exchangeRate": 1508.65,
+            "exchangeRate": 1472.57,
             "cryptoAmount": 1,
-            "fiatAmount": 1508.65,
-            "providerPayoutAmount": 1508.65,
-            "gasFeeInFiat": 30.173000000000002
+            "fiatAmount": 1472.57,
+            "providerPayoutAmount": 1472.57,
+            "gasFeeInFiat": 29.4514
           }
         }
       }
