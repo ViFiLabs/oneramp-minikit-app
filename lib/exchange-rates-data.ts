@@ -1,426 +1,426 @@
 // Client-side exchange rates data for instant access
 export const exchangeRatesData = {
-  "lastUpdated": "2025-10-09T08:32:03.708Z",
-  "exchangeRates": {
-    "NG": {
-      "buying": {
-        "momo": {
-          "country": "NG",
-          "exchange": 1472.57,
-          "conversionResponse": {
-            "success": true,
-            "chargeFeeInFiat": 368.1425,
-            "chargeFeeInUsd": 0.25,
-            "exchangeRate": 1472.57,
-            "cryptoAmount": 1,
-            "fiatAmount": 1472.57,
-            "providerPayoutAmount": 1472.57,
-            "gasFeeInFiat": 29.4514
-          }
+  lastUpdated: "2025-10-09T09:54:05.168Z",
+  exchangeRates: {
+    NG: {
+      buying: {
+        momo: {
+          country: "NG",
+          exchange: 1472.57,
+          conversionResponse: {
+            success: true,
+            chargeFeeInFiat: 368.1425,
+            chargeFeeInUsd: 0.25,
+            exchangeRate: 1472.57,
+            cryptoAmount: 1,
+            fiatAmount: 1472.57,
+            providerPayoutAmount: 1472.57,
+            gasFeeInFiat: 29.4514,
+          },
         },
-        "bank": {
-          "country": "NG",
-          "exchange": 1472.57,
-          "conversionResponse": {
-            "success": true,
-            "chargeFeeInFiat": 368.1425,
-            "chargeFeeInUsd": 0.25,
-            "exchangeRate": 1472.57,
-            "cryptoAmount": 1,
-            "fiatAmount": 1472.57,
-            "providerPayoutAmount": 1472.57,
-            "gasFeeInFiat": 29.4514
-          }
-        }
+        bank: {
+          country: "NG",
+          exchange: 1472.57,
+          conversionResponse: {
+            success: true,
+            chargeFeeInFiat: 368.1425,
+            chargeFeeInUsd: 0.25,
+            exchangeRate: 1472.57,
+            cryptoAmount: 1,
+            fiatAmount: 1472.57,
+            providerPayoutAmount: 1472.57,
+            gasFeeInFiat: 29.4514,
+          },
+        },
       },
-      "selling": {
-        "momo": {
-          "country": "NG",
-          "exchange": 1472.57,
-          "conversionResponse": {
-            "success": true,
-            "chargeFeeInFiat": 176.70839999999998,
-            "chargeFeeInUsd": 0.12,
-            "exchangeRate": 1472.57,
-            "cryptoAmount": 1,
-            "fiatAmount": 1472.57,
-            "providerPayoutAmount": 1472.57,
-            "gasFeeInFiat": 29.4514
-          }
+      selling: {
+        momo: {
+          country: "NG",
+          exchange: 1472.57,
+          conversionResponse: {
+            success: true,
+            chargeFeeInFiat: 176.70839999999998,
+            chargeFeeInUsd: 0.12,
+            exchangeRate: 1472.57,
+            cryptoAmount: 1,
+            fiatAmount: 1472.57,
+            providerPayoutAmount: 1472.57,
+            gasFeeInFiat: 29.4514,
+          },
         },
-        "bank": {
-          "country": "NG",
-          "exchange": 1472.57,
-          "conversionResponse": {
-            "success": true,
-            "chargeFeeInFiat": 176.70839999999998,
-            "chargeFeeInUsd": 0.12,
-            "exchangeRate": 1472.57,
-            "cryptoAmount": 1,
-            "fiatAmount": 1472.57,
-            "providerPayoutAmount": 1472.57,
-            "gasFeeInFiat": 29.4514
-          }
-        }
-      }
+        bank: {
+          country: "NG",
+          exchange: 1472.57,
+          conversionResponse: {
+            success: true,
+            chargeFeeInFiat: 176.70839999999998,
+            chargeFeeInUsd: 0.12,
+            exchangeRate: 1472.57,
+            cryptoAmount: 1,
+            fiatAmount: 1472.57,
+            providerPayoutAmount: 1472.57,
+            gasFeeInFiat: 29.4514,
+          },
+        },
+      },
     },
-    "KE": {
-      "buying": {
-        "momo": {
-          "exchange": 129.2,
-          "country": "KE",
-          "conversionResponse": {
-            "success": true,
-            "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0.025,
-            "exchangeRate": 129.2,
-            "fiatAmount": 129.2,
-            "gasFeeInFiat": 2.6630000000000003
-          }
+    KE: {
+      buying: {
+        momo: {
+          exchange: 129.2,
+          country: "KE",
+          conversionResponse: {
+            success: true,
+            chargeFeeInFiat: 0,
+            chargeFeeInUsd: 0.025,
+            exchangeRate: 129.2,
+            fiatAmount: 129.2,
+            gasFeeInFiat: 2.6630000000000003,
+          },
         },
-        "bank": {
-          "exchange": 129.2,
-          "country": "KE",
-          "conversionResponse": {
-            "success": true,
-            "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0.025,
-            "exchangeRate": 129.2,
-            "fiatAmount": 129.2,
-            "gasFeeInFiat": 2.6630000000000003
-          }
-        }
+        bank: {
+          exchange: 129.2,
+          country: "KE",
+          conversionResponse: {
+            success: true,
+            chargeFeeInFiat: 0,
+            chargeFeeInUsd: 0.025,
+            exchangeRate: 129.2,
+            fiatAmount: 129.2,
+            gasFeeInFiat: 2.6630000000000003,
+          },
+        },
       },
-      "selling": {
-        "momo": {
-          "exchange": 129.2,
-          "country": "KE",
-          "conversionResponse": {
-            "success": true,
-            "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0.026,
-            "exchangeRate": 129.2,
-            "fiatAmount": 129.2,
-            "gasFeeInFiat": 2.5500000000000003
-          }
+      selling: {
+        momo: {
+          exchange: 129.2,
+          country: "KE",
+          conversionResponse: {
+            success: true,
+            chargeFeeInFiat: 0,
+            chargeFeeInUsd: 0.026,
+            exchangeRate: 129.2,
+            fiatAmount: 129.2,
+            gasFeeInFiat: 2.5500000000000003,
+          },
         },
-        "bank": {
-          "exchange": 129.2,
-          "country": "KE",
-          "conversionResponse": {
-            "success": true,
-            "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0.026,
-            "exchangeRate": 129.2,
-            "fiatAmount": 129.2,
-            "gasFeeInFiat": 2.5500000000000003
-          }
-        }
-      }
+        bank: {
+          exchange: 129.2,
+          country: "KE",
+          conversionResponse: {
+            success: true,
+            chargeFeeInFiat: 0,
+            chargeFeeInUsd: 0.026,
+            exchangeRate: 129.2,
+            fiatAmount: 129.2,
+            gasFeeInFiat: 2.5500000000000003,
+          },
+        },
+      },
     },
-    "UG": {
-      "buying": {
-        "momo": {
-          "exchange": 3570,
-          "country": "UG",
-          "conversionResponse": {
-            "success": true,
-            "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0.04,
-            "exchangeRate": 3570,
-            "fiatAmount": 3570,
-            "gasFeeInFiat": 76.0888
-          }
+    UG: {
+      buying: {
+        momo: {
+          exchange: 3570,
+          country: "UG",
+          conversionResponse: {
+            success: true,
+            chargeFeeInFiat: 0,
+            chargeFeeInUsd: 0.04,
+            exchangeRate: 3570,
+            fiatAmount: 3570,
+            gasFeeInFiat: 76.0888,
+          },
         },
-        "bank": {
-          "exchange": 3570,
-          "country": "UG",
-          "conversionResponse": {
-            "success": true,
-            "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0.04,
-            "exchangeRate": 3570,
-            "fiatAmount": 3570,
-            "gasFeeInFiat": 76.0888
-          }
-        }
+        bank: {
+          exchange: 3570,
+          country: "UG",
+          conversionResponse: {
+            success: true,
+            chargeFeeInFiat: 0,
+            chargeFeeInUsd: 0.04,
+            exchangeRate: 3570,
+            fiatAmount: 3570,
+            gasFeeInFiat: 76.0888,
+          },
+        },
       },
-      "selling": {
-        "momo": {
-          "exchange": 3570,
-          "country": "UG",
-          "conversionResponse": {
-            "success": true,
-            "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0.04,
-            "exchangeRate": 3570,
-            "fiatAmount": 3570,
-            "gasFeeInFiat": 72.41640000000001
-          }
+      selling: {
+        momo: {
+          exchange: 3570,
+          country: "UG",
+          conversionResponse: {
+            success: true,
+            chargeFeeInFiat: 0,
+            chargeFeeInUsd: 0.04,
+            exchangeRate: 3570,
+            fiatAmount: 3570,
+            gasFeeInFiat: 72.41640000000001,
+          },
         },
-        "bank": {
-          "exchange": 3570,
-          "country": "UG",
-          "conversionResponse": {
-            "success": true,
-            "chargeFeeInFiat": 0,
-            "chargeFeeInUsd": 0.04,
-            "exchangeRate": 3570,
-            "fiatAmount": 3570,
-            "gasFeeInFiat": 72.41640000000001
-          }
-        }
-      }
+        bank: {
+          exchange: 3570,
+          country: "UG",
+          conversionResponse: {
+            success: true,
+            chargeFeeInFiat: 0,
+            chargeFeeInUsd: 0.04,
+            exchangeRate: 3570,
+            fiatAmount: 3570,
+            gasFeeInFiat: 72.41640000000001,
+          },
+        },
+      },
     },
-    "GHA": {
-      "buying": {
-        "momo": {
-          "country": "GHA",
-          "exchange": 16.35,
-          "conversionResponse": {
-            "success": true,
-            "chargeFeeInFiat": 0.9810000000000001,
-            "chargeFeeInUsd": 0.06,
-            "exchangeRate": 16.35,
-            "cryptoAmount": 1,
-            "fiatAmount": 16.35,
-            "providerPayoutAmount": 16.35,
-            "gasFeeInFiat": 0.327
-          }
+    GHA: {
+      buying: {
+        momo: {
+          country: "GHA",
+          exchange: 16.35,
+          conversionResponse: {
+            success: true,
+            chargeFeeInFiat: 0.9810000000000001,
+            chargeFeeInUsd: 0.06,
+            exchangeRate: 16.35,
+            cryptoAmount: 1,
+            fiatAmount: 16.35,
+            providerPayoutAmount: 16.35,
+            gasFeeInFiat: 0.327,
+          },
         },
-        "bank": {
-          "country": "GHA",
-          "exchange": 16.35,
-          "conversionResponse": {
-            "success": true,
-            "chargeFeeInFiat": 0.9810000000000001,
-            "chargeFeeInUsd": 0.06,
-            "exchangeRate": 16.35,
-            "cryptoAmount": 1,
-            "fiatAmount": 16.35,
-            "providerPayoutAmount": 16.35,
-            "gasFeeInFiat": 0.327
-          }
-        }
+        bank: {
+          country: "GHA",
+          exchange: 16.35,
+          conversionResponse: {
+            success: true,
+            chargeFeeInFiat: 0.9810000000000001,
+            chargeFeeInUsd: 0.06,
+            exchangeRate: 16.35,
+            cryptoAmount: 1,
+            fiatAmount: 16.35,
+            providerPayoutAmount: 16.35,
+            gasFeeInFiat: 0.327,
+          },
+        },
       },
-      "selling": {
-        "momo": {
-          "country": "GHA",
-          "exchange": 15.17,
-          "conversionResponse": {
-            "success": true,
-            "chargeFeeInFiat": 0.25789,
-            "chargeFeeInUsd": 0.017,
-            "exchangeRate": 15.17,
-            "cryptoAmount": 1,
-            "fiatAmount": 15.17,
-            "providerPayoutAmount": 15.17,
-            "gasFeeInFiat": 0.3034
-          }
+      selling: {
+        momo: {
+          country: "GHA",
+          exchange: 15.17,
+          conversionResponse: {
+            success: true,
+            chargeFeeInFiat: 0.25789,
+            chargeFeeInUsd: 0.017,
+            exchangeRate: 15.17,
+            cryptoAmount: 1,
+            fiatAmount: 15.17,
+            providerPayoutAmount: 15.17,
+            gasFeeInFiat: 0.3034,
+          },
         },
-        "bank": {
-          "country": "GHA",
-          "exchange": 15.17,
-          "conversionResponse": {
-            "success": true,
-            "chargeFeeInFiat": 0.25789,
-            "chargeFeeInUsd": 0.017,
-            "exchangeRate": 15.17,
-            "cryptoAmount": 1,
-            "fiatAmount": 15.17,
-            "providerPayoutAmount": 15.17,
-            "gasFeeInFiat": 0.3034
-          }
-        }
-      }
+        bank: {
+          country: "GHA",
+          exchange: 15.17,
+          conversionResponse: {
+            success: true,
+            chargeFeeInFiat: 0.25789,
+            chargeFeeInUsd: 0.017,
+            exchangeRate: 15.17,
+            cryptoAmount: 1,
+            fiatAmount: 15.17,
+            providerPayoutAmount: 15.17,
+            gasFeeInFiat: 0.3034,
+          },
+        },
+      },
     },
-    "ZM": {
-      "buying": {
-        "momo": {
-          "country": "ZM",
-          "exchange": 27.73,
-          "conversionResponse": {
-            "success": true,
-            "chargeFeeInFiat": 6.9325,
-            "chargeFeeInUsd": 0.25,
-            "exchangeRate": 27.73,
-            "cryptoAmount": 1,
-            "fiatAmount": 27.73,
-            "providerPayoutAmount": 27.73,
-            "gasFeeInFiat": 0.5546
-          }
+    ZM: {
+      buying: {
+        momo: {
+          country: "ZM",
+          exchange: 27.73,
+          conversionResponse: {
+            success: true,
+            chargeFeeInFiat: 6.9325,
+            chargeFeeInUsd: 0.25,
+            exchangeRate: 27.73,
+            cryptoAmount: 1,
+            fiatAmount: 27.73,
+            providerPayoutAmount: 27.73,
+            gasFeeInFiat: 0.5546,
+          },
         },
-        "bank": {
-          "country": "ZM",
-          "exchange": 27.73,
-          "conversionResponse": {
-            "success": true,
-            "chargeFeeInFiat": 6.9325,
-            "chargeFeeInUsd": 0.25,
-            "exchangeRate": 27.73,
-            "cryptoAmount": 1,
-            "fiatAmount": 27.73,
-            "providerPayoutAmount": 27.73,
-            "gasFeeInFiat": 0.5546
-          }
-        }
+        bank: {
+          country: "ZM",
+          exchange: 27.73,
+          conversionResponse: {
+            success: true,
+            chargeFeeInFiat: 6.9325,
+            chargeFeeInUsd: 0.25,
+            exchangeRate: 27.73,
+            cryptoAmount: 1,
+            fiatAmount: 27.73,
+            providerPayoutAmount: 27.73,
+            gasFeeInFiat: 0.5546,
+          },
+        },
       },
-      "selling": {
-        "momo": {
-          "country": "ZM",
-          "exchange": 25.12,
-          "conversionResponse": {
-            "success": true,
-            "chargeFeeInFiat": 3.0144,
-            "chargeFeeInUsd": 0.12,
-            "exchangeRate": 25.12,
-            "cryptoAmount": 1,
-            "fiatAmount": 25.12,
-            "providerPayoutAmount": 25.12,
-            "gasFeeInFiat": 0.5024000000000001
-          }
+      selling: {
+        momo: {
+          country: "ZM",
+          exchange: 25.12,
+          conversionResponse: {
+            success: true,
+            chargeFeeInFiat: 3.0144,
+            chargeFeeInUsd: 0.12,
+            exchangeRate: 25.12,
+            cryptoAmount: 1,
+            fiatAmount: 25.12,
+            providerPayoutAmount: 25.12,
+            gasFeeInFiat: 0.5024000000000001,
+          },
         },
-        "bank": {
-          "country": "ZM",
-          "exchange": 25.12,
-          "conversionResponse": {
-            "success": true,
-            "chargeFeeInFiat": 3.0144,
-            "chargeFeeInUsd": 0.12,
-            "exchangeRate": 25.12,
-            "cryptoAmount": 1,
-            "fiatAmount": 25.12,
-            "providerPayoutAmount": 25.12,
-            "gasFeeInFiat": 0.5024000000000001
-          }
-        }
-      }
+        bank: {
+          country: "ZM",
+          exchange: 25.12,
+          conversionResponse: {
+            success: true,
+            chargeFeeInFiat: 3.0144,
+            chargeFeeInUsd: 0.12,
+            exchangeRate: 25.12,
+            cryptoAmount: 1,
+            fiatAmount: 25.12,
+            providerPayoutAmount: 25.12,
+            gasFeeInFiat: 0.5024000000000001,
+          },
+        },
+      },
     },
-    "TZ": {
-      "buying": {
-        "momo": {
-          "country": "TZ",
-          "exchange": 2530,
-          "conversionResponse": {
-            "success": true,
-            "chargeFeeInFiat": 88.55000000000001,
-            "chargeFeeInUsd": 0.035,
-            "exchangeRate": 2530,
-            "cryptoAmount": 1,
-            "fiatAmount": 2530,
-            "providerPayoutAmount": 2530,
-            "gasFeeInFiat": 50.6
-          }
+    TZ: {
+      buying: {
+        momo: {
+          country: "TZ",
+          exchange: 2530,
+          conversionResponse: {
+            success: true,
+            chargeFeeInFiat: 88.55000000000001,
+            chargeFeeInUsd: 0.035,
+            exchangeRate: 2530,
+            cryptoAmount: 1,
+            fiatAmount: 2530,
+            providerPayoutAmount: 2530,
+            gasFeeInFiat: 50.6,
+          },
         },
-        "bank": {
-          "country": "TZ",
-          "exchange": 2530,
-          "conversionResponse": {
-            "success": true,
-            "chargeFeeInFiat": 88.55000000000001,
-            "chargeFeeInUsd": 0.035,
-            "exchangeRate": 2530,
-            "cryptoAmount": 1,
-            "fiatAmount": 2530,
-            "providerPayoutAmount": 2530,
-            "gasFeeInFiat": 50.6
-          }
-        }
+        bank: {
+          country: "TZ",
+          exchange: 2530,
+          conversionResponse: {
+            success: true,
+            chargeFeeInFiat: 88.55000000000001,
+            chargeFeeInUsd: 0.035,
+            exchangeRate: 2530,
+            cryptoAmount: 1,
+            fiatAmount: 2530,
+            providerPayoutAmount: 2530,
+            gasFeeInFiat: 50.6,
+          },
+        },
       },
-      "selling": {
-        "momo": {
-          "country": "TZ",
-          "exchange": 2552.01,
-          "conversionResponse": {
-            "success": true,
-            "chargeFeeInFiat": 102.08040000000001,
-            "chargeFeeInUsd": 0.04,
-            "exchangeRate": 2552.01,
-            "cryptoAmount": 1,
-            "fiatAmount": 2552.01,
-            "providerPayoutAmount": 2552.01,
-            "gasFeeInFiat": 51.040200000000006
-          }
+      selling: {
+        momo: {
+          country: "TZ",
+          exchange: 2552.01,
+          conversionResponse: {
+            success: true,
+            chargeFeeInFiat: 102.08040000000001,
+            chargeFeeInUsd: 0.04,
+            exchangeRate: 2552.01,
+            cryptoAmount: 1,
+            fiatAmount: 2552.01,
+            providerPayoutAmount: 2552.01,
+            gasFeeInFiat: 51.040200000000006,
+          },
         },
-        "bank": {
-          "country": "TZ",
-          "exchange": 2552.01,
-          "conversionResponse": {
-            "success": true,
-            "chargeFeeInFiat": 102.08040000000001,
-            "chargeFeeInUsd": 0.04,
-            "exchangeRate": 2552.01,
-            "cryptoAmount": 1,
-            "fiatAmount": 2552.01,
-            "providerPayoutAmount": 2552.01,
-            "gasFeeInFiat": 51.040200000000006
-          }
-        }
-      }
+        bank: {
+          country: "TZ",
+          exchange: 2552.01,
+          conversionResponse: {
+            success: true,
+            chargeFeeInFiat: 102.08040000000001,
+            chargeFeeInUsd: 0.04,
+            exchangeRate: 2552.01,
+            cryptoAmount: 1,
+            fiatAmount: 2552.01,
+            providerPayoutAmount: 2552.01,
+            gasFeeInFiat: 51.040200000000006,
+          },
+        },
+      },
     },
-    "ZA": {
-      "buying": {
-        "momo": {
-          "country": "ZA",
-          "exchange": 18.57,
-          "conversionResponse": {
-            "success": true,
-            "chargeFeeInFiat": 1.2999,
-            "chargeFeeInUsd": 0.07,
-            "exchangeRate": 18.57,
-            "cryptoAmount": 1,
-            "fiatAmount": 18.57,
-            "providerPayoutAmount": 18.57,
-            "gasFeeInFiat": 0.3714
-          }
+    ZA: {
+      buying: {
+        momo: {
+          country: "ZA",
+          exchange: 18.57,
+          conversionResponse: {
+            success: true,
+            chargeFeeInFiat: 1.2999,
+            chargeFeeInUsd: 0.07,
+            exchangeRate: 18.57,
+            cryptoAmount: 1,
+            fiatAmount: 18.57,
+            providerPayoutAmount: 18.57,
+            gasFeeInFiat: 0.3714,
+          },
         },
-        "bank": {
-          "country": "ZA",
-          "exchange": 18.57,
-          "conversionResponse": {
-            "success": true,
-            "chargeFeeInFiat": 1.2999,
-            "chargeFeeInUsd": 0.07,
-            "exchangeRate": 18.57,
-            "cryptoAmount": 1,
-            "fiatAmount": 18.57,
-            "providerPayoutAmount": 18.57,
-            "gasFeeInFiat": 0.3714
-          }
-        }
+        bank: {
+          country: "ZA",
+          exchange: 18.57,
+          conversionResponse: {
+            success: true,
+            chargeFeeInFiat: 1.2999,
+            chargeFeeInUsd: 0.07,
+            exchangeRate: 18.57,
+            cryptoAmount: 1,
+            fiatAmount: 18.57,
+            providerPayoutAmount: 18.57,
+            gasFeeInFiat: 0.3714,
+          },
+        },
       },
-      "selling": {
-        "momo": {
-          "country": "ZA",
-          "exchange": 18.32,
-          "conversionResponse": {
-            "success": true,
-            "chargeFeeInFiat": 0.32976,
-            "chargeFeeInUsd": 0.018,
-            "exchangeRate": 18.32,
-            "cryptoAmount": 1,
-            "fiatAmount": 18.32,
-            "providerPayoutAmount": 18.32,
-            "gasFeeInFiat": 0.3664
-          }
+      selling: {
+        momo: {
+          country: "ZA",
+          exchange: 18.32,
+          conversionResponse: {
+            success: true,
+            chargeFeeInFiat: 0.32976,
+            chargeFeeInUsd: 0.018,
+            exchangeRate: 18.32,
+            cryptoAmount: 1,
+            fiatAmount: 18.32,
+            providerPayoutAmount: 18.32,
+            gasFeeInFiat: 0.3664,
+          },
         },
-        "bank": {
-          "country": "ZA",
-          "exchange": 18.32,
-          "conversionResponse": {
-            "success": true,
-            "chargeFeeInFiat": 0.32976,
-            "chargeFeeInUsd": 0.018,
-            "exchangeRate": 18.32,
-            "cryptoAmount": 1,
-            "fiatAmount": 18.32,
-            "providerPayoutAmount": 18.32,
-            "gasFeeInFiat": 0.3664
-          }
-        }
-      }
-    }
-  }
+        bank: {
+          country: "ZA",
+          exchange: 18.32,
+          conversionResponse: {
+            success: true,
+            chargeFeeInFiat: 0.32976,
+            chargeFeeInUsd: 0.018,
+            exchangeRate: 18.32,
+            cryptoAmount: 1,
+            fiatAmount: 18.32,
+            providerPayoutAmount: 18.32,
+            gasFeeInFiat: 0.3664,
+          },
+        },
+      },
+    },
+  },
 };
 
 // Fixed cross rates: 1 NGN -> Local currency units
@@ -455,4 +455,44 @@ export function getExchangeRateClient(
   return null;
 }
 
+// Dynamic cNGN helpers based on current exchange rates
+/**
+ * Get the default prefill amount for cNGN (equivalent to 1 USD)
+ * @returns cNGN amount equal to 1 USD based on current exchange rate
+ */
+export function getCNGNDefaultAmount(): number {
+  const rate = getExchangeRateClient("NG", "selling", "momo");
+  return rate?.exchange || 1472.57; // Fallback to current rate if data unavailable
+}
 
+/**
+ * Get the KYC bypass threshold for cNGN (equivalent to 1000 USD)
+ * This threshold allows MoMo transactions under this amount to bypass full KYC
+ * @returns cNGN amount equal to 1000 USD based on current exchange rate
+ */
+export function getCNGNKYCThreshold(): number {
+  const rate = getExchangeRateClient("NG", "selling", "momo");
+  const usdAmount = 1000; // $1000 threshold
+  return (rate?.exchange || 1472.57) * usdAmount;
+}
+
+/**
+ * Get the cNGN to NGN exchange rate
+ * Note: cNGN is NOT pegged 1:1 to NGN - there's a small platform fee
+ * Based on API data, 1 cNGN ≈ 0.9966 NGN (approximately 99.66% of NGN value)
+ * @returns The exchange rate for cNGN -> NGN conversion
+ */
+export function getCNGNToNGNRate(): number {
+  // The platform takes a small fee, so cNGN trades slightly below NGN
+  // This rate is derived from: exchange / amountPaid from quote-out response
+  // Example: 1467.5338106 / 1472.57 = 0.996577
+  return 0.996577; // ~0.34% platform fee
+}
+
+/**
+ * Get the NGN to cNGN exchange rate (inverse of cNGN to NGN)
+ * @returns The exchange rate for NGN -> cNGN conversion
+ */
+export function getNGNToCNGNRate(): number {
+  return 1 / getCNGNToNGNRate(); // ~1.00344
+}

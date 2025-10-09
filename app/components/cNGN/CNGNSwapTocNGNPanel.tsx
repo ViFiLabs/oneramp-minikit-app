@@ -6,6 +6,7 @@ import { useUserSelectionStore } from "@/store/user-selection";
 import { useAmountStore } from "@/store/amount-store";
 import { SwipeToWithdrawButton } from "@/app/components/payment/swipe-to-withdraw";
 import { SwapArrow } from "@/app/components/panels/SwapArrow";
+import { getNGNToCNGNRate } from "@/lib/exchange-rates-data";
 
 export default function CNGNSwapTocNGNPanel() {
   const { country, updateSelection } = useUserSelectionStore();
@@ -15,7 +16,8 @@ export default function CNGNSwapTocNGNPanel() {
     const usdc = parseFloat(String(amount || 0));
     const ngnPerUSDC = country?.exchangeRate || 0; // 1 USDC ~ N NGN
     if (!usdc || !ngnPerUSDC) return "0.00";
-    const cngn = usdc * ngnPerUSDC; // result in NGN; cNGN is 1:1 NGN
+    const ngn = usdc * ngnPerUSDC; // Convert USDC to NGN first
+    const cngn = ngn * getNGNToCNGNRate(); // Then convert NGN to cNGN (not 1:1)
     return cngn.toLocaleString("en-US", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
@@ -89,14 +91,14 @@ export default function CNGNSwapTocNGNPanel() {
 
       <div className="flex items-center justify-between text-xs my-2 text-neutral-400 px-1">
         <div>
-          1 cNGN ~{" "}
+          1 USDC ≈{" "}
           {(country?.exchangeRate
-            ? 1 / country.exchangeRate
+            ? country.exchangeRate * getNGNToCNGNRate()
             : 0
-          ).toLocaleString("en-US", { maximumFractionDigits: 4 })}{" "}
-          USDC
+          ).toLocaleString("en-US", { maximumFractionDigits: 2 })}{" "}
+          cNGN
         </div>
-        <div>Max slippage ~ 2.5%</div>
+        {/* <div className="text-neutral-500">~0.34% platform fee</div> */}
       </div>
 
       <div className="mt-2">

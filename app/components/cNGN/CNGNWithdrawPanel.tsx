@@ -30,6 +30,10 @@ import {
   TransferType,
 } from "@/types";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
+import {
+  getCNGNKYCThreshold,
+  getCNGNToNGNRate,
+} from "@/lib/exchange-rates-data";
 
 export default function CNGNWithdrawPanel() {
   const userSelection = useUserSelectionStore();
@@ -149,7 +153,7 @@ export default function CNGNWithdrawPanel() {
 
       // Allow MoMo transactions under the asset-specific ~$100 threshold to bypass full KYC
       const numericAmount = parseFloat(String(amount || 0));
-      const cngnThreshold = 1_507_908; // ~ $100 in NGN
+      const cngnThreshold = getCNGNKYCThreshold(); // Dynamic: ~$1000 in NGN based on current exchange rate
       const usdThreshold = 100;
       const isCngn = (asset?.symbol || "") === "cNGN";
       const threshold = isCngn ? cngnThreshold : usdThreshold;
@@ -473,7 +477,7 @@ export default function CNGNWithdrawPanel() {
 
     // Allow MoMo under the asset-specific ~$100 threshold to bypass KYC
     const numericAmount = parseFloat(String(amount || 0));
-    const cngnThreshold = 1_507_908; // ~ $100 in NGN
+    const cngnThreshold = getCNGNKYCThreshold(); // Dynamic: ~$1000 in NGN based on current exchange rate
     const usdThreshold = 100;
     const threshold = asset?.symbol === "cNGN" ? cngnThreshold : usdThreshold;
     const allowKycBypassForMomo =
@@ -584,8 +588,11 @@ export default function CNGNWithdrawPanel() {
         </div>
       </div>
 
-      {/* Peg line for cNGN */}
-      <div className="px-1 text-xs text-neutral-400 my-2"> ~ </div>
+      {/* Exchange rate for cNGN -> NGN */}
+      <div className="px-1 text-xs text-neutral-400 my-2 flex justify-between items-center">
+        <span>1 cNGN ≈ {getCNGNToNGNRate().toFixed(6)} NGN</span>
+        {/* <span className="text-neutral-500">~0.34% platform fee</span> */}
+      </div>
 
       {/* Recipient */}
       <SelectInstitution disableSubmit={true} />

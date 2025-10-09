@@ -38,6 +38,10 @@ import SelectInstitution from "./select-institution";
 import { KYCVerificationModal } from "./modals/KYCVerificationModal";
 import { toast } from "sonner";
 import { ModalConnectButton } from "@/app/components/wallet/modal-connect-button";
+import {
+  getCNGNDefaultAmount,
+  getCNGNKYCThreshold,
+} from "@/lib/exchange-rates-data";
 // Standalone cNGN action picker now lives in CNGNActionPanel
 import { supportedAssetsUI } from "@/data/assets-ui";
 import { cNGNTabsUI } from "./cNGN/utils";
@@ -140,7 +144,7 @@ export function WithdrawPanel({
 
     // Prefill minimum for selected asset on selection
     const minByAsset: Record<string, number> = {
-      cNGN: 1508,
+      cNGN: getCNGNDefaultAmount(),
       USDC: 1,
       USDT: 1,
     };
@@ -200,7 +204,7 @@ export function WithdrawPanel({
   // Prefill minimum amount once when switching assets (don't override user typing)
   useEffect(() => {
     const minByAsset: Record<string, number> = {
-      cNGN: 1508,
+      cNGN: getCNGNDefaultAmount(),
       USDC: 1,
       USDT: 1,
     };
@@ -226,7 +230,7 @@ export function WithdrawPanel({
         country.countryCode === "NG" || country.countryCode === "ZA";
 
       const numericAmount = parseFloat(String(amount || 0));
-      const cngnThreshold = 1_507_908; // ~ $100 in NGN
+      const cngnThreshold = getCNGNKYCThreshold(); // Dynamic: ~$1000 in NGN based on current exchange rate
       const usdThreshold = 100;
       const threshold =
         selectedCurrency.symbol === "cNGN" ? cngnThreshold : usdThreshold;
@@ -614,7 +618,7 @@ export function WithdrawPanel({
 
     // Allow MoMo under $100 to bypass KYC for Withdraw
     const numericAmount = parseFloat(String(amount || 0));
-    const cngnThreshold = 1_507_908; // ~ $100 in NGN
+    const cngnThreshold = getCNGNKYCThreshold(); // Dynamic: ~$1000 in NGN based on current exchange rate
     const usdThreshold = 100;
     const threshold =
       selectedCurrency.symbol === "cNGN" ? cngnThreshold : usdThreshold;

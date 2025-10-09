@@ -28,6 +28,10 @@ import { countries } from "@/data/countries";
 import { useAllCountryExchangeRates } from "@/hooks/useExchangeRate";
 import { usePreFetchInstitutions } from "@/hooks/useExchangeRate";
 import { useKYCStore } from "@/store/kyc-store";
+import {
+  getCNGNDefaultAmount,
+  getCNGNKYCThreshold,
+} from "@/lib/exchange-rates-data";
 import { toast } from "sonner";
 
 // Reuse the same country list from withdrawPanel
@@ -173,7 +177,7 @@ export function BuyPanel() {
 
       // Allow MoMo transactions under the asset-specific ~$100 threshold to bypass full KYC
       const numericAmount = parseFloat(String(amount));
-      const cngnThreshold = 1_507_908; // ~ $100 in NGN
+      const cngnThreshold = getCNGNKYCThreshold(); // Dynamic: ~$1000 in NGN based on current exchange rate
       const usdThreshold = 100;
       const threshold = asset.symbol === "cNGN" ? cngnThreshold : usdThreshold;
       const allowKycBypassForMomo =
@@ -349,7 +353,7 @@ export function BuyPanel() {
   useEffect(() => {
     if (!asset?.symbol) return;
     const minByAsset: Record<string, string> = {
-      cNGN: "1508",
+      cNGN: getCNGNDefaultAmount().toString(),
       USDC: "1",
       USDT: "1",
     };
@@ -366,7 +370,7 @@ export function BuyPanel() {
   const handleBuyComplete = () => {
     // Allow MoMo under $100 to bypass KYC (Deposit flow uses USD input already)
     const numericAmount = parseFloat(String(amount || 0));
-    const cngnThreshold = 1_507_908; // ~ $100 in NGN
+    const cngnThreshold = getCNGNKYCThreshold(); // Dynamic: ~$1000 in NGN based on current exchange rate
     const usdThreshold = 100;
     const threshold = asset?.symbol === "cNGN" ? cngnThreshold : usdThreshold;
     const allowKycBypassForMomo =

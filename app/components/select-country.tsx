@@ -9,7 +9,7 @@ import { useEffect, useMemo } from "react";
 import SelectCountryModal from "./modals/select-country-modal";
 import CurrencyValueInput from "./inputs/CurrencyValueInput";
 import { countries } from "@/data/countries";
-import { getNgnToLocalRate } from "@/lib/exchange-rates-data";
+import { getNgnToLocalRate, getCNGNToNGNRate } from "@/lib/exchange-rates-data";
 
 const SelectCountry = () => {
   const { country, updateSelection, paymentMethod, countryPanelOnTop, asset } =
@@ -49,13 +49,22 @@ const SelectCountry = () => {
   }, [exchangeRate, asset?.symbol, country?.countryCode, allExchangeRates]);
 
   const calculatedAmount = useMemo(() => {
-    if (!country || !amount || !effectiveRate) return null;
+    if (!country || !amount) return null;
     const numericAmount = parseFloat(amount);
     if (isNaN(numericAmount)) return null;
 
+    // Special handling for cNGN to NGN conversion
+    const isCngn = (asset?.symbol || "").toUpperCase() === "CNGN";
+    if (isCngn && country.countryCode === "NG") {
+      const convertedAmount = numericAmount * getCNGNToNGNRate();
+      return convertedAmount.toFixed(2);
+    }
+
+    // For other currencies, use the effective rate
+    if (!effectiveRate) return null;
     const convertedAmount = numericAmount * effectiveRate;
     return convertedAmount.toFixed(2);
-  }, [amount, country, effectiveRate]);
+  }, [amount, country, effectiveRate, asset?.symbol]);
 
   const isAmountValid = useMemo(() => {
     if (!calculatedAmount || !country) return true;

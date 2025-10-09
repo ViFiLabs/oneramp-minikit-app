@@ -5,7 +5,7 @@ import { useAmountStore } from "@/store/amount-store";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/app/components/ui/skeleton";
 import { countries } from "@/data/countries";
-import { getNgnToLocalRate } from "@/lib/exchange-rates-data";
+import { getNgnToLocalRate, getCNGNToNGNRate } from "@/lib/exchange-rates-data";
 
 const ExchangeRateComponent = ({
   default: isDefault,
@@ -55,8 +55,16 @@ const ExchangeRateComponent = ({
   const localCurrencyAmount = useMemo(() => {
     if (!effectiveRate || !amount) return 0;
     const numericAmount = parseFloat(amount) || 0;
+
+    // Special handling for cNGN: apply platform fee conversion
+    const isCngn = (asset?.symbol || "").toUpperCase() === "CNGN";
+    if (isCngn && country?.countryCode === "NG") {
+      // For cNGN to NGN, apply the platform fee
+      return numericAmount * getCNGNToNGNRate();
+    }
+
     return numericAmount * effectiveRate;
-  }, [effectiveRate, amount]);
+  }, [effectiveRate, amount, asset?.symbol, country?.countryCode]);
 
   return (
     <div
@@ -85,6 +93,13 @@ const ExchangeRateComponent = ({
                           maximumFractionDigits: 2,
                         })}{" "}
                         {country.currency}
+                        {/* Show platform fee note for cNGN */}
+                        {/* {(asset?.symbol || "").toUpperCase() === "CNGN" &&
+                          country?.countryCode === "NG" && (
+                            <span className="text-neutral-500 ml-1">
+                              (~0.34% fee)
+                            </span>
+                          )} */}
                       </>
                     ) : (
                       <>-- {country.currency}</>
