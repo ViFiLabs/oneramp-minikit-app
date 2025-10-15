@@ -33,6 +33,7 @@ import {
   getCNGNKYCThreshold,
 } from "@/lib/exchange-rates-data";
 import { toast } from "sonner";
+import { BYPASS_NG_PHONE_VALIDATION } from "@/constants";
 
 // Reuse the same country list from withdrawPanel
 export const countryCurrencies = [
@@ -419,20 +420,18 @@ export function BuyPanel() {
     if (!isConnected || !address) return true;
     if (appState === AppState.Processing) return true; // block swipe during account verification
 
-    // For Nigeria, disable when KYC phone is invalid
+    // Nigeria-specific phone validation, toggled by feature flag
     if (country.countryCode === "NG") {
-      const kycPhone = kycData?.fullKYC?.phoneNumber || "";
-
-      const isValidNigerianPhone = (input?: string | null) => {
-        if (!input) return false;
-        const phone = String(input).replace(/\s|-/g, "");
-        // Accept: +234XXXXXXXXXX (10 digits after country code), 234XXXXXXXXXX, or 0XXXXXXXXXX (11 digits)
-        const patterns = [/^\+234\d{10}$/i, /^234\d{10}$/i, /^0\d{10}$/];
-        return patterns.some((re) => re.test(phone));
-      };
-
-      if (!isValidNigerianPhone(kycPhone)) {
-        return true;
+      if (!BYPASS_NG_PHONE_VALIDATION) {
+        const kycPhone = kycData?.fullKYC?.phoneNumber || "";
+        const isValidNigerianPhone = (input?: string | null) => {
+          if (!input) return false;
+          const phone = String(input).replace(/\s|-/g, "");
+          // Accept: +234XXXXXXXXXX (10 digits after country code), 234XXXXXXXXXX, or 0XXXXXXXXXX (11 digits)
+          const patterns = [/^\+234\d{10}$/i, /^234\d{10}$/i, /^0\d{10}$/];
+          return patterns.some((re) => re.test(phone));
+        };
+        if (!isValidNigerianPhone(kycPhone)) return true;
       }
     } else {
       // For non-Nigeria countries, require institution selection
@@ -454,6 +453,7 @@ export function BuyPanel() {
 
   // Nigeria-specific KYC phone validation to show an inline message (since institution/account inputs are hidden)
   const isNgPhoneInvalid = useMemo(() => {
+    if (BYPASS_NG_PHONE_VALIDATION) return false;
     if (country?.countryCode !== "NG") return false;
     const kycPhone = kycData?.fullKYC?.phoneNumber || "";
     const phone = String(kycPhone).replace(/\s|-/g, "");
