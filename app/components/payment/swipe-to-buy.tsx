@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { ChevronRight, Loader2, Check, CreditCard } from "lucide-react";
+import { useHaptics } from "@/hooks/useHaptics";
 
 interface SwipeToBuyButtonProps {
   onBuyComplete: () => void;
@@ -24,6 +25,8 @@ export function SwipeToBuyButton({
   const [dragX, setDragX] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const haptics = useHaptics();
 
   useEffect(() => {
     if (reset) {
@@ -64,6 +67,7 @@ export function SwipeToBuyButton({
     if ((e as React.TouchEvent).cancelable) {
       (e as React.TouchEvent).preventDefault();
     }
+    haptics.light(); // subtle tap on swipe start
   };
 
   useEffect(() => {
@@ -83,7 +87,10 @@ export function SwipeToBuyButton({
         // Smoothly assist the handle to 80% position for better UX
         setDragX(maxAllowedDrag);
         setIsDragging(false);
-        setTimeout(() => onBuyComplete(), 300);
+        setTimeout(() => {
+          haptics.success(); // completion haptic
+          onBuyComplete();
+        }, 300);
       }
     };
 
@@ -106,7 +113,7 @@ export function SwipeToBuyButton({
       document.removeEventListener("touchmove", onTouchMove);
       document.removeEventListener("touchend", onEnd);
     };
-  }, [isDragging, isCompleted, onBuyComplete]);
+  }, [isDragging, isCompleted, onBuyComplete, haptics]);
 
   useEffect(() => {
     if (!isLoading) {

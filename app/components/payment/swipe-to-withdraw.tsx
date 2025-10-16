@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { useHaptics } from "@/hooks/useHaptics";
 import {
   ChevronRight,
   Loader2,
@@ -33,7 +34,7 @@ export function SwipeToWithdrawButton({
   isWalletConnected = false,
   hasKYC = false,
   onConnectWallet,
-  onStartKYC,
+  // onStartKYC,
   reset = false,
 }: SwipeToWithdrawButtonProps) {
   // Trigger completion once user drags past ~55% of the track (mobile-friendly)
@@ -42,6 +43,8 @@ export function SwipeToWithdrawButton({
   const [dragX, setDragX] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const haptics = useHaptics();
 
   // Reset button state when reset prop changes
   useEffect(() => {
@@ -57,7 +60,7 @@ export function SwipeToWithdrawButton({
 
     // Check wallet connection
     if (!isWalletConnected) return "Connect Wallet";
-    
+
     // Always show "Swipe to Withdraw" if wallet is connected, regardless of KYC status
     return "Swipe to Withdraw";
   };
@@ -67,7 +70,7 @@ export function SwipeToWithdrawButton({
 
     // Check wallet connection
     if (!isWalletConnected) return "Connect your wallet to continue";
-    
+
     // Always show withdrawal-related helper text, regardless of KYC status
     if (disabled) return "Complete form details to continue";
     return "Drag the slider to confirm withdrawal";
@@ -150,6 +153,7 @@ export function SwipeToWithdrawButton({
       if (e.cancelable) {
         e.preventDefault();
       }
+      haptics.light(); // subtle tap on swipe start
       return;
     }
 
@@ -173,6 +177,7 @@ export function SwipeToWithdrawButton({
       if (e.cancelable) {
         e.preventDefault();
       }
+      haptics.light(); // subtle tap on swipe start
       return;
     }
 
@@ -202,6 +207,7 @@ export function SwipeToWithdrawButton({
         setTimeout(() => {
           // Always call onWithdrawComplete when swipe is completed
           // Let the parent component handle KYC verification
+          haptics.success(); // completion haptic
           onWithdrawComplete();
         }, 300);
       }
@@ -229,6 +235,7 @@ export function SwipeToWithdrawButton({
         setTimeout(() => {
           // Always call onWithdrawComplete when swipe is completed
           // Let the parent component handle KYC verification
+          haptics.success(); // completion haptic
           onWithdrawComplete();
         }, 300);
       }
@@ -263,12 +270,7 @@ export function SwipeToWithdrawButton({
       document.removeEventListener("touchmove", handleGlobalTouchMove);
       document.removeEventListener("touchend", handleGlobalTouchEnd);
     };
-  }, [
-    isDragging,
-    isCompleted,
-    onWithdrawComplete,
-    isWalletConnected,
-  ]);
+  }, [isDragging, isCompleted, onWithdrawComplete, isWalletConnected, haptics]);
 
   // Reset when loading changes or when KYC/wallet state changes
   useEffect(() => {

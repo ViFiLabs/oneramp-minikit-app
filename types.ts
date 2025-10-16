@@ -268,6 +268,7 @@ export interface KYCVerificationResponse {
 
 export interface VerifyAccountDetailsRequest {
   bankId: string;
+  bankName: string;
   accountNumber: string;
   currency: string;
 }

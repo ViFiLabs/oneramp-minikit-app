@@ -464,6 +464,11 @@ export function BuyPanel() {
   const handleCountrySelect = (selectedCountry: Country) => {
     const rate = exchangeRate?.exchange ?? selectedCountry.exchangeRate;
 
+    // If the selected country is Nigeria, set the payment method to bank
+    if (selectedCountry.countryCode === "NG") {
+      updateSelection({ paymentMethod: "bank" });
+    }
+
     updateSelection({
       country: {
         ...selectedCountry,

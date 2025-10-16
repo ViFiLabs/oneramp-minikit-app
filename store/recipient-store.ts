@@ -6,6 +6,8 @@ import { persist } from "zustand/middleware";
 interface CountryRecipientData {
   institution?: Institution;
   accountNumber?: string;
+  accountName?: string;
+  paymentMethod?: "bank" | "momo";
   lastUpdated?: string;
 }
 
@@ -19,6 +21,8 @@ interface RecipientStore {
     data: {
       institution?: Institution;
       accountNumber?: string;
+      accountName?: string;
+      paymentMethod?: "bank" | "momo";
     }
   ) => void;
 
@@ -56,7 +60,9 @@ export const useRecipientStore = create<RecipientStore>()(
 
       clearRecipient: (countryCode) => {
         set((state) => {
-          const { [countryCode]: _, ...rest } = state.recipientsByCountry;
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { [countryCode]: _removed, ...rest } =
+            state.recipientsByCountry;
           return { recipientsByCountry: rest };
         });
       },

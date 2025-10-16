@@ -258,7 +258,9 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
       return (
         <p className="text-white text-center text-lg font-medium">{`${Number(
           quote.amountPaid
-        ).toFixed(1)} cNGN for ${fiatAmount.toFixed(0)} ${quote.fiatType} on ${
+        ).toFixed(1)} cNGN for ${Number(quote.fiatAmount).toFixed(0)} ${
+          quote.fiatType
+        } on ${
           quote.network.charAt(0).toUpperCase() + quote.network.slice(1)
         }`}</p>
       );

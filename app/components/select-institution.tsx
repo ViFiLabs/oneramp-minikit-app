@@ -22,7 +22,7 @@ import {
 } from "@/types";
 import { useMutation } from "@tanstack/react-query";
 import { Loader } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { AccountStatusIndicator, AccountNameDisplay } from "./account-details";
@@ -30,6 +30,7 @@ import SubmitButton from "./buttons/submit-button";
 import { InstitutionModal } from "./modals/InstitutionModal";
 import { KYCVerificationModal } from "./modals/KYCVerificationModal";
 import { useRecipientStore } from "@/store/recipient-store";
+import { verifyAccountDetails } from "@/actions/institutions";
 
 interface FormInputs {
   accountNumber: string;
@@ -116,6 +117,16 @@ const SelectInstitution = ({
           setValue("accountNumber", savedData.accountNumber);
           updateSelection({ accountNumber: savedData.accountNumber });
         }
+
+        // Prefill account name if saved
+        if (savedData.accountName) {
+          updateSelection({ accountName: savedData.accountName });
+        }
+
+        // Prefill payment method if saved
+        if (savedData.paymentMethod) {
+          updateSelection({ paymentMethod: savedData.paymentMethod });
+        }
       }
     }
   }, [
@@ -139,15 +150,84 @@ const SelectInstitution = ({
     return () => subscription.unsubscribe();
   }, [watch, updateSelection]);
 
-  // Save institution and account number to persist store when they change
+  // Save institution, account number, and account name to persist store when they change
   useEffect(() => {
-    if (country?.countryCode && (institution || accountNumber)) {
+    if (
+      country?.countryCode &&
+      (institution || accountNumber || userPayLoad.accountName)
+    ) {
       saveRecipient(country.countryCode, {
         institution: institution || undefined,
         accountNumber: accountNumber || undefined,
+        accountName: userPayLoad.accountName || undefined,
+        paymentMethod: userPayLoad.paymentMethod || undefined,
       });
     }
-  }, [country?.countryCode, institution, accountNumber, saveRecipient]);
+  }, [
+    country?.countryCode,
+    institution,
+    accountNumber,
+    userPayLoad.accountName,
+    userPayLoad.paymentMethod,
+    saveRecipient,
+  ]);
+
+  // Prefetch and persist account name when missing (bank only)
+  useEffect(() => {
+    const shouldPrefetch =
+      userPayLoad.paymentMethod === "bank" &&
+      !!country?.currency &&
+      !!institution?.code &&
+      !!accountNumber &&
+      !userPayLoad.accountName &&
+      !!kycData; // align with normal verifier gating
+
+    if (!shouldPrefetch) return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const resp = await verifyAccountDetails({
+          bankId: institution!.code,
+          bankName: institution!.name,
+          accountNumber,
+          currency: country!.currency,
+        });
+
+        if (cancelled) return;
+        if (resp && !(resp instanceof Error) && resp.accountName) {
+          updateSelection({ accountName: resp.accountName });
+          if (country?.countryCode) {
+            saveRecipient(country.countryCode, {
+              institution: institution!,
+              accountNumber,
+              accountName: resp.accountName,
+              paymentMethod: "bank",
+            });
+          }
+        }
+      } catch {
+        // Ignore prefetch errors; UI verifier handles feedback
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    userPayLoad.paymentMethod,
+    country?.currency,
+    country?.countryCode,
+    institution?.code,
+    institution?.name,
+    accountNumber,
+    userPayLoad.accountName,
+    kycData,
+    saveRecipient,
+    updateSelection,
+    country,
+    institution,
+  ]);
 
   const createMutation = useMutation({
     mutationFn: async (payload: QuoteRequest) =>
@@ -388,12 +468,28 @@ const SelectInstitution = ({
     onError: () => {},
   });
 
+  // Check if user has the required wallet for the selected network
+  const hasRequiredWallet = useCallback(() => {
+    if (!currentNetwork) return false;
+
+    const isSupportedNetwork = SUPPORTED_NETWORKS_WITH_RPC_URLS.find(
+      (network) => network.name === currentNetwork.name
+    );
+
+    return !!isSupportedNetwork && isConnected;
+  }, [currentNetwork, isConnected]);
+
   // Update button disabled state and text whenever dependencies change
   useEffect(() => {
+    // For Nigeria buy flow, account number is not required in the form
+    const isNigeriaBuyFlow = buy && userPayLoad?.country?.countryCode === "NG";
+    const requiresAccountNumber = !isNigeriaBuyFlow;
+
     const isDisabled =
       !isConnected ||
       !hasRequiredWallet() ||
-      !accountNumber ||
+      (requiresAccountNumber && !accountNumber) ||
+      !institution ||
       !country ||
       !isAmountValid ||
       userPayLoad.appState === AppState.Processing;
@@ -425,6 +521,10 @@ const SelectInstitution = ({
     currentNetwork,
     isAmountValid,
     errors,
+    buy,
+    userPayLoad?.country?.countryCode,
+    hasRequiredWallet,
+    userPayLoad.appState,
   ]);
 
   const handleInstitutionSelect = (inst: Institution) => {
@@ -457,6 +557,9 @@ const SelectInstitution = ({
       saveRecipient(country.countryCode, {
         institution: inst,
         accountNumber: savedData?.accountNumber,
+        accountName: savedData?.accountName,
+        paymentMethod:
+          (instType as "bank" | "momo") || savedData?.paymentMethod,
       });
     }
 
@@ -547,17 +650,6 @@ const SelectInstitution = ({
 
     // Reset form inputs visually while keeping global state
   });
-
-  // Check if user has the required wallet for the selected network
-  const hasRequiredWallet = () => {
-    if (!currentNetwork) return false;
-
-    const isSupportedNetwork = SUPPORTED_NETWORKS_WITH_RPC_URLS.find(
-      (network) => network.name === currentNetwork.name
-    );
-
-    return !!isSupportedNetwork && isConnected;
-  };
 
   const isAccountNumberValid = () => {
     if (!userPayLoad) return false;

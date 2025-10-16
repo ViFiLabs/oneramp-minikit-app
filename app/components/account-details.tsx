@@ -37,6 +37,7 @@ export const AccountStatusIndicator = ({
     queryFn: async () =>
       await verifyAccountDetails({
         bankId: institution?.code || "",
+        bankName: institution?.name || "",
         accountNumber: accountNumber,
         currency: country?.currency || "",
       }),
@@ -55,7 +56,7 @@ export const AccountStatusIndicator = ({
       setAppState(AppState.Idle);
       updateSelection({ accountName: accountDetails.accountName });
     }
-  }, [isLoading, error, accountDetails, kycData]);
+  }, [isLoading, error, accountDetails, kycData, setAppState, updateSelection]);
 
   if (isLoading && kycData && !kycData?.message?.link) {
     return (
@@ -82,7 +83,7 @@ export const AccountNameDisplay = ({
 }: {
   accountNumber: string;
 }) => {
-  const { paymentMethod, country, institution } = useUserSelectionStore();
+  const { country, institution } = useUserSelectionStore();
   const { kycData } = useKYCStore();
 
   const {
@@ -94,6 +95,7 @@ export const AccountNameDisplay = ({
     queryFn: async () =>
       await verifyAccountDetails({
         bankId: institution?.code || "",
+        bankName: institution?.name || "",
         accountNumber: accountNumber,
         currency: country?.currency || "",
       }),
@@ -103,13 +105,8 @@ export const AccountNameDisplay = ({
     refetchOnWindowFocus: true,
   });
 
-  // Only show account name for bank accounts, not mobile money
-  if (
-    paymentMethod === "bank" &&
-    accountDetails?.accountName &&
-    !isLoading &&
-    !error
-  ) {
+  // Show account name when available
+  if (accountDetails?.accountName && !isLoading && !error) {
     return (
       <div className="flex items-center justify-between mt-2">
         <div className="flex p-1 text-white border-2 bg-neutral-900 border-[#bcbcff] rounded-lg px-4 text-sm font-medium border-gradient-to-r from-purple-500/20 to-indigo-500/20">

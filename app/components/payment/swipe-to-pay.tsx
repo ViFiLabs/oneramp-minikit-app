@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { useHaptics } from "@/hooks/useHaptics";
 import {
   ChevronRight,
   Loader2,
@@ -34,6 +35,8 @@ export function SwipeToPayButton({
   const [dragX, setDragX] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const haptics = useHaptics();
 
   const getButtonText = () => {
     if (isLoading && stepMessage) return stepMessage;
@@ -103,12 +106,14 @@ export function SwipeToPayButton({
     if (disabled || isLoading) return;
     setIsDragging(true);
     e.preventDefault();
+    haptics.light();
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (disabled || isLoading) return;
     setIsDragging(true);
     e.preventDefault();
+    haptics.light();
   };
 
   useEffect(() => {
@@ -131,6 +136,7 @@ export function SwipeToPayButton({
         setDragX(maxAllowedDrag);
         setIsDragging(false);
         setTimeout(() => {
+          haptics.success();
           onPaymentComplete();
         }, 300);
       }
@@ -190,7 +196,7 @@ export function SwipeToPayButton({
       document.removeEventListener("touchmove", handleGlobalTouchMove);
       document.removeEventListener("touchend", handleGlobalTouchEnd);
     };
-  }, [isDragging, isCompleted, onPaymentComplete]);
+  }, [isDragging, isCompleted, onPaymentComplete, haptics]);
 
   // Reset when loading changes
   useEffect(() => {

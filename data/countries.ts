@@ -192,7 +192,8 @@ export const countries: Country[] = [
     phoneCode: "+234",
     exchangeRate: 1_588.69,
     institutions: [],
-    fiatMinMax: { min: 3_000, max: 3_375_000 },
+    // Minimum set to ~$1 in NGN (kept close to current UI rate 1 USDC ~ 1,472.57 NGN)
+    fiatMinMax: { min: 1472.57, max: 3_375_000 },
     cryptoMinMax: { min: 1, max: 2_500 },
     accountNumberLength: {
       bankLength: 10,

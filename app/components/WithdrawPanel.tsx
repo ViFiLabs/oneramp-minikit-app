@@ -692,6 +692,9 @@ export function WithdrawPanel({
     !institution ||
     !accountNumber ||
     !evmConnected ||
+    // While verifying bank account name, prevent swiping
+    (userSelectionStore.paymentMethod === "bank" &&
+      userSelectionStore.appState === AppState.Processing) ||
     stepMessage === "Transaction Complete!" ||
     // For cNGN ensure action is selected
     (selectedCurrency.symbol === "cNGN" && !userSelectionStore.cngnAction);

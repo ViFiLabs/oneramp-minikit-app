@@ -140,8 +140,18 @@ export default function CNGNWithdrawPanel() {
       !country ||
       !institution ||
       !accountNumber ||
-      !evmConnected,
-    [isAmountValid, country, institution, accountNumber, evmConnected]
+      !evmConnected ||
+      (userSelection.paymentMethod === "bank" &&
+        userSelection.appState === AppState.Processing),
+    [
+      isAmountValid,
+      country,
+      institution,
+      accountNumber,
+      evmConnected,
+      userSelection.paymentMethod,
+      userSelection.appState,
+    ]
   );
 
   // Create transfer payload (same logic as SwapPanel)
