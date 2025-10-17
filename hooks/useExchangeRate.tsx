@@ -165,7 +165,7 @@ export function useAllCountryInstitutions(method: "buy" | "sell" = "buy") {
   });
 }
 
-// Original hook for backward compatibility
+// Original hook for backward compatibility with automatic revalidation
 export function useExchangeRate({
   countryCode,
   orderType,
@@ -178,6 +178,7 @@ export function useExchangeRate({
         throw new Error("Country code and provider type are required");
       }
 
+      // Use server action with built-in Next.js caching and revalidation
       return await getCountryExchangeRate({
         country: countryCode,
         orderType,
@@ -185,9 +186,12 @@ export function useExchangeRate({
       });
     },
     enabled: !!countryCode && !!providerType,
-    staleTime: 30 * 1000, // 30 seconds
-    refetchInterval: 60 * 1000, // Refetch every minute for fresh rates
+    staleTime: 90 * 1000, // 90 seconds - matches server-side cache duration
+    refetchInterval: 90 * 1000, // Refetch every 90 seconds for fresh rates
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    // Background refetching - updates happen automatically
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 }

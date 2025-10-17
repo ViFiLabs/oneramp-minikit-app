@@ -1,35 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { oneRampApi } from "@/constants";
-import fs from "fs/promises";
-import path from "path";
+import { revalidateTag } from "next/cache";
+import { getAllExchangeRates } from "@/actions/rates";
 
-const EXCHANGE_RATES_FILE_PATH = path.join(
-  process.cwd(),
-  "data",
-  "exchange-rates.json"
-);
-
-interface ExchangeRateResponse {
-  exchange: number;
-  country: string;
-  conversionResponse: {
-    success: boolean;
-    chargeFeeInFiat: number;
-    chargeFeeInUsd: number;
-    exchangeRate: number;
-    fiatAmount: number;
-    gasFeeInFiat: number;
-  };
-}
-
-interface ExchangeRatesData {
-  lastUpdated: string;
-  exchangeRates: Record<
-    string,
-    Record<string, Record<string, ExchangeRateResponse>>
-  >;
-}
-
+/**
+ * POST /api/exchange-rates/update
+ * Manually revalidate exchange rates cache
+ * This endpoint forces an immediate cache refresh
+ */
 export async function POST(request: NextRequest) {
   try {
     // Check for authorization (you can add your own auth logic here)
@@ -38,77 +15,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const countries = [
-      "NG", // Nigeria
-      "KE", // Kenya
-      "UG", // Uganda
-      "GHA", // Ghana
-      "ZM", // Zambia
-      "TZ", // Tanzania
-      "ZA", // South Africa
-    ];
+    // Revalidate the exchange rates cache
+    revalidateTag("exchange-rates");
 
-    const orderTypes = ["buying", "selling"];
-    const providerTypes = ["momo", "bank"];
-    const updatedExchangeRates: Record<
-      string,
-      Record<string, Record<string, ExchangeRateResponse>>
-    > = {};
-
-    // Fetch exchange rates for each country, order type, and provider type
-    for (const country of countries) {
-      updatedExchangeRates[country] = {};
-
-      for (const orderType of orderTypes) {
-        updatedExchangeRates[country][orderType] = {};
-
-        for (const providerType of providerTypes) {
-          try {
-            const response = await oneRampApi.post("/exchange", {
-              country,
-              orderType,
-              providerType,
-            });
-            updatedExchangeRates[country][orderType][providerType] =
-              response.data;
-          } catch {
-            // Continue with other requests even if one fails
-            updatedExchangeRates[country][orderType][providerType] = {
-              exchange: 0,
-              country,
-              conversionResponse: {
-                success: false,
-                chargeFeeInFiat: 0,
-                chargeFeeInUsd: 0,
-                exchangeRate: 0,
-                fiatAmount: 0,
-                gasFeeInFiat: 0,
-              },
-            };
-          }
-        }
-      }
-    }
-
-    // Create the updated data structure
-    const updatedData: ExchangeRatesData = {
-      lastUpdated: new Date().toISOString(),
-      exchangeRates: updatedExchangeRates,
-    };
-
-    // Write to the JSON file
-    await fs.writeFile(
-      EXCHANGE_RATES_FILE_PATH,
-      JSON.stringify(updatedData, null, 2),
-      "utf-8"
-    );
+    // Fetch fresh rates to confirm update
+    const freshRates = await getAllExchangeRates();
 
     return NextResponse.json({
       success: true,
-      message: "Exchange rates data updated successfully",
-      lastUpdated: updatedData.lastUpdated,
-      countriesUpdated: countries.length,
-      totalRates: Object.values(updatedExchangeRates).reduce(
+      message: "Exchange rates cache revalidated successfully",
+      lastUpdated: new Date().toISOString(),
+      countries: Object.keys(freshRates),
+      totalRates: Object.values(freshRates).reduce(
         (total, countryData) =>
           total +
           Object.values(countryData).reduce(
@@ -118,11 +36,12 @@ export async function POST(request: NextRequest) {
           ),
         0
       ),
+      note: "Rates are now automatically revalidated every 90 seconds. Manual revalidation is no longer required.",
     });
   } catch (error) {
     return NextResponse.json(
       {
-        error: "Failed to update exchange rates",
+        error: "Failed to revalidate exchange rates",
         details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
@@ -130,34 +49,37 @@ export async function POST(request: NextRequest) {
   }
 }
 
+/**
+ * GET /api/exchange-rates/update
+ * Get current exchange rates (automatically cached and revalidated every 90 seconds)
+ */
 export async function GET() {
   try {
-    const fileContent = await fs.readFile(EXCHANGE_RATES_FILE_PATH, "utf-8");
-    const data = JSON.parse(fileContent) as ExchangeRatesData;
+    // This will use the cached data with automatic revalidation
+    const rates = await getAllExchangeRates();
 
     return NextResponse.json({
       success: true,
-      lastUpdated: data.lastUpdated,
-      countries: Object.keys(data.exchangeRates),
-      totalRates: Object.values(data.exchangeRates).reduce(
-        (
-          total: number,
-          countryData: Record<string, Record<string, ExchangeRateResponse>>
-        ) =>
+      lastUpdated: new Date().toISOString(),
+      countries: Object.keys(rates),
+      totalRates: Object.values(rates).reduce(
+        (total, countryData) =>
           total +
           Object.values(countryData).reduce(
-            (
-              orderTypeTotal: number,
-              orderTypeData: Record<string, ExchangeRateResponse>
-            ) => orderTypeTotal + Object.keys(orderTypeData).length,
+            (orderTypeTotal, orderTypeData) =>
+              orderTypeTotal + Object.keys(orderTypeData).length,
             0
           ),
         0
       ),
+      note: "Rates are automatically revalidated every 90 seconds. No manual updates needed!",
     });
-  } catch {
+  } catch (error) {
     return NextResponse.json(
-      { error: "Failed to read exchange rates file" },
+      {
+        error: "Failed to fetch exchange rates",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 }
     );
   }
