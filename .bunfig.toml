@@ -1,0 +1,6 @@
+[install]
+registry = "https://registry.npmjs.org"
+
+[install.scopes]
+"@radix-ui" = { registry = "https://registry.npmjs.org" }
+"@csstools" = { registry = "https://registry.npmjs.org" }
