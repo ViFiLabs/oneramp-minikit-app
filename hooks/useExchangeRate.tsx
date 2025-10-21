@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getCountryExchangeRate } from "@/actions/rates";
+import { getCountryExchangeRate, getAllExchangeRates } from "@/actions/rates";
 import { getInstitutions } from "@/actions/institutions";
 import { Institution } from "@/types";
 import { getExchangeRateClient } from "@/lib/exchange-rates-data";
@@ -23,32 +23,61 @@ export function useAllCountryExchangeRates({
         throw new Error("Provider type and order type are required");
       }
 
-      // Use client-side data for instant access
-      const countries = ["NG", "KE", "GHA", "ZM", "UG", "TZ", "ZA"];
-      const ratesMap: Record<string, ExchangeRateResponse> = {};
+      // Prefer fresh data from the server with automatic revalidation
+      try {
+        const allRates = await getAllExchangeRates();
+        const ratesMap: Record<string, ExchangeRateResponse> = {};
 
-      // Get rates from client-side cache
-      countries.forEach((countryCode) => {
-        const rate = getExchangeRateClient(
-          countryCode,
-          orderType,
-          providerType as "momo" | "bank"
-        );
-        if (rate) {
-          ratesMap[countryCode] = rate;
+        Object.keys(allRates).forEach((countryCode) => {
+          const rate =
+            allRates[countryCode]?.[orderType]?.[
+              providerType as "momo" | "bank"
+            ];
+          if (rate) {
+            ratesMap[countryCode] = rate;
+          }
+        });
+
+        // Fallback to client-side snapshot if server returned nothing
+        if (Object.keys(ratesMap).length === 0) {
+          const countries = ["NG", "KE", "GHA", "ZM", "UG", "TZ", "ZA"];
+          countries.forEach((countryCode) => {
+            const rate = getExchangeRateClient(
+              countryCode,
+              orderType,
+              providerType as "momo" | "bank"
+            );
+            if (rate) {
+              ratesMap[countryCode] = rate;
+            }
+          });
         }
-      });
 
-      return ratesMap;
+        return ratesMap;
+      } catch {
+        // Network/server issue: gracefully fall back to client snapshot
+        const countries = ["NG", "KE", "GHA", "ZM", "UG", "TZ", "ZA"];
+        const ratesMap: Record<string, ExchangeRateResponse> = {};
+        countries.forEach((countryCode) => {
+          const rate = getExchangeRateClient(
+            countryCode,
+            orderType,
+            providerType as "momo" | "bank"
+          );
+          if (rate) {
+            ratesMap[countryCode] = rate;
+          }
+        });
+        return ratesMap;
+      }
     },
     enabled: !!(providerType && orderType),
-    staleTime: Infinity, // Never consider data stale - use cache forever
-    gcTime: Infinity, // Keep in cache forever
-    retry: 1,
+    staleTime: 90 * 1000, // 90s to match server-side cache duration
+    refetchInterval: 90 * 1000, // revalidate roughly every 1–2 minutes
+    retry: 2,
     retryDelay: 1000,
-    // No background refetching since we're using client-side data
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 }
 
