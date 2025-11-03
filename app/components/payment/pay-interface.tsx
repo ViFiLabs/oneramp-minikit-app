@@ -647,16 +647,19 @@ export function PaymentInterface() {
       return;
     }
 
-    // Allow MoMo under $100 to bypass KYC for Pay
-    const allowKycBypassForMomo =
-      paymentMethod === "momo" &&
-      country?.countryCode !== "NG" &&
-      country?.countryCode !== "ZA" &&
-      parseFloat(String(amount || 0)) > 0 &&
-      parseFloat(String(amount || 0)) < 100;
+    // Bypass KYC for small payments: USD equivalent below $100
+    // Convert local fiat amount to USD using the current exchange rate when available
+    const numericAmount = parseFloat(String(amount || 0));
+    const rateForUsd = exchangeRate?.exchange || country?.exchangeRate || 0;
+    const amountInUsd = rateForUsd > 0 ? numericAmount / rateForUsd : 0;
+    const allowKycBypassForSmallPayments = amountInUsd > 0 && amountInUsd < 100;
 
     // Verify KYC before proceeding with payment
-    if (!allowKycBypassForMomo && kycData && kycData.kycStatus !== "VERIFIED") {
+    if (
+      !allowKycBypassForSmallPayments &&
+      kycData &&
+      kycData.kycStatus !== "VERIFIED"
+    ) {
       // Reset transaction state immediately to prevent SwipeToPayButton from staying in submission mode
       updateSelection({
         appState: AppState.Idle,
@@ -678,7 +681,7 @@ export function PaymentInterface() {
 
     // Additional check for rejected or in-review KYC
     if (
-      !allowKycBypassForMomo &&
+      !allowKycBypassForSmallPayments &&
       (kycData?.kycStatus === "REJECTED" || kycData?.kycStatus === "IN_REVIEW")
     ) {
       // Reset transaction state immediately
