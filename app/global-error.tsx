@@ -1,6 +1,9 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
+import Error from "next/error";
 import { Button } from "@/app/components/ui/button";
+import { useEffect } from "react";
 
 interface GlobalErrorProps {
   error: Error & { digest?: string };
@@ -8,6 +11,9 @@ interface GlobalErrorProps {
 }
 
 export default function GlobalError({ error, reset }: GlobalErrorProps) {
+  useEffect(() => {
+    Sentry.captureException(error);
+  }, [error]);
   return (
     <html>
       <body>
@@ -47,7 +53,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                     Error Details (Development):
                   </p>
                   <p className="text-xs text-red-400 font-mono break-all">
-                    {error.message}
+                    {error.toString()}
                   </p>
                   {error.digest && (
                     <p className="text-xs text-gray-500 mt-2">
