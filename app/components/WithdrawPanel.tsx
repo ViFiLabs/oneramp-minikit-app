@@ -19,7 +19,7 @@ import {
   Quote,
   Transfer,
 } from "@/types";
-import { useAllCountryExchangeRates } from "@/hooks/useExchangeRate";
+import { useExchangeRate } from "@/hooks/useExchangeRate";
 import { usePreFetchInstitutions } from "@/hooks/useExchangeRate";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState, useEffect, useCallback, useMemo } from "react";
@@ -105,15 +105,7 @@ export function WithdrawPanel({
   // EVM payment hook
   const { payWithEVM } = useEVMPay();
 
-  // Pre-fetch exchange rates for all supported countries when component mounts
-  // This improves the user experience by having rates ready when countries are selected
-  // Note: The data is used in ExchangeRateComponent and SelectCountry, this triggers the pre-fetching
-  // Using "selling" endpoint for better performance and real-time rate updates
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { data: allExchangeRates } = useAllCountryExchangeRates({
-    orderType: "selling", // Using selling endpoint for better performance
-    providerType: "momo", // Default provider type
-  });
+  // Removed all-countries prefetch to avoid unnecessary API errors
 
   // Pre-fetch institutions for Kenya and Uganda on initial load for better UX
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

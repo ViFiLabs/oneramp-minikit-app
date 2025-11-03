@@ -36,7 +36,7 @@ import { useQuoteStore } from "@/store/quote-store";
 import { useTransferStore } from "@/store/transfer-store";
 import { useKYCStore } from "@/store/kyc-store";
 import { Institution, AppState } from "@/types";
-import { useAllCountryExchangeRates } from "@/hooks/useExchangeRate";
+import { useExchangeRate } from "@/hooks/useExchangeRate";
 import { usePreFetchInstitutions } from "@/hooks/useExchangeRate";
 import { useAssetBalance } from "@/hooks/useAssetBalance";
 import useWalletGetInfo from "@/hooks/useWalletGetInfo";
@@ -114,22 +114,16 @@ export function PaymentInterface() {
     asset || null
   );
 
-  // Get all country exchange rates using optimized hook
-  // This pre-fetches rates for all supported countries to avoid individual API calls
+  // Get selected country's live exchange rate
   const {
-    data: allExchangeRates,
+    data: exchangeRate,
     isLoading: isExchangeRateLoading,
     error: exchangeRateError,
-  } = useAllCountryExchangeRates({
+  } = useExchangeRate({
+    countryCode: country?.countryCode,
     orderType: "selling",
-    providerType: paymentMethod || "momo", // Default to momo for Pay interface
+    providerType: paymentMethod || "momo",
   });
-
-  // Get current country's exchange rate from cached data
-  const exchangeRate = useMemo(() => {
-    if (!country?.countryCode || !allExchangeRates) return undefined;
-    return allExchangeRates[country.countryCode];
-  }, [country?.countryCode, allExchangeRates]);
 
   // Defensive: ensure unsupported country/asset from other tabs don't bleed into Pay
   const supportedCountryCodes = useMemo(

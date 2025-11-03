@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { useUserSelectionStore } from "@/store/user-selection";
-import { useAllCountryExchangeRates } from "@/hooks/useExchangeRate";
+import { useExchangeRate } from "@/hooks/useExchangeRate";
 import { useAmountStore } from "@/store/amount-store";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/app/components/ui/skeleton";
@@ -19,37 +19,47 @@ const ExchangeRateComponent = ({
   const { country, asset } = useUserSelectionStore();
   const { amount } = useAmountStore();
 
-  // Get all country exchange rates using optimized hook
-  const { data: allExchangeRates, isLoading: isExchangeRateLoading } =
-    useAllCountryExchangeRates({
-      orderType, // Use the passed orderType or default to "selling"
-      providerType: "momo", // Default provider type
+  // Fetch selected country's live exchange rate
+  const { data: exchangeRate, isLoading: isExchangeRateLoading } =
+    useExchangeRate({
+      countryCode: country?.countryCode,
+      orderType,
+      providerType: "momo",
     });
 
-  // Get current country's exchange rate from cached data
-  const exchangeRate = useMemo(() => {
-    if (!country?.countryCode || !allExchangeRates) return undefined;
-    return allExchangeRates[country.countryCode];
-  }, [country?.countryCode, allExchangeRates]);
+  // Also fetch Nigeria rate for cross-rate calc when asset is cNGN
+  const { data: nigeriaRate } = useExchangeRate({
+    countryCode: "NG",
+    orderType,
+    providerType: "momo",
+  });
 
   // Derive effective rate: if asset is cNGN, convert NGN -> local using cross-rate
   const effectiveRate = useMemo(() => {
-    if (!exchangeRate || !country) return undefined;
-    const isCngn = (asset?.symbol || "").toUpperCase() === "CNGN";
-    if (!isCngn) return exchangeRate.exchange;
+    const countryCode = country?.countryCode;
+    const baseRate = exchangeRate?.exchange;
+    if (!baseRate || !countryCode) return undefined;
 
-    const fixed = getNgnToLocalRate(country.countryCode);
+    const isCngn = (asset?.symbol || "").toUpperCase() === "CNGN";
+    if (!isCngn) return baseRate;
+
+    const fixed = getNgnToLocalRate(countryCode);
     if (fixed && fixed > 0) return fixed;
 
-    const nigeriaAPI = allExchangeRates?.NG?.exchange;
+    const nigeriaAPI = nigeriaRate?.exchange;
     const nigeriaFallback = countries.find(
       (c) => c.countryCode === "NG"
     )?.exchangeRate;
     const ngRate = nigeriaAPI || nigeriaFallback;
     if (!ngRate || ngRate <= 0) return undefined;
-    // exchangeRate.exchange is USD->Local, ngRate is USD->NGN, so NGN->Local = Local/USD / NGN/USD
-    return exchangeRate.exchange / ngRate;
-  }, [exchangeRate, asset?.symbol, allExchangeRates, country]);
+    // baseRate is USD->Local, ngRate is USD->NGN, so NGN->Local = Local/USD / NGN/USD
+    return baseRate / ngRate;
+  }, [
+    exchangeRate?.exchange,
+    asset?.symbol,
+    nigeriaRate?.exchange,
+    country?.countryCode,
+  ]);
 
   // Calculate the equivalent amount in local currency
   const localCurrencyAmount = useMemo(() => {

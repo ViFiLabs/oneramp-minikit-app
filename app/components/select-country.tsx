@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import { useAmountStore } from "@/store/amount-store";
 import { useUserSelectionStore } from "@/store/user-selection";
-import { useAllCountryExchangeRates } from "@/hooks/useExchangeRate";
+import { useExchangeRate } from "@/hooks/useExchangeRate";
 import { Country } from "@/types";
 import { useEffect, useMemo } from "react";
 import SelectCountryModal from "./modals/select-country-modal";
@@ -16,37 +16,45 @@ const SelectCountry = () => {
     useUserSelectionStore();
   const { amount, setIsValid, setFiatAmount } = useAmountStore();
 
-  // Use the optimized hook to get all exchange rates (same as withdrawPanel)
-  const { data: allExchangeRates } = useAllCountryExchangeRates({
+  // Fetch selected country's live exchange rate
+  const { data: exchangeRate } = useExchangeRate({
+    countryCode: country?.countryCode,
     orderType: "selling",
-    providerType: paymentMethod || "momo", // Default to momo if no payment method
+    providerType: paymentMethod || "momo",
   });
 
-  // Get current country's exchange rate from cached data
-  const exchangeRate = useMemo(() => {
-    if (!country?.countryCode || !allExchangeRates) return null;
-    return allExchangeRates[country.countryCode];
-  }, [country?.countryCode, allExchangeRates]);
+  // Also fetch Nigeria rate for cross-rate when asset is cNGN
+  const { data: nigeriaRate } = useExchangeRate({
+    countryCode: "NG",
+    orderType: "selling",
+    providerType: paymentMethod || "momo",
+  });
 
   // Compute effective rate: if asset is cNGN, do NGN->Local using fixed overrides
   const effectiveRate = useMemo(() => {
-    if (!exchangeRate) return null;
-    const isCngn = (asset?.symbol || "").toUpperCase() === "CNGN";
-    if (!isCngn) return exchangeRate.exchange;
+    const baseRate = exchangeRate?.exchange;
+    const countryCode = country?.countryCode;
+    if (!baseRate) return null;
 
-    const fixed = country?.countryCode
-      ? getNgnToLocalRate(country.countryCode)
-      : undefined;
+    const isCngn = (asset?.symbol || "").toUpperCase() === "CNGN";
+    if (!isCngn) return baseRate;
+
+    const fixed = countryCode ? getNgnToLocalRate(countryCode) : undefined;
     if (fixed && fixed > 0) return fixed;
 
-    const nigeriaAPI = allExchangeRates?.NG?.exchange;
+    const nigeriaAPI = nigeriaRate?.exchange;
     const nigeriaFallback = countries.find(
       (c) => c.countryCode === "NG"
     )?.exchangeRate;
     const ngRate = nigeriaAPI || nigeriaFallback;
-    if (!ngRate || ngRate <= 0) return exchangeRate.exchange;
-    return exchangeRate.exchange / ngRate;
-  }, [exchangeRate, asset?.symbol, country?.countryCode, allExchangeRates]);
+    if (!ngRate || ngRate <= 0) return baseRate;
+    return baseRate / ngRate;
+  }, [
+    exchangeRate?.exchange,
+    asset?.symbol,
+    country?.countryCode,
+    nigeriaRate?.exchange,
+  ]);
 
   const calculatedAmount = useMemo(() => {
     if (!country || !amount) return null;
