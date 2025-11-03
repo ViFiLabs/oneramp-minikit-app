@@ -93,13 +93,14 @@ export function usePreFetchInstitutions(
       return await getInstitutions(countryCode, method);
     },
     enabled: !!countryCode, // Fetch whenever a country is provided
-    staleTime: Infinity, // Never consider data stale - use cache forever
-    gcTime: Infinity, // Keep in cache forever
+    staleTime: 60 * 1000, // 1 minute to pick up backend updates quickly
+    refetchInterval: 3 * 60 * 1000, // refresh every 3 minutes in background
+    gcTime: 10 * 60 * 1000,
     retry: 1,
     retryDelay: 1000,
-    // Background fetch - don't show loading states
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    // Background fetch - light weight
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 }
 

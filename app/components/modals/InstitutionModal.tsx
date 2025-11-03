@@ -27,7 +27,7 @@ import {
 } from "@/app/components/ui/dialog";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 
-import { getInstitutionsClient } from "@/lib/institutions-data";
+import { usePreFetchInstitutions } from "@/hooks/useExchangeRate";
 
 interface InstitutionModalProps {
   open: boolean;
@@ -46,20 +46,23 @@ export function InstitutionModal({
   buy,
 }: InstitutionModalProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [institutions, setInstitutions] = useState<Institution[]>([]);
+  const method = buy ? "buy" : "sell";
+  const { data: institutions = [], refetch } = usePreFetchInstitutions(
+    country,
+    method
+  );
 
-  // Instant client-side data access - no loading needed
+  // Ensure we refresh when the modal is opened, to pick up backend updates
   useEffect(() => {
-    if (country) {
-      const data = getInstitutionsClient(country, buy ? "buy" : "sell");
-      setInstitutions(data as Institution[]);
+    if (open && country) {
+      refetch();
     }
-  }, [country, buy]);
+  }, [open, country, refetch]);
 
   if (!open) return null;
 
   // Filter institutions based on search query
-  const filteredInstitutions = institutions?.filter((institution) =>
+  const filteredInstitutions = (institutions as Institution[])?.filter((institution) =>
     institution.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 

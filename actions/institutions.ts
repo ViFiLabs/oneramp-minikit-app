@@ -40,22 +40,29 @@ export async function getInstitutions(country: string, method = "buy") {
       throw new Error("Country is required");
     }
 
-    // Try to read from JSON file first for fast loading
+    // Prefer fresh data from the API (backend updated frequently)
+    try {
+      const response = await oneRampApi.get(`/institutions/${country}/${method}`);
+      if (Array.isArray(response.data)) {
+        return response.data;
+      }
+    } catch {
+      // fall back to local cache below
+    }
+
+    // Fallback to JSON cache when API fails or returns unexpected data
     try {
       const fileContent = await fs.readFile(INSTITUTIONS_FILE_PATH, "utf-8");
       const data = JSON.parse(fileContent) as InstitutionsData;
-
       const countryInstitutions = data.institutions[country];
       if (countryInstitutions && countryInstitutions[method]) {
         return countryInstitutions[method];
       }
     } catch {
-      // Fallback to API if cache read fails
+      // ignore
     }
 
-    // Fallback to API if JSON file doesn't exist or doesn't have the data
-    const response = await oneRampApi.get(`/institutions/${country}/${method}`);
-    return response.data;
+    return [];
   } catch {
     return [];
   }

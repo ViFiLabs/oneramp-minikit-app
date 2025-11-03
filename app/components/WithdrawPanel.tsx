@@ -1,47 +1,46 @@
 "use client";
 
-import { assets } from "@/data/currencies";
-import { SUPPORTED_NETWORKS_WITH_RPC_URLS } from "@/data/networks";
-import useWalletGetInfo from "@/hooks/useWalletGetInfo";
-import { useAmountStore } from "@/store/amount-store";
-import { useNetworkStore } from "@/store/network";
-import { useUserSelectionStore } from "@/store/user-selection";
-import { useQuoteStore } from "@/store/quote-store";
-import { useTransferStore } from "@/store/transfer-store";
-import { useKYCStore } from "@/store/kyc-store";
-import {
-  Asset,
-  Network,
-  OrderStep,
-  AppState,
-  ChainTypes,
-  TransferType,
-  Quote,
-  Transfer,
-} from "@/types";
-import { useExchangeRate } from "@/hooks/useExchangeRate";
-import { usePreFetchInstitutions } from "@/hooks/useExchangeRate";
-import { AnimatePresence, motion } from "framer-motion";
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { useMutation } from "@tanstack/react-query";
 import { createQuoteOut } from "@/actions/quote";
 import { createTransferOut } from "@/actions/transfer";
-import useEVMPay from "@/onchain/useEVMPay";
-import ExchangeRateComponent from "./exchange-rate-component";
-import { SwipeToWithdrawButton } from "./payment/swipe-to-withdraw";
-import { SwapButton } from "./buttons/SwapButton";
-import { FromPanel } from "./panels/FromPanel";
-import { SwapArrow } from "./panels/SwapArrow";
-import { SwapHeader } from "./panels/SwapHeader";
-import { ToPanel } from "./panels/ToPanel";
-import SelectInstitution from "./select-institution";
-import { KYCVerificationModal } from "./modals/KYCVerificationModal";
-import { toast } from "sonner";
 import { ModalConnectButton } from "@/app/components/wallet/modal-connect-button";
+import { assets } from "@/data/currencies";
+import { SUPPORTED_NETWORKS_WITH_RPC_URLS } from "@/data/networks";
+import { usePreFetchInstitutions } from "@/hooks/useExchangeRate";
+import useWalletGetInfo from "@/hooks/useWalletGetInfo";
 import {
   getCNGNDefaultAmount,
   getCNGNKYCThreshold,
 } from "@/lib/exchange-rates-data";
+import useEVMPay from "@/onchain/useEVMPay";
+import { useAmountStore } from "@/store/amount-store";
+import { useKYCStore } from "@/store/kyc-store";
+import { useNetworkStore } from "@/store/network";
+import { useQuoteStore } from "@/store/quote-store";
+import { useTransferStore } from "@/store/transfer-store";
+import { useUserSelectionStore } from "@/store/user-selection";
+import {
+  AppState,
+  Asset,
+  ChainTypes,
+  Network,
+  OrderStep,
+  Quote,
+  Transfer,
+  TransferType,
+} from "@/types";
+import { useMutation } from "@tanstack/react-query";
+import { AnimatePresence, motion } from "framer-motion";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { SwapButton } from "./buttons/SwapButton";
+import ExchangeRateComponent from "./exchange-rate-component";
+import { KYCVerificationModal } from "./modals/KYCVerificationModal";
+import { FromPanel } from "./panels/FromPanel";
+import { SwapArrow } from "./panels/SwapArrow";
+import { SwapHeader } from "./panels/SwapHeader";
+import { ToPanel } from "./panels/ToPanel";
+import { SwipeToWithdrawButton } from "./payment/swipe-to-withdraw";
+import SelectInstitution from "./select-institution";
 // Standalone cNGN action picker now lives in CNGNActionPanel
 import { supportedAssetsUI } from "@/data/assets-ui";
 import { cNGNTabsUI } from "./cNGN/utils";
@@ -454,6 +453,10 @@ export function WithdrawPanel({
 
     const transferPayload = createTransferPayload(quoteResponse.quote.quoteId);
 
+    console.log("====================================");
+    console.log("transferPayload", transferPayload);
+    console.log("====================================");
+
     const transferResponse = await createTransferOut(transferPayload);
 
     return {
@@ -470,6 +473,10 @@ export function WithdrawPanel({
     address,
     createTransferPayload,
   ]);
+
+  console.log("====================================");
+  console.log("User Selection Store", userSelectionStore);
+  console.log("====================================");
 
   // Withdrawal flow mutation
   const withdrawMutation = useMutation({
