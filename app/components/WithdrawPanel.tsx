@@ -453,10 +453,6 @@ export function WithdrawPanel({
 
     const transferPayload = createTransferPayload(quoteResponse.quote.quoteId);
 
-    console.log("====================================");
-    console.log("transferPayload", transferPayload);
-    console.log("====================================");
-
     const transferResponse = await createTransferOut(transferPayload);
 
     return {
@@ -473,10 +469,6 @@ export function WithdrawPanel({
     address,
     createTransferPayload,
   ]);
-
-  console.log("====================================");
-  console.log("User Selection Store", userSelectionStore);
-  console.log("====================================");
 
   // Withdrawal flow mutation
   const withdrawMutation = useMutation({
