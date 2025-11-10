@@ -4,7 +4,7 @@ import { Button } from "@/app/components/ui/button";
 import { PAY_SUPPORTED_COUNTRIES } from "@/data/countries";
 import { useUserSelectionStore } from "@/store/user-selection";
 import { Quote, Transfer } from "@/types";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { FiCheck, FiX } from "react-icons/fi";
 
 interface WithdrawalStatusCardProps {
@@ -128,6 +128,38 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
   }, []);
 
   // Global mouse event listeners for smooth dragging
+  const handleDone = useCallback(() => {
+    const runClose = () => {
+      resetToDefault();
+      onDone();
+    };
+
+    if (isFailed) {
+      setTimeout(runClose, 500);
+    } else {
+      runClose();
+    }
+  }, [isFailed, onDone, resetToDefault]);
+
+  const handleClose = useCallback(() => {
+    const executeClose = () => {
+      if (onClose) {
+        onClose();
+      } else {
+        handleDone();
+      }
+    };
+
+    if (isFailed) {
+      setIsVisible(false);
+      setTimeout(executeClose, 500);
+      return;
+    }
+
+    setIsVisible(false);
+    setTimeout(executeClose, 300); // Wait for animation to complete
+  }, [handleDone, isFailed, onClose]);
+
   useEffect(() => {
     const handleGlobalMouseMove = (e: MouseEvent) => {
       if (!isDragging) return;
@@ -171,7 +203,7 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
       document.removeEventListener("mousemove", handleGlobalMouseMove);
       document.removeEventListener("mouseup", handleGlobalMouseUp);
     };
-  }, [isDragging, dragStartY, dragCurrentY]);
+  }, [isDragging, dragStartY, dragCurrentY, handleClose]);
 
   // Calculate amounts based on country
   let totalAmount = 0;
@@ -188,22 +220,6 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
   // For withdrawal (TransferOut), we're swapping crypto for fiat
   const cryptoAmount = Number(quote.cryptoAmount);
   const fiatAmount = totalAmount;
-
-  const handleDone = () => {
-    resetToDefault();
-    onDone();
-  };
-
-  const handleClose = () => {
-    setIsVisible(false);
-    setTimeout(() => {
-      if (onClose) {
-        onClose();
-      } else {
-        handleDone();
-      }
-    }, 300); // Wait for animation to complete
-  };
 
   // Touch/drag handlers for mobile
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -262,7 +278,7 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
           stableAsset ? quote.fiatType : quote.cryptoType
         } for ${Number(
           stableAsset ? quote.cryptoAmount : quote.fiatAmount
-        ).toFixed(0)} ${quote.fiatType} on ${
+        ).toFixed(0)} ${stableAsset ? quote.cryptoType : quote.fiatType} on ${
           quote.network.charAt(0).toUpperCase() + quote.network.slice(1)
         }`}</p>
       );
@@ -283,7 +299,7 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
     <>
       {/* Backdrop */}
       <div
-        className={`fixed transition-opacity duration-300 z-[55] ${
+        className={`fixed transition-opacity duration-300 z-55 ${
           panelBounds
             ? "bg-transparent"
             : "inset-0 bg-black bg-opacity-50 md:bg-black/60 md:backdrop-blur-lg"
@@ -312,7 +328,7 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
 
       {/* Modal */}
       <div
-        className={`fixed z-[60] flex ${
+        className={`fixed z-60 flex ${
           isDesktop
             ? panelBounds
               ? ""
@@ -539,7 +555,7 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
                       ? "bg-red-500 hover:bg-red-600"
                       : isSuccess
                       ? "bg-blue-500 hover:bg-blue-600"
-                      : "bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
+                      : "bg-linear-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
                   }`}
                 >
                   {isFailed ? "Try Again" : "Done"}
