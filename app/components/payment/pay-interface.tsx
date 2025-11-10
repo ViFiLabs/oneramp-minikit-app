@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
@@ -22,6 +22,7 @@ import {
   getPaySupportedCountries,
   isPaymentTypeSupported,
   requiresInstitutionSelection,
+  countries,
 } from "@/data/countries";
 
 // Note: Actions are now handled by the useBillPayment hook
@@ -68,6 +69,7 @@ import {
   getUgandaCashoutBreakdown,
 } from "@/utils/cashout-fees";
 import { usePayRecipientStore } from "@/store/pay-recipient-store";
+import { getNgnToLocalRate, getCNGNToNGNRate } from "@/lib/exchange-rates-data";
 
 export function PaymentInterface() {
   const {
@@ -125,10 +127,59 @@ export function PaymentInterface() {
     providerType: paymentMethod || "momo",
   });
 
+  // Fetch Nigeria rate for cNGN cross-rate conversions
+  const { data: nigeriaRate } = useExchangeRate({
+    countryCode: "NG",
+    orderType: "selling",
+    providerType: paymentMethod || "momo",
+  });
+
+  const isCngnAsset = useMemo(
+    () => (asset?.symbol || "").toUpperCase() === "CNGN",
+    [asset?.symbol]
+  );
+
+  const effectiveRate = useMemo(() => {
+    const baseRate = exchangeRate?.exchange;
+    const countryCode = country?.countryCode;
+    if (!baseRate || !countryCode) return undefined;
+
+    if (!isCngnAsset) return baseRate;
+
+    const fixed = getNgnToLocalRate(countryCode);
+    if (fixed && fixed > 0) return fixed;
+
+    const nigeriaAPI = nigeriaRate?.exchange;
+    const nigeriaFallback = countries.find(
+      (c) => c.countryCode === "NG"
+    )?.exchangeRate;
+    const ngRate = nigeriaAPI || nigeriaFallback;
+    if (!ngRate || ngRate <= 0) return undefined;
+    return baseRate / ngRate;
+  }, [
+    exchangeRate?.exchange,
+    isCngnAsset,
+    country?.countryCode,
+    nigeriaRate?.exchange,
+  ]);
+
   // Defensive: ensure unsupported country/asset from other tabs don't bleed into Pay
   const supportedCountryCodes = useMemo(
     () => new Set(payEnabledCountries.map((c) => c.countryCode)),
     []
+  );
+
+  const convertLocalToCngn = useCallback(
+    (localAmount: number) => {
+      if (!isCngnAsset) return null;
+      if (!effectiveRate || effectiveRate <= 0) return null;
+      const cngnToNgnRate = getCNGNToNGNRate();
+      if (!cngnToNgnRate || cngnToNgnRate <= 0) return null;
+
+      const ngnAmount = localAmount / effectiveRate;
+      return ngnAmount / cngnToNgnRate;
+    },
+    [isCngnAsset, effectiveRate]
   );
 
   useEffect(() => {
@@ -307,24 +358,17 @@ export function PaymentInterface() {
 
   // Get available assets for the current network
   const availableAssets = useMemo(() => {
-    if (!currentNetwork) return assets;
+    const allowedSymbols = new Set(["USDC", "cNGN"]);
 
     return assets.filter((asset) => {
+      if (!allowedSymbols.has(asset.symbol)) return false;
+
+      if (!currentNetwork) return true;
+
       const networkConfig = asset.networks[currentNetwork.name];
       return networkConfig && networkConfig.tokenAddress;
     });
   }, [currentNetwork]);
-
-  // Enforce supported asset for Pay: avoid cNGN default bleed from other tabs
-  useEffect(() => {
-    if (asset?.symbol === "cNGN") {
-      const fallback =
-        availableAssets.find((a) => a.symbol === "USDC") || availableAssets[0];
-      if (fallback && asset.symbol !== fallback.symbol) {
-        updateSelection({ asset: fallback });
-      }
-    }
-  }, [asset?.symbol, availableAssets, updateSelection]);
 
   // Set default asset to first available asset for the current network
   useEffect(() => {
@@ -799,17 +843,29 @@ export function PaymentInterface() {
     const numericAmount = parseFloat(amount);
     if (isNaN(numericAmount)) return "0.00";
 
-    // Add cashout fees if enabled for Tanzania
     const totalAmount =
       includeCashoutFees && supportsCashoutFees(country.name)
         ? numericAmount + cashoutFeeAmount
         : numericAmount;
 
-    // Use the exchange rate from API if available, otherwise use fallback from country data
-    const rate = exchangeRate?.exchange || country.exchangeRate;
+    if (isCngnAsset) {
+      const cngnAmount = convertLocalToCngn(totalAmount);
+      return cngnAmount !== null ? cngnAmount.toFixed(4) : "0.00";
+    }
+
+    const rate = exchangeRate?.exchange ?? country.exchangeRate;
+    if (!rate || rate <= 0) return "0.00";
     const convertedAmount = totalAmount / rate;
     return convertedAmount.toFixed(4);
-  }, [amount, country, exchangeRate, includeCashoutFees, cashoutFeeAmount]);
+  }, [
+    amount,
+    country,
+    exchangeRate?.exchange,
+    includeCashoutFees,
+    cashoutFeeAmount,
+    isCngnAsset,
+    convertLocalToCngn,
+  ]);
 
   // Validate amount based on country limits
   const isAmountValidForCountry = useMemo(() => {
@@ -830,11 +886,24 @@ export function PaymentInterface() {
     const numericAmount = parseFloat(amount);
     const numericBalance = parseFloat(String(currentBalance || "0"));
     if (isNaN(numericAmount) || isNaN(numericBalance)) return false;
+    if (isCngnAsset) {
+      const requiredCngn = convertLocalToCngn(numericAmount);
+      if (requiredCngn === null) return false;
+      return requiredCngn > numericBalance;
+    }
     const rate = exchangeRate?.exchange || country.exchangeRate;
     if (!rate || rate <= 0) return false;
     const requiredCrypto = numericAmount / rate;
     return requiredCrypto > numericBalance;
-  }, [country, amount, isBalanceLoading, currentBalance, exchangeRate]);
+  }, [
+    country,
+    amount,
+    isBalanceLoading,
+    currentBalance,
+    exchangeRate,
+    isCngnAsset,
+    convertLocalToCngn,
+  ]);
 
   // Update amount validity
   useEffect(() => {
@@ -873,7 +942,11 @@ export function PaymentInterface() {
   const handleAssetSelect = (selectedAsset: string) => {
     const assetData = availableAssets.find((a) => a.symbol === selectedAsset);
     if (assetData) {
-      updateSelection({ asset: assetData });
+      if (assetData.symbol === "cNGN") {
+        updateSelection({ asset: assetData, stableAsset: true });
+      } else {
+        updateSelection({ asset: assetData, stableAsset: false });
+      }
     }
   };
 
@@ -1211,8 +1284,7 @@ export function PaymentInterface() {
             <Select
               value={asset?.symbol || availableAssets[0]?.symbol || "USDC"}
               onValueChange={handleAssetSelect}
-              // disabled={isProcessing}
-              disabled={true}
+              disabled={isProcessing}
             >
               <SelectTrigger className="bg-transparent border-none text-sm sm:text-base text-white p-0 h-auto">
                 <SelectValue />
@@ -1577,11 +1649,18 @@ export function PaymentInterface() {
               <div className="flex items-center justify-between text-xs md:text-sm text-gray-400">
                 <p>
                   1 {asset?.symbol || "USD"} ={" "}
-                  {exchangeRate
-                    ? exchangeRate.exchange.toLocaleString()
-                    : country?.exchangeRate
-                    ? country.exchangeRate.toLocaleString() + " (est.)"
-                    : "--"}{" "}
+                  {(() => {
+                    const rateForDisplay = isCngnAsset
+                      ? effectiveRate
+                      : exchangeRate?.exchange;
+                    if (rateForDisplay && rateForDisplay > 0) {
+                      return rateForDisplay.toLocaleString();
+                    }
+                    if (country?.exchangeRate) {
+                      return country.exchangeRate.toLocaleString() + " (est.)";
+                    }
+                    return "--";
+                  })()}{" "}
                   {country?.currency || ""}
                 </p>
                 <p>Payment usually completes in 30s</p>
@@ -1675,7 +1754,11 @@ export function PaymentInterface() {
               fiatCurrency={country?.currency || "KES"}
               cryptoAmount={calculatedCryptoAmount}
               cryptoCurrency={asset?.symbol || "USDC"}
-              exchangeRateData={exchangeRate}
+              exchangeRateData={
+                isCngnAsset && effectiveRate && exchangeRate
+                  ? { ...exchangeRate, exchange: effectiveRate }
+                  : exchangeRate
+              }
               accountDetails={accountDetails || undefined}
               isLoadingAccountDetails={isLoadingAccountDetails}
             />
@@ -1758,7 +1841,7 @@ export function PaymentInterface() {
               <Button
                 onClick={handleCancelTransaction}
                 variant="ghost"
-                className="!text-red-400 hover:!text-red-300 text-sm font-medium transition-colors"
+                className="text-red-400! hover:text-red-300! text-sm font-medium transition-colors"
               >
                 Cancel Transaction
               </Button>

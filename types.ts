@@ -124,6 +124,7 @@ export interface UserSelectionGlobalState {
    * UI should prompt the user to pick one before proceeding.
    */
   cngnAction?: "fiat_withdrawal" | "onchain_transfer";
+  stableAsset?: boolean;
 }
 
 export interface UserBillTillPayout {

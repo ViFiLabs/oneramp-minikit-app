@@ -27,6 +27,7 @@ const initialState: UserSelectionGlobalState = {
   countryPanelOnTop: false,
   isPayout: true,
   cngnAction: undefined,
+  stableAsset: false,
 };
 
 const defaultState = {

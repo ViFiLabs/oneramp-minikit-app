@@ -27,7 +27,7 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
   onClose,
   animationPhase = "initial",
 }) => {
-  const { resetToDefault } = useUserSelectionStore();
+  const { resetToDefault, stableAsset } = useUserSelectionStore();
   const [isVisible, setIsVisible] = useState(false);
   const [dragStartY, setDragStartY] = useState(0);
   const [dragCurrentY, setDragCurrentY] = useState(0);
@@ -258,9 +258,11 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
       return (
         <p className="text-white text-center text-lg font-medium">{`${Number(
           quote.amountPaid
-        ).toFixed(1)} cNGN for ${Number(quote.fiatAmount).toFixed(0)} ${
-          quote.fiatType
-        } on ${
+        ).toFixed(1)} ${
+          stableAsset ? quote.fiatType : quote.cryptoType
+        } for ${Number(
+          stableAsset ? quote.cryptoAmount : quote.fiatAmount
+        ).toFixed(0)} ${quote.fiatType} on ${
           quote.network.charAt(0).toUpperCase() + quote.network.slice(1)
         }`}</p>
       );

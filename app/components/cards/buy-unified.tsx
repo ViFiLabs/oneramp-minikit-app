@@ -7,7 +7,7 @@ import { useUserSelectionStore } from "@/store/user-selection";
 import { OrderStep, TransferStatusEnum, TransferType } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import BuyStatusCard from "@/app/components/cards/buy-status-card";
 
 const BuyUnified = () => {
@@ -40,11 +40,26 @@ const BuyUnified = () => {
     refetchInterval: 3000,
   });
 
+  const previousTransferIdRef = useRef<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (
+      transfer?.transferId &&
+      previousTransferIdRef.current !== transfer.transferId
+    ) {
+      previousTransferIdRef.current = transfer.transferId;
+      setCurrentState("processing");
+      setAnimationPhase("initial");
+    }
+  }, [transfer?.transferId]);
+
   useEffect(() => {
     // Prefer polled status; fall back to stored transfer status if polling unavailable
     const statusFromPoll = transferStatus?.status as string | undefined;
+    const hasPolledStatus = typeof statusFromPoll === "string";
     const effectiveStatus =
-      statusFromPoll || (transfer?.transferStatus as string | undefined);
+      (hasPolledStatus ? statusFromPoll : undefined) ||
+      (transfer?.transferStatus as string | undefined);
 
     if (!isLoading && effectiveStatus) {
       // Keep the latest polled transfer fields in store so UI has fresh details (when available)
@@ -65,13 +80,15 @@ const BuyUnified = () => {
       } catch {}
 
       const isComplete =
-        effectiveStatus === TransferStatusEnum.TransferComplete ||
-        effectiveStatus === "TransferCompleted" ||
-        effectiveStatus === "TransferComplete";
+        hasPolledStatus &&
+        (statusFromPoll === TransferStatusEnum.TransferComplete ||
+          statusFromPoll === "TransferCompleted" ||
+          statusFromPoll === "TransferComplete");
 
       const isFailed =
-        effectiveStatus === TransferStatusEnum.TransferFailed ||
-        effectiveStatus === "TransferFailed";
+        hasPolledStatus &&
+        (statusFromPoll === TransferStatusEnum.TransferFailed ||
+          statusFromPoll === "TransferFailed");
 
       if (isComplete) {
         setAnimationPhase("transition");
@@ -93,6 +110,7 @@ const BuyUnified = () => {
     transferStatus?.status,
     transferStatus?.transferAddress,
     transferStatus?.userActionDetails,
+    transferStatus,
     transfer?.transferStatus,
     isLoading,
     quote?.country,
