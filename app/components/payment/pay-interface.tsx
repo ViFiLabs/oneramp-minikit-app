@@ -69,7 +69,7 @@ import {
   getUgandaCashoutBreakdown,
 } from "@/utils/cashout-fees";
 import { usePayRecipientStore } from "@/store/pay-recipient-store";
-import { getNgnToLocalRate, getCNGNToNGNRate } from "@/lib/exchange-rates-data";
+import { getNgnToLocalRate } from "@/lib/exchange-rates-data";
 
 export function PaymentInterface() {
   const {
@@ -173,11 +173,13 @@ export function PaymentInterface() {
     (localAmount: number) => {
       if (!isCngnAsset) return null;
       if (!effectiveRate || effectiveRate <= 0) return null;
-      const cngnToNgnRate = getCNGNToNGNRate();
-      if (!cngnToNgnRate || cngnToNgnRate <= 0) return null;
 
-      const ngnAmount = localAmount / effectiveRate;
-      return ngnAmount / cngnToNgnRate;
+      // Convert Local → cNGN
+      // The backend treats cNGN amounts as NGN-equivalent when converting to local
+      // So the reverse is: Local → NGN-equivalent (which is cNGN)
+      // effectiveRate is NGN → Local, so Local → NGN = localAmount / effectiveRate
+      // Since backend treats cNGN as NGN-equivalent, we just divide by effectiveRate
+      return localAmount / effectiveRate;
     },
     [isCngnAsset, effectiveRate]
   );
@@ -1650,9 +1652,23 @@ export function PaymentInterface() {
                 <p>
                   1 {asset?.symbol || "USD"} ={" "}
                   {(() => {
-                    const rateForDisplay = isCngnAsset
-                      ? effectiveRate
-                      : exchangeRate?.exchange;
+                    if (isCngnAsset) {
+                      // For cNGN, show the cNGN → Local rate
+                      // The backend treats cNGN as NGN-equivalent, so the rate is just effectiveRate
+                      if (effectiveRate && effectiveRate > 0) {
+                        return effectiveRate.toLocaleString();
+                      }
+                      if (country?.exchangeRate) {
+                        // Fallback: estimate using country rate
+                        const estimatedRate =
+                          country.exchangeRate /
+                          (countries.find((c) => c.countryCode === "NG")
+                            ?.exchangeRate || 1500);
+                        return estimatedRate.toLocaleString() + " (est.)";
+                      }
+                      return "--";
+                    }
+                    const rateForDisplay = exchangeRate?.exchange;
                     if (rateForDisplay && rateForDisplay > 0) {
                       return rateForDisplay.toLocaleString();
                     }
