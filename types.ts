@@ -239,6 +239,7 @@ export interface ExchangeRateResponse {
 // Institution interface of type key value pair
 
 export interface KYCVerificationResponse {
+  error?: string;
   kycStatus: string;
   message: {
     link: string;

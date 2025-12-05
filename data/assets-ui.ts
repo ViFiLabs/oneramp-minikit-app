@@ -1,4 +1,4 @@
-import SelectCNGNAction from "@/app/components/cNGN/SelectCNGNAction";
+import SelectCNGNAction from "@/src/app/withdraw-interface/cNGN/SelectCNGNAction";
 import type { ComponentType } from "react";
 
 type AssetSymbol = "cNGN" | "USDC";
