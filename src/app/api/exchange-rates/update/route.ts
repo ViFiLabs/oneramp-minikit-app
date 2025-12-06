@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Revalidate the exchange rates cache
-    revalidateTag("exchange-rates");
+    await revalidateTag("exchange-rates", "layout");
 
     // Fetch fresh rates to confirm update
     const freshRates = await getAllExchangeRates();

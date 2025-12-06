@@ -2,10 +2,6 @@ import {withSentryConfig} from "@sentry/nextjs";
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   devIndicators: false,
-  eslint: {
-    // Warning: only use this in development and remove it for production
-    ignoreDuringBuilds: true,
-  },
   images: {
     remotePatterns: [
       {
@@ -22,8 +18,70 @@ const nextConfig = {
   experimental: {
     scrollRestoration: true,
   },
+  // Webpack configuration to exclude problematic test files
+  webpack: (config: any, { isServer }: { isServer: boolean }) => {
+    if (!config.plugins) {
+      config.plugins = [];
+    }
+    const webpack = require("webpack");
+    
+    // Ignore test directories, bench files, and LICENSE from thread-stream
+    config.plugins.push(
+      new webpack.IgnorePlugin({
+        checkResource(resource: string) {
+          // Ignore all test files, benchmark files, and LICENSE files from thread-stream
+          if (resource.includes("thread-stream")) {
+            return (
+              resource.includes("/test/") ||
+              resource.includes("\\test\\") ||
+              resource.includes("/bench") ||
+              resource.includes("\\bench") ||
+              resource.endsWith("/LICENSE") ||
+              resource.endsWith("\\LICENSE") ||
+              resource.includes("README.md")
+            );
+          }
+          return false;
+        },
+      })
+    );
+
+    // For server-side, externalize these packages completely
+    if (isServer) {
+      config.externals = config.externals || [];
+      if (!Array.isArray(config.externals)) {
+        const originalExternals = config.externals;
+        config.externals = [
+          originalExternals,
+          ({ request }: { request: string }) => {
+            if (
+              request === "pino" ||
+              request === "pino-pretty" ||
+              request === "thread-stream"
+            ) {
+              return `commonjs ${request}`;
+            }
+          },
+        ];
+      }
+    }
+
+    return config;
+  },
   // Output configuration for deployment
   output: process.env.NODE_ENV === "production" ? "standalone" : undefined,
+  // Externalize server-only packages (Next.js 16 API)
+  serverExternalPackages: ["pino", "pino-pretty", "thread-stream"],
+  // Exclude problematic files from output tracing
+  outputFileTracingExcludes: {
+    "*": [
+      "**/thread-stream/test/**",
+      "**/thread-stream/bench/**",
+      "**/thread-stream/LICENSE",
+      "**/thread-stream/README.md",
+      "**/pino/**/test/**",
+    ],
+  },
   // Add headers for better caching and security
   async headers() {
     return [
