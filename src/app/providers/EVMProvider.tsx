@@ -42,7 +42,7 @@ createAppKit({
   features: {
     analytics: true,
     email: false,
-    socials: ["google", "farcaster"],
+    socials: false,
     emailShowWallets: true,
     swaps: false,
     onramp: false,
