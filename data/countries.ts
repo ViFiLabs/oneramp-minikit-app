@@ -275,21 +275,21 @@ export const countries: Country[] = [
   //     mobileLength: 10,
   //   },
   // },
-  {
-    name: "Ghana",
-    logo: "/logos/ghana.png",
-    currency: "GHS",
-    countryCode: "GHA",
-    phoneCode: "+233",
-    exchangeRate: 15.43,
-    institutions: [],
-    fiatMinMax: { min: 15.43, max: 35_000 },
-    cryptoMinMax: { min: 1, max: 2_500 },
-    accountNumberLength: {
-      bankLength: 13,
-      mobileLength: 10,
-    },
-  },
+  // {
+  //   name: "Ghana",
+  //   logo: "/logos/ghana.png",
+  //   currency: "GHS",
+  //   countryCode: "GHA",
+  //   phoneCode: "+233",
+  //   exchangeRate: 15.43,
+  //   institutions: [],
+  //   fiatMinMax: { min: 15.43, max: 35_000 },
+  //   cryptoMinMax: { min: 1, max: 2_500 },
+  //   accountNumberLength: {
+  //     bankLength: 13,
+  //     mobileLength: 10,
+  //   },
+  // },
 ];
 
 export const GLOBAL_MIN_MAX = {
