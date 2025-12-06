@@ -390,7 +390,7 @@ export function BuyInterface() {
     }
 
     // If KYC is verified or bypass is allowed, proceed with the purchase
-    // createBuyFlow.mutate(); // TODO: Uncomment this when ready to proceed
+    createBuyFlow.mutate(); // TODO: Uncomment this when ready to proceed
   };
 
   const isBuyDisabled = useMemo(() => {
