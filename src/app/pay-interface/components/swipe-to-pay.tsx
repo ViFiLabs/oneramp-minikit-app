@@ -162,6 +162,7 @@ export function SwipeToPayButton({
         setDragX(maxAllowedDrag);
         setIsDragging(false);
         setTimeout(() => {
+          haptics.success();
           onPaymentComplete();
         }, 300);
       }
