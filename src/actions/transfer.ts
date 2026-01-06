@@ -23,6 +23,15 @@ export const createTransferIn = async (
 
     const idompetancyKey = uuidv4();
 
+    let { idType, additionalIdType } = payload.userDetails;
+
+    if (!idType || !additionalIdType) {
+      idType = "NIN";
+      additionalIdType = "NIN";
+      payload.userDetails.idType = idType;
+      payload.userDetails.additionalIdType = additionalIdType;
+    }
+
     const response = await oneRampApiWithCustomHeaders({
       "Idempotency-Key": idompetancyKey,
     }).post("/transfer-in", payload);
