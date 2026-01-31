@@ -83,7 +83,7 @@ const WithdrawalUnified = () => {
       // Set timeout for 2 minutes (120 seconds)
       transactionTimeoutRef.current = setTimeout(() => {
         console.log(
-          "Transaction timeout - user likely didn't sign the transaction"
+          "Transaction timeout - user likely didn't sign the transaction",
         );
         // Animate to failed state
         setAnimationPhase("transition");
