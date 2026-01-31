@@ -6,10 +6,10 @@ import {
   erc20Abi,
   createPublicClient,
   http,
-  createWalletClient,
-  custom,
+  type WalletClient,
 } from "viem";
 import { base } from "viem/chains";
+import { useWalletClient } from "wagmi";
 import { getTokenAddress, getTokenDecimals } from "@/data/token-config";
 import useWalletGetInfo from "@/src/hooks/useWalletGetInfo";
 import { getLiveExchangeRate, getV3Quote } from "@/src/utils/v3-rate-fetcher";
@@ -94,15 +94,16 @@ const getUserFriendlyError = (error: any): string => {
   const errorMessage = error instanceof Error ? error.message : String(error);
   const lowerMessage = errorMessage.toLowerCase();
 
-  // Check for user rejection/denial patterns
+  // Check for user rejection/denial patterns (includes viem "not authorized" message)
   if (
     lowerMessage.includes("user rejected") ||
     lowerMessage.includes("user denied") ||
     lowerMessage.includes("user cancelled") ||
     lowerMessage.includes("transaction rejected") ||
-    lowerMessage.includes("denied transaction signature")
+    lowerMessage.includes("denied transaction signature") ||
+    lowerMessage.includes("has not been authorized")
   ) {
-    return "Approval rejected";
+    return "Transaction rejected";
   }
 
   // Check for approval-related errors
@@ -110,7 +111,7 @@ const getUserFriendlyError = (error: any): string => {
     lowerMessage.includes("approval") &&
     (lowerMessage.includes("rejected") || lowerMessage.includes("failed"))
   ) {
-    return "Approval rejected";
+    return "Transaction rejected";
   }
 
   // Generic transaction failures
@@ -139,6 +140,7 @@ const getUserFriendlyError = (error: any): string => {
 
 export function useAerodromeSwap() {
   const { address, isConnected } = useWalletGetInfo();
+  const { data: walletClient } = useWalletClient({ chainId: base.id });
   const [swapState, setSwapState] = useState<SwapState>({
     isLoading: false,
     isApproving: false,
@@ -155,18 +157,6 @@ export function useAerodromeSwap() {
       });
     };
   }, [address]);
-
-  // Get wallet client for transactions
-  const getWalletClient = useCallback(async () => {
-    if (typeof window === "undefined" || !window.ethereum) {
-      throw new Error("No wallet provider found");
-    }
-
-    return createWalletClient({
-      chain: base,
-      transport: custom(window.ethereum as any),
-    });
-  }, []);
 
   // Check allowance for a token
   const checkAllowance = async (
@@ -212,10 +202,17 @@ export function useAerodromeSwap() {
     setSwapState((prev) => ({ ...prev, isApproving: true, error: undefined }));
 
     try {
-      const walletClient = await getWalletClient();
+      if (!walletClient) {
+        throw new Error(
+          "Wallet not ready. Please ensure you're connected via the app's wallet modal."
+        );
+      }
       const amountBigInt = parseUnits(amount, decimals);
 
-      const hash = await walletClient.writeContract({
+      const hash = await (
+        walletClient as WalletClient
+      ).writeContract({
+        chain: base,
         address: tokenAddress as `0x${string}`,
         abi: erc20Abi,
         functionName: "approve",
@@ -240,7 +237,7 @@ export function useAerodromeSwap() {
         isApproving: false,
         error: userFriendlyError,
       }));
-      throw error;
+      throw new Error(userFriendlyError);
     }
   };
 
@@ -263,7 +260,11 @@ export function useAerodromeSwap() {
     setSwapState((prev) => ({ ...prev, isSwapping: true, error: undefined }));
 
     try {
-      const walletClient = await getWalletClient();
+      if (!walletClient) {
+        throw new Error(
+          "Wallet not ready. Please ensure you're connected via the app's wallet modal."
+        );
+      }
       const amountInBigInt = parseUnits(amountIn, tokenADecimals);
       const deadlineTimestamp = Math.floor(Date.now() / 1000) + deadline * 60;
 
@@ -400,7 +401,8 @@ export function useAerodromeSwap() {
           deadline: exactInputSingleParams.deadline.toString(),
         });
 
-        const hash = await walletClient.writeContract({
+        const hash = await (walletClient as WalletClient).writeContract({
+          chain: base,
           address: AERODROME_V3_SWAP_ROUTER as `0x${string}`,
           abi: AERODROME_V3_ROUTER_ABI,
           functionName: "exactInputSingle",
@@ -434,7 +436,7 @@ export function useAerodromeSwap() {
         isSwapping: false,
         error: userFriendlyError,
       }));
-      throw error;
+      throw new Error(userFriendlyError);
     }
   };
 
@@ -614,6 +616,11 @@ export function useAerodromeSwap() {
     setSwapState((prev) => ({ ...prev, successHandled: true }));
   }, []);
 
+  // Clear error when user dismisses the error sheet
+  const clearError = useCallback(() => {
+    setSwapState((prev) => ({ ...prev, error: undefined }));
+  }, []);
+
   return {
     swap,
     getQuote,
@@ -624,5 +631,6 @@ export function useAerodromeSwap() {
     isApprovalSuccess,
     isSwapSuccess,
     markSuccessHandled,
+    clearError,
   };
 }

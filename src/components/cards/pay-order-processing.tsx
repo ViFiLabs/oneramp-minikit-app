@@ -14,7 +14,7 @@ import {
 } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import ProcessingCard from "./processing-card";
 
 const PayOrderProcessing = () => {
@@ -23,6 +23,11 @@ const PayOrderProcessing = () => {
   const { quote, resetQuote } = useQuoteStore();
   const router = useRouter();
   const hashSubmittedRef = useRef(false);
+  const [isVisible, setIsVisible] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setIsVisible(true), 50);
+    return () => clearTimeout(t);
+  }, []);
 
   // Debug the quote structure
   useEffect(() => {
@@ -115,13 +120,15 @@ const PayOrderProcessing = () => {
 
   // Handle case where quote data is invalid
   if (!actualQuote || !actualQuote.network) {
-    console.error("Invalid quote structure:", { quote, actualQuote });
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black">
-        <div className="text-white text-center">
-          <p>Loading payment details...</p>
+      <>
+        <div className="fixed inset-0 z-50 bg-black/60 md:backdrop-blur-sm" />
+        <div className="fixed inset-0 z-[51] flex items-end justify-center">
+          <div className="bg-gray-900 rounded-t-3xl max-w-md w-full max-h-[50vh] p-6 flex items-center justify-center">
+            <p className="text-white text-center">Loading payment details...</p>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -140,17 +147,27 @@ const PayOrderProcessing = () => {
     : undefined;
 
   return (
-    <div className="fixed inset-0 z-50 flex-col md:flex-row flex py-20 justify-center bg-black gap-x-16">
-      {/* Show processing card with actual quote */}
-      <ProcessingCard
-        transactionHash={transactionHash || undefined}
-        exploreUrl={exploreUrl}
-        quote={actualQuote}
-        transfer={transfer || undefined}
-        onCancel={handleCancel}
-        onGetReceipt={handleGetReceipt}
-      />
-    </div>
+    <>
+      {/* Dark overlay */}
+      <div className="fixed inset-0 z-50 bg-black/60 md:backdrop-blur-sm" />
+      {/* Action sheet from bottom */}
+      <div className="fixed inset-0 z-[51] flex items-end justify-center">
+        <div
+          className={`w-full max-w-md max-h-[50vh] overflow-y-auto rounded-t-3xl overflow-hidden bg-[#181818] transition-transform duration-300 ease-out ${
+            isVisible ? "translate-y-0" : "translate-y-full"
+          }`}
+        >
+          <ProcessingCard
+            transactionHash={transactionHash || undefined}
+            exploreUrl={exploreUrl}
+            quote={actualQuote}
+            transfer={transfer || undefined}
+            onCancel={handleCancel}
+            onGetReceipt={handleGetReceipt}
+          />
+        </div>
+      </div>
+    </>
   );
 };
 
