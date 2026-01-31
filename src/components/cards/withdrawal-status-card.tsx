@@ -60,7 +60,7 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
               classes.includes("max-w-md") ||
               !isDesktopSize)
           );
-        }
+        },
       );
 
       if (candidates.length > 0) {
@@ -73,11 +73,11 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
           (el) =>
             el.textContent &&
             el.textContent.includes("Swap") &&
-            el.closest('div[class*="bg-"]')
+            el.closest('div[class*="bg-"]'),
         );
         if (swapHeaders.length > 0) {
           panelContainer = swapHeaders[0].closest(
-            'div[class*="max-w-md"], div[class*="rounded-3xl"]'
+            'div[class*="max-w-md"], div[class*="rounded-3xl"]',
           );
           console.log("Found panel via Swap header:", panelContainer);
         }
@@ -208,7 +208,7 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
   // Calculate amounts based on country
   let totalAmount = 0;
   const isPaySupportedCountry = PAY_SUPPORTED_COUNTRIES.some(
-    (country) => country.countryCode === quote.country
+    (country) => country.countryCode === quote.country,
   );
 
   if (isPaySupportedCountry) {
@@ -273,11 +273,11 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
     if (quote.cryptoType === "cNGN") {
       return (
         <p className="text-white text-center text-lg font-medium">{`${Number(
-          quote.amountPaid
+          quote.amountPaid,
         ).toFixed(1)} ${
           stableAsset ? quote.fiatType : quote.cryptoType
         } for ${Number(
-          stableAsset ? quote.cryptoAmount : quote.fiatAmount
+          stableAsset ? quote.cryptoAmount : quote.fiatAmount,
         ).toFixed(0)} ${stableAsset ? quote.cryptoType : quote.fiatType} on ${
           quote.network.charAt(0).toUpperCase() + quote.network.slice(1)
         }`}</p>
@@ -297,116 +297,27 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
 
   return (
     <>
-      {/* Backdrop */}
+      {/* Backdrop - always dark overlay for consistency */}
       <div
-        className={`fixed transition-opacity duration-300 z-55 ${
-          panelBounds
-            ? "bg-transparent"
-            : "inset-0 bg-black bg-opacity-50 md:bg-black/60 md:backdrop-blur-lg"
-        } ${isVisible ? "opacity-100" : "opacity-0"}`}
+        className={`fixed inset-0 transition-opacity duration-300 z-55 bg-black/60 md:backdrop-blur-sm ${
+          isVisible ? "opacity-100" : "opacity-0"
+        }`}
         onClick={handleClose}
-        style={{
-          position: "fixed",
-          zIndex: 55,
-          ...(panelBounds
-            ? {
-                // Constrain backdrop to panel area but make it transparent
-                left: `${panelBounds.left}px`,
-                top: `${panelBounds.top}px`,
-                width: `${panelBounds.width}px`,
-                height: `${panelBounds.height}px`,
-                borderRadius: isDesktop ? "1.5rem" : "1.5rem", // Match panel's rounded-3xl
-              }
-            : {
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-              }),
-        }}
+        style={{ position: "fixed", zIndex: 55 }}
       />
 
-      {/* Modal */}
+      {/* Modal - action sheet from bottom */}
       <div
-        className={`fixed z-60 flex ${
-          isDesktop
-            ? panelBounds
-              ? ""
-              : "items-center justify-center inset-0"
-            : panelBounds
-            ? ""
-            : "items-end justify-center inset-0"
-        }`}
-        style={{
-          position: "fixed",
-          zIndex: 60,
-          // Use detected panel boundaries on desktop when available
-          ...(isDesktop && panelBounds
-            ? {
-                left: `${panelBounds.left}px`,
-                top: `${panelBounds.top}px`,
-                width: `${panelBounds.width}px`,
-                height: `${panelBounds.height}px`,
-                padding: 0,
-                alignItems: "flex-end",
-                justifyContent: "center",
-              }
-            : isDesktop
-            ? {
-                // Fallback for desktop when panel bounds not detected
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                padding: "1rem",
-              }
-            : panelBounds
-            ? {
-                // Mobile positioning with panel bounds - slide from panel base
-                left: `${panelBounds.left}px`,
-                top: `${panelBounds.top}px`,
-                width: `${panelBounds.width}px`,
-                height: `${panelBounds.height}px`,
-                padding: 0,
-                alignItems: "flex-end",
-                justifyContent: "center",
-              }
-            : {
-                // Mobile positioning fallback - slide from screen bottom
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-              }),
-        }}
+        className="fixed inset-0 z-60 flex items-end justify-center"
+        style={{ position: "fixed", zIndex: 60 }}
       >
         <div
           ref={modalRef}
-          className={`overflow-hidden shadow-2xl transition-all duration-500 ease-out ${
-            isDesktop && panelBounds
-              ? `bg-gray-900 rounded-3xl w-full h-[50vh] ${
-                  isVisible
-                    ? "translate-y-0 opacity-100"
-                    : "translate-y-full opacity-0"
-                }`
-              : isDesktop
-              ? `bg-gray-900 rounded-2xl max-w-md w-full h-[50vh] ${
-                  isVisible ? "scale-100 opacity-100" : "scale-95 opacity-0"
-                }`
-              : panelBounds
-              ? `bg-gray-900 rounded-3xl w-full h-[50vh] ${
-                  isVisible
-                    ? "translate-y-0 opacity-100"
-                    : "translate-y-full opacity-0"
-                }`
-              : `bg-gray-900 w-full h-[60vh] rounded-t-3xl ${
-                  isVisible ? "translate-y-0" : "translate-y-full"
-                }`
+          className={`w-full max-w-md h-1/2 overflow-y-auto shadow-2xl transition-transform duration-300 ease-out bg-gray-900 rounded-t-3xl ${
+            isVisible ? "translate-y-0" : "translate-y-full"
           }`}
           style={{
-            transition: isDragging
-              ? "none"
-              : "transform 300ms ease-out, opacity 300ms ease-out, scale 300ms ease-out",
+            transition: isDragging ? "none" : "transform 300ms ease-out",
           }}
         >
           {/* Drag Handle for mobile - only show on mobile */}

@@ -11,12 +11,17 @@ import { SwapArrow } from "@/src/components/panels/SwapArrow";
 import { SwapPanelHeader } from "@/src/components/panels/SwapPanelHeader";
 import { SwipeToSwapButton } from "@/src/components/payment/swipe-to-swap";
 import { ModalConnectButton } from "@/src/components/wallet/modal-connect-button";
+import {
+  SwapStatusActionSheet,
+  type SwapStatus,
+} from "./components/SwapStatusActionSheet";
 import { useAmountStore } from "@/src/store/amount-store";
 import { useNetworkStore } from "@/src/store/network";
 import { useUserSelectionStore } from "@/src/store/user-selection";
 import { Asset, Network } from "@/types";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 
 const networks: Network[] = SUPPORTED_NETWORKS_WITH_RPC_URLS;
 
@@ -30,14 +35,9 @@ export function SwapPanel() {
   // Get available assets for the current network (USDC/USDT and cNGN for swap mode)
   const availableAssets = useMemo(() => {
     const allowedSymbols = new Set(["USDC", "USDT", "CNGN"]);
-    console.log("🔍 Filtering assets for network:", currentNetwork?.name);
 
     if (!currentNetwork) {
       const filtered = assets.filter((a) => allowedSymbols.has(a.symbol));
-      console.log(
-        "📦 No network selected, available assets:",
-        filtered.map((a) => a.symbol)
-      );
       return filtered;
     }
 
@@ -45,7 +45,6 @@ export function SwapPanel() {
       const networkConfig = asset.networks[currentNetwork.name];
       // USDT is not available on Base network
       if (currentNetwork.name === "Base" && asset.symbol === "USDT") {
-        console.log("⚠️ Filtering out USDT on Base network");
         return false;
       }
       const hasValidConfig =
@@ -59,21 +58,17 @@ export function SwapPanel() {
             currentNetwork.name
           }: config=${!!networkConfig}, address=${
             networkConfig?.tokenAddress || "none"
-          }`
+          }`,
         );
       } else {
         console.log(
-          `✅ ${asset.symbol} available on ${currentNetwork.name}: address=${networkConfig.tokenAddress}`
+          `✅ ${asset.symbol} available on ${currentNetwork.name}: address=${networkConfig.tokenAddress}`,
         );
       }
 
       return hasValidConfig;
     });
 
-    console.log(
-      "📦 Final available assets:",
-      filtered.map((a) => a.symbol)
-    );
     return filtered;
   }, [currentNetwork]);
 
@@ -81,7 +76,7 @@ export function SwapPanel() {
 
   // Add second currency for "To" panel
   const [selectedToCurrency, setSelectedToCurrency] = useState<Asset | null>(
-    null
+    null,
   );
 
   // Wallet connection states
@@ -107,12 +102,12 @@ export function SwapPanel() {
     isApprovalSuccess,
     isSwapSuccess,
     markSuccessHandled,
+    clearError,
   } = useAerodromeSwap();
 
   // Refetch balances when currency changes (especially for CNGN)
   useEffect(() => {
     if (selectedCurrency?.symbol === "CNGN") {
-      console.log("🔄 CNGN selected, refreshing balance...");
       fromBalance.refetch();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -120,7 +115,6 @@ export function SwapPanel() {
 
   useEffect(() => {
     if (selectedToCurrency?.symbol === "CNGN") {
-      console.log("🔄 CNGN selected as To currency, refreshing balance...");
       toBalance.refetch();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -140,23 +134,15 @@ export function SwapPanel() {
           const quote = await getQuote(
             selectedCurrency.symbol,
             selectedToCurrency.symbol,
-            amount
+            amount,
           );
           if (quote) {
             setToAmount(parseFloat(quote.amountOut).toFixed(2));
             // Calculate the exchange rate (how much "to currency" per 1 "from currency")
             const rate = parseFloat(quote.amountOut) / parseFloat(amount);
             setExchangeRate(rate.toFixed(4)); // Use whole number for readability
-            console.log(
-              `💱 Quote: ${amount} ${selectedCurrency.symbol} = ${
-                quote.amountOut
-              } ${selectedToCurrency.symbol}, Rate: 1 ${
-                selectedCurrency.symbol
-              } = ${rate.toFixed(0)} ${selectedToCurrency.symbol}`
-            );
           }
         } catch (error) {
-          console.error("Error fetching quote:", error);
           setToAmount("0.00");
           setExchangeRate("0");
         }
@@ -175,15 +161,12 @@ export function SwapPanel() {
   // Handle successful approval
   useEffect(() => {
     if (isApprovalSuccess) {
-      console.log("✅ Token approval successful");
     }
   }, [isApprovalSuccess]);
 
   // Handle successful swap and refresh balances
   useEffect(() => {
     if (isSwapSuccess) {
-      console.log("✅ Swap completed successfully");
-
       // Show success message
       setShowSuccessMessage(true);
 
@@ -198,7 +181,6 @@ export function SwapPanel() {
       setTimeout(() => {
         fromBalance.refetch();
         toBalance.refetch();
-        console.log("🎉 Swap completed - balances refreshed");
       }, 1000);
 
       // Hide success message after 15 seconds
@@ -215,15 +197,6 @@ export function SwapPanel() {
       availableAssets.length > 0 &&
       (!selectedCurrency || !selectedToCurrency)
     ) {
-      console.log(
-        "🔄 Initializing currencies for network:",
-        currentNetwork?.name
-      );
-      console.log(
-        "Available assets:",
-        availableAssets.map((a) => a.symbol)
-      );
-
       // On Base, prefer USDC since USDT is not available
       const preferredFromSymbol =
         currentNetwork?.name === "Base" ? "USDC" : "USDT";
@@ -235,14 +208,11 @@ export function SwapPanel() {
       // Always prefer CNGN for "To" currency, but ensure it's different from "From"
       const toAsset =
         availableAssets.find(
-          (a) => a.symbol === "CNGN" && a.symbol !== fromAsset?.symbol
+          (a) => a.symbol === "CNGN" && a.symbol !== fromAsset?.symbol,
         ) ||
         availableAssets.find((a) => a.symbol !== fromAsset?.symbol) ||
         availableAssets[1] ||
         availableAssets[0];
-
-      console.log("🚀 Setting From currency:", fromAsset?.symbol);
-      console.log("🎯 Setting To currency:", toAsset?.symbol);
 
       if (fromAsset) {
         setSelectedCurrency(fromAsset);
@@ -301,22 +271,11 @@ export function SwapPanel() {
 
   const handleSwapCurrencies = () => {
     if (!selectedCurrency || !selectedToCurrency) {
-      console.log("⚠️ Cannot swap - one or both currencies not selected");
       return;
     }
 
-    console.log("🔄 Swapping currencies...");
-    console.log(
-      "Before swap - From:",
-      selectedCurrency.symbol,
-      "To:",
-      selectedToCurrency.symbol
-    );
-    console.log("Current network:", currentNetwork?.name);
-
     // Prevent swapping if currencies are the same
     if (selectedCurrency.symbol === selectedToCurrency.symbol) {
-      console.log("⚠️ Cannot swap same currencies");
       return;
     }
 
@@ -338,13 +297,6 @@ export function SwapPanel() {
     updateSelection({
       asset: tempToCurrency,
     } as unknown as Record<string, unknown>);
-
-    console.log(
-      "After swap - From:",
-      tempToCurrency.symbol,
-      "To:",
-      tempFromCurrency.symbol
-    );
   };
 
   // Sync selectedCurrency with global asset on mount
@@ -355,7 +307,7 @@ export function SwapPanel() {
       userSelectionStore.asset &&
       (!allowedSymbols.has(userSelectionStore.asset.symbol) ||
         !availableAssets.find(
-          (a) => a.symbol === userSelectionStore.asset?.symbol
+          (a) => a.symbol === userSelectionStore.asset?.symbol,
         ))
     ) {
       if (availableAssets.length > 0) {
@@ -371,7 +323,7 @@ export function SwapPanel() {
         // Set appropriate "to" currency (different from "from")
         const toCurrency =
           availableAssets.find(
-            (a) => a.symbol === "CNGN" && a.symbol !== preferred.symbol
+            (a) => a.symbol === "CNGN" && a.symbol !== preferred.symbol,
           ) ||
           availableAssets.find((a) => a.symbol !== preferred.symbol) ||
           availableAssets[0];
@@ -389,10 +341,11 @@ export function SwapPanel() {
       const toCurrency =
         availableAssets.find(
           (a) =>
-            a.symbol === "CNGN" && a.symbol !== userSelectionStore.asset?.symbol
+            a.symbol === "CNGN" &&
+            a.symbol !== userSelectionStore.asset?.symbol,
         ) ||
         availableAssets.find(
-          (a) => a.symbol !== userSelectionStore.asset?.symbol
+          (a) => a.symbol !== userSelectionStore.asset?.symbol,
         ) ||
         availableAssets[0];
       setSelectedToCurrency(toCurrency);
@@ -411,7 +364,7 @@ export function SwapPanel() {
         // Set appropriate "to" currency (different from "from")
         const toCurrency =
           availableAssets.find(
-            (a) => a.symbol === "CNGN" && a.symbol !== defaultAsset.symbol
+            (a) => a.symbol === "CNGN" && a.symbol !== defaultAsset.symbol,
           ) ||
           availableAssets.find((a) => a.symbol !== defaultAsset.symbol) ||
           availableAssets[0];
@@ -448,20 +401,10 @@ export function SwapPanel() {
     }
 
     if (!selectedCurrency || !selectedToCurrency || !amount || amount === "0") {
-      console.log("Missing required swap parameters");
       return;
     }
 
     try {
-      console.log(
-        "🔄 Starting swap:",
-        selectedCurrency.symbol,
-        "→",
-        selectedToCurrency.symbol,
-        "Amount:",
-        amount
-      );
-
       await swap({
         tokenASymbol: selectedCurrency.symbol,
         tokenBSymbol: selectedToCurrency.symbol,
@@ -469,10 +412,10 @@ export function SwapPanel() {
         slippage: 2.5, // 0.5% slippage tolerance
         deadline: 20, // 20 minutes
       });
-
-      console.log("✅ Swap initiated successfully");
     } catch (error) {
-      console.error("❌ Swap failed:", error);
+      const message =
+        error instanceof Error ? error.message : "Swap failed";
+      toast.error(message);
     }
   };
 
@@ -515,6 +458,34 @@ export function SwapPanel() {
   // Determine if swap is in loading state
   const isSwapLoading =
     swapState.isLoading || swapState.isApproving || swapState.isSwapping;
+
+  // Show status action sheet when processing, success, or error
+  const showStatusSheet =
+    swapState.isApproving ||
+    swapState.isSwapping ||
+    swapState.error ||
+    showSuccessMessage;
+
+  const getStatusSheetStatus = (): SwapStatus => {
+    if (showSuccessMessage) return "success";
+    if (swapState.error) return "error";
+    return "processing";
+  };
+
+  const getStatusSheetStepMessage = (): string => {
+    if (swapState.isApproving) return "Approving token...";
+    if (swapState.isSwapping) return "Processing swap...";
+    return "Processing...";
+  };
+
+  const handleStatusSheetClose = () => {
+    if (swapState.error) {
+      clearError();
+    }
+    if (showSuccessMessage) {
+      setShowSuccessMessage(false);
+    }
+  };
 
   return (
     <div className="w-full max-w-md mx-auto min-h-[400px] bg-[#181818] rounded-3xl p-0 flex flex-col gap-0 md:shadow-lg md:border border-[#232323] relative">
@@ -603,50 +574,6 @@ export function SwapPanel() {
         </motion.div>
       )}
 
-      {/* Swap Status Messages */}
-      {(swapState.error || swapState.isApproving || swapState.isSwapping) && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mx-3 md:mx-4 mb-2"
-        >
-          <div
-            className={`p-3 rounded-lg text-sm ${
-              swapState.error
-                ? "bg-red-900/20 border border-red-500/30 text-red-400"
-                : "bg-blue-900/20 border border-blue-500/30 text-blue-400"
-            }`}
-          >
-            {swapState.error && (
-              <>
-                <div className="flex items-center gap-2 mb-1">
-                  <span>❌</span>
-                  <span className="font-medium">Swap Error</span>
-                </div>
-                <div className="text-xs opacity-80">{swapState.error}</div>
-              </>
-            )}
-            {swapState.isApproving && (
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
-                <span>
-                  Approving {selectedCurrency?.symbol} for swapping...
-                </span>
-              </div>
-            )}
-            {swapState.isSwapping && (
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
-                <span>
-                  Executing swap: {selectedCurrency?.symbol} →{" "}
-                  {selectedToCurrency?.symbol}
-                </span>
-              </div>
-            )}
-          </div>
-        </motion.div>
-      )}
-
       {/* Swap Button */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
@@ -654,72 +581,6 @@ export function SwapPanel() {
         transition={{ duration: 0.4, delay: 0.3, ease: "easeOut" }}
       >
         <div className="px-3 md:px-4 mt-4">
-          {/* Success Message */}
-          <AnimatePresence>
-            {showSuccessMessage && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-                className="mb-4 p-4 bg-green-500/10 border border-green-500/20 rounded-2xl backdrop-blur-sm"
-              >
-                <div className="flex items-center justify-center space-x-3">
-                  <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="text-white"
-                    >
-                      <polyline points="20,6 9,17 4,12" />
-                    </svg>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-green-400 font-semibold text-sm">
-                      Transaction Successful!
-                    </p>
-                    <p className="text-green-300/80 text-xs mt-1">
-                      Your swap has been completed successfully
-                    </p>
-                  </div>
-                </div>
-
-                {swapState.swapHash && (
-                  <div className="mt-3 text-center">
-                    <a
-                      href={`https://basescan.org/tx/${swapState.swapHash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center space-x-2 text-green-400 hover:text-green-300 text-xs transition-colors"
-                    >
-                      <span className="text-white">View on BaseScan</span>
-                      <svg
-                        width="12"
-                        height="12"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                        <polyline points="15,3 21,3 21,9" />
-                        <line x1="10" y1="14" x2="21" y2="3" />
-                      </svg>
-                    </a>
-                  </div>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
-
           {!evmConnected ? (
             <SwipeToSwapButton
               onSwapComplete={handleConnectWallet}
@@ -737,6 +598,19 @@ export function SwapPanel() {
           )}
         </div>
       </motion.div>
+
+      {/* Status Action Sheet - processing, success, or error */}
+      {showStatusSheet && (
+        <SwapStatusActionSheet
+          status={getStatusSheetStatus()}
+          stepMessage={getStatusSheetStepMessage()}
+          errorMessage={swapState.error}
+          swapHash={swapState.swapHash}
+          fromSymbol={selectedCurrency?.symbol}
+          toSymbol={selectedToCurrency?.symbol}
+          onClose={handleStatusSheetClose}
+        />
+      )}
 
       {/* Wallet Connection Modal */}
       {showWalletModal && (

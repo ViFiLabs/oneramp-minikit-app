@@ -87,7 +87,7 @@ export function CurrencyPanel({
               type="number"
               value={amount}
               onChange={handleAmountChange}
-              className="text-white text-2xl md:text-3xl font-semibold bg-transparent border-none outline-none text-right w-32"
+              className="hide-number-spinner text-white text-2xl md:text-3xl font-semibold bg-transparent border-none outline-none text-right w-32"
               placeholder="0"
             />
           ) : (

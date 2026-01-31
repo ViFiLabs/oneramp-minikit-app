@@ -7,7 +7,7 @@ import { useUserSelectionStore } from "@/src/store/user-selection";
 import { OrderStep, TransferStatusEnum } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import ProcessingCard from "./processing-card";
 
 const OrderProcessing = () => {
@@ -15,6 +15,11 @@ const OrderProcessing = () => {
   const { transfer, resetTransfer } = useTransferStore();
   const { quote, resetQuote } = useQuoteStore();
   const router = useRouter();
+  const [isVisible, setIsVisible] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setIsVisible(true), 50);
+    return () => clearTimeout(t);
+  }, []);
 
   const { data: transferStatus, isLoading } = useQuery({
     queryKey: ["transferStatus", transfer?.transferId],
@@ -59,19 +64,29 @@ const OrderProcessing = () => {
     : undefined;
 
   return (
-    <div className="fixed inset-0 z-50 flex-col md:flex-row flex py-20  justify-center bg-black gap-x-16">
-      {/* Left side - Timeline */}
-      {quote && (
-        <ProcessingCard
-          transactionHash={transfer?.transactionHash}
-          exploreUrl={exploreUrl}
-          quote={quote}
-          transfer={transfer || undefined}
-          onCancel={handleCancel}
-          onGetReceipt={handleGetReceipt}
-        />
-      )}
-    </div>
+    <>
+      {/* Dark overlay */}
+      <div className="fixed inset-0 z-50 bg-black/60 md:backdrop-blur-sm" />
+      {/* Action sheet from bottom */}
+      <div className="fixed inset-0 z-51 flex items-end justify-center">
+        <div
+          className={`w-full max-w-md h-[65vh] overflow-y-auto rounded-t-3xl overflow-hidden bg-[#181818] transition-transform duration-300 ease-out ${
+            isVisible ? "translate-y-0" : "translate-y-full"
+          }`}
+        >
+          {quote && (
+            <ProcessingCard
+              transactionHash={transfer?.transactionHash}
+              exploreUrl={exploreUrl}
+              quote={quote}
+              transfer={transfer || undefined}
+              onCancel={handleCancel}
+              onGetReceipt={handleGetReceipt}
+            />
+          )}
+        </div>
+      </div>
+    </>
   );
 };
 

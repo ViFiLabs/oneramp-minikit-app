@@ -148,11 +148,14 @@ const BuyUnified = () => {
 
   if (!quote.network) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black">
-        <div className="text-white text-center">
-          <p>Loading purchase details...</p>
+      <>
+        <div className="fixed inset-0 z-50 bg-black/60 md:backdrop-blur-sm" />
+        <div className="fixed inset-0 z-[51] flex items-end justify-center">
+          <div className="bg-gray-900 rounded-t-3xl max-w-md w-full max-h-[50vh] p-6 flex items-center justify-center">
+            <p className="text-white text-center">Loading purchase details...</p>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
