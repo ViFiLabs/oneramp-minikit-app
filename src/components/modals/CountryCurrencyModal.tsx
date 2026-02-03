@@ -21,19 +21,23 @@ interface CountryCurrencyModalProps {
   onClose: () => void;
   onSelect: (country: Country) => void;
   filteredCountries?: Country[];
+  /** Country codes to disable (e.g. ["NG"] for Nigeria on withdraw tab) */
+  disabledCountryCodes?: string[];
 }
 
 // Check if a country is disabled
-const isCountryDisabled = (country: Country) => {
-  return country.countryCode === "GHA"; // Ghana is disabled
-};
+const isCountryDisabledForCode = (code: string) => code === "GHA"; // Ghana is disabled
 
 export function CountryCurrencyModal({
   open,
   onClose,
   onSelect,
   filteredCountries,
+  disabledCountryCodes = [],
 }: CountryCurrencyModalProps) {
+  const isCountryDisabled = (country: Country) =>
+    isCountryDisabledForCode(country.countryCode) ||
+    disabledCountryCodes.includes(country.countryCode);
   const { country } = useUserSelectionStore();
   const { countryCode: userCountryCode, isLoading: isLocationLoading } =
     useUserLocation();
@@ -85,7 +89,7 @@ export function CountryCurrencyModal({
     }
 
     return [userCountry, ...enabledCountries, ...disabledCountries];
-  }, [baseCountries, userCountryCode, isLocationLoading]);
+  }, [baseCountries, userCountryCode, isLocationLoading, disabledCountryCodes]);
 
   // Enhanced country selection handler that triggers pre-fetching
   const handleCountrySelect = (selectedCountry: Country) => {

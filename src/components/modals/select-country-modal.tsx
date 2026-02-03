@@ -8,11 +8,13 @@ import { useState } from "react";
 interface SelectCountryModalProps {
   handleCountrySelect: (country: Country) => void;
   filteredCountries?: Country[];
+  disabledCountryCodes?: string[];
 }
 
 const SelectCountryModal = ({
   handleCountrySelect,
   filteredCountries,
+  disabledCountryCodes,
 }: SelectCountryModalProps) => {
   const [showCountryCurrencyModal, setShowCountryCurrencyModal] =
     useState(false);
@@ -57,6 +59,7 @@ const SelectCountryModal = ({
           setShowCountryCurrencyModal(false);
         }}
         filteredCountries={filteredCountries}
+        disabledCountryCodes={disabledCountryCodes}
       />
     </>
   );
