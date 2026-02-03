@@ -832,6 +832,9 @@ export function WithdrawInterface({
                   exchangeRate={exchangeRate}
                   nigeriaRate={nigeriaRate}
                   exchangeRates={exchangeRates}
+                  disabledCountryCodes={
+                    mode === "withdraw" ? ["NG"] : undefined
+                  }
                 />
               </motion.div>
 
@@ -898,6 +901,9 @@ export function WithdrawInterface({
                   exchangeRate={exchangeRate}
                   nigeriaRate={nigeriaRate}
                   exchangeRates={exchangeRates}
+                  disabledCountryCodes={
+                    mode === "withdraw" ? ["NG"] : undefined
+                  }
                 />
               </motion.div>
             </motion.div>

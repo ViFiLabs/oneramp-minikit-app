@@ -12,6 +12,8 @@ interface ToPanelProps {
   exchangeRate?: ExchangeRateResponse; // Optional exchange rate from suspense data for current country
   nigeriaRate?: ExchangeRateResponse; // Optional Nigeria rate from suspense data
   exchangeRates?: Record<string, ExchangeRateResponse>; // Optional all exchange rates map
+  /** Country codes to disable in the picker (e.g. ["NG"] for Nigeria on withdraw tab) */
+  disabledCountryCodes?: string[];
 }
 
 export function ToPanel({
@@ -20,6 +22,7 @@ export function ToPanel({
   exchangeRate,
   nigeriaRate,
   exchangeRates,
+  disabledCountryCodes,
 }: ToPanelProps) {
   return (
     <div className="mx-3 md:mx-4 my-1 bg-[#232323] rounded-2xl p-4 md:p-5 flex flex-col gap-2 relative">
@@ -41,6 +44,7 @@ export function ToPanel({
         exchangeRate={exchangeRate}
         nigeriaRate={nigeriaRate}
         exchangeRates={exchangeRates}
+        disabledCountryCodes={disabledCountryCodes}
       />
     </div>
   );
