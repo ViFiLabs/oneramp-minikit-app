@@ -2,6 +2,7 @@
 
 import { FiCheck, FiX } from "react-icons/fi";
 import { useEffect, useState } from "react";
+import { ProcessingCountdown } from "@/src/components/cards/processing-countdown";
 
 export type SwapStatus = "processing" | "success" | "error";
 
@@ -13,6 +14,8 @@ interface SwapStatusActionSheetProps {
   fromSymbol?: string;
   toSymbol?: string;
   onClose: () => void;
+  /** Session start timestamp for persistent countdown (survives tab close/reopen) */
+  sessionStartTime?: number | null;
 }
 
 export function SwapStatusActionSheet({
@@ -23,6 +26,7 @@ export function SwapStatusActionSheet({
   fromSymbol,
   toSymbol,
   onClose,
+  sessionStartTime,
 }: SwapStatusActionSheetProps) {
   const [isVisible, setIsVisible] = useState(false);
 
@@ -65,8 +69,17 @@ export function SwapStatusActionSheet({
             <div className="w-12 h-1 bg-gray-500 rounded-full" />
           </div>
 
-          {/* Header with Close Button - hidden when processing */}
-          <div className="flex justify-end px-4 pb-2">
+          {/* Header with Countdown (left) and Close Button (right) - close hidden when processing */}
+          <div className="flex items-center justify-between px-4 pb-2">
+            <div className="w-9 shrink-0">
+              {status === "processing" && sessionStartTime != null && (
+                <ProcessingCountdown
+                  sessionStartTime={sessionStartTime}
+                  size={36}
+                  strokeWidth={2.5}
+                />
+              )}
+            </div>
             {canClose && (
               <button
                 onClick={handleClose}

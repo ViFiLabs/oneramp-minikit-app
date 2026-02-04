@@ -3,6 +3,10 @@
 import { assets } from "@/data/currencies";
 import { SUPPORTED_NETWORKS_WITH_RPC_URLS } from "@/data/networks";
 import { useAerodromeSwap } from "@/src/hooks/useAerodromeSwap";
+import {
+  useProcessingSession,
+  clearProcessingSession,
+} from "@/src/hooks/useProcessingSession";
 import { useTokenBalance } from "@/src/hooks/useTokenBalance";
 import useWalletGetInfo from "@/src/hooks/useWalletGetInfo";
 import { ExchangeRateDisplay } from "@/src/components/ExchangeRateDisplay";
@@ -479,6 +483,7 @@ export function SwapPanel() {
   };
 
   const handleStatusSheetClose = () => {
+    clearProcessingSession("swap");
     if (swapState.error) {
       clearError();
     }
@@ -486,6 +491,12 @@ export function SwapPanel() {
       setShowSuccessMessage(false);
     }
   };
+
+  const isSwapProcessing =
+    showStatusSheet && getStatusSheetStatus() === "processing";
+  const sessionStartTime = useProcessingSession(
+    isSwapProcessing ? "swap" : undefined
+  );
 
   return (
     <div className="w-full max-w-md mx-auto min-h-[400px] bg-[#181818] rounded-3xl p-0 flex flex-col gap-0 md:shadow-lg md:border border-[#232323] relative">
@@ -609,6 +620,7 @@ export function SwapPanel() {
           fromSymbol={selectedCurrency?.symbol}
           toSymbol={selectedToCurrency?.symbol}
           onClose={handleStatusSheetClose}
+          sessionStartTime={sessionStartTime}
         />
       )}
 
