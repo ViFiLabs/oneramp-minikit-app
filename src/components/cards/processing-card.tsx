@@ -8,6 +8,7 @@ import AssetAvator from "./asset-avator";
 import CountryAvator from "./country-avator";
 import { Button } from "@/src/components/ui/button";
 import TransactionsModal from "@/src/app/transactions/transactions-modal";
+import { ProcessingCountdown } from "./processing-countdown";
 
 import { PAY_SUPPORTED_COUNTRIES } from "@/data/countries";
 
@@ -18,6 +19,8 @@ interface ProcessingCardProps {
   transfer?: Transfer;
   onCancel: () => void;
   onGetReceipt: () => void;
+  /** Session start timestamp for persistent countdown (survives tab close/reopen) */
+  sessionStartTime?: number | null;
 }
 
 const ProcessingCard: React.FC<ProcessingCardProps> = ({
@@ -26,6 +29,7 @@ const ProcessingCard: React.FC<ProcessingCardProps> = ({
   quote,
   transfer,
   onCancel,
+  sessionStartTime,
 }) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [isTooltipClosing, setIsTooltipClosing] = useState(false);
@@ -150,6 +154,13 @@ const ProcessingCard: React.FC<ProcessingCardProps> = ({
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-[#232323]">
             <div className="flex items-center gap-3">
+              {sessionStartTime != null && (
+                <ProcessingCountdown
+                  sessionStartTime={sessionStartTime}
+                  size={36}
+                  strokeWidth={2.5}
+                />
+              )}
               <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
                 <Loader size={16} className="animate-spin text-white" />
               </div>

@@ -4,6 +4,10 @@ import {
   submitTransactionHash,
   getTransferStatus,
 } from "@/src/actions/transfer";
+import {
+  useProcessingSession,
+  clearProcessingSession,
+} from "@/src/hooks/useProcessingSession";
 import { useQuoteStore } from "@/src/store/quote-store";
 import { useTransferStore } from "@/src/store/transfer-store";
 import { useUserSelectionStore } from "@/src/store/user-selection";
@@ -23,6 +27,7 @@ const WithdrawalUnified = () => {
     useUserSelectionStore();
   const { transfer, resetTransfer, transactionHash, setTransfer } =
     useTransferStore();
+  const sessionStartTime = useProcessingSession(transfer?.transferId);
   const { quote, resetQuote } = useQuoteStore();
   const router = useRouter();
   const hashSubmittedRef = useRef(false);
@@ -249,6 +254,7 @@ const WithdrawalUnified = () => {
   }, [orderStep]);
 
   const handleDone = () => {
+    clearProcessingSession(transfer?.transferId);
     resetQuote();
     resetTransfer();
     resetToDefault();
@@ -256,6 +262,7 @@ const WithdrawalUnified = () => {
   };
 
   const handleTryAgain = () => {
+    clearProcessingSession(transfer?.transferId);
     resetQuote();
     resetTransfer();
     resetToDefault();
@@ -306,6 +313,7 @@ const WithdrawalUnified = () => {
       isSuccess={isSuccess}
       onDone={isFailed ? handleTryAgain : handleDone}
       animationPhase={animationPhase}
+      sessionStartTime={sessionStartTime}
     />
   );
 };

@@ -1,6 +1,10 @@
 "use client";
 
 import { getTransferStatus } from "@/src/actions/transfer";
+import {
+  useProcessingSession,
+  clearProcessingSession,
+} from "@/src/hooks/useProcessingSession";
 import { useQuoteStore } from "@/src/store/quote-store";
 import { useTransferStore } from "@/src/store/transfer-store";
 import { useUserSelectionStore } from "@/src/store/user-selection";
@@ -15,6 +19,7 @@ const OrderProcessing = () => {
   const { transfer, resetTransfer } = useTransferStore();
   const { quote, resetQuote } = useQuoteStore();
   const router = useRouter();
+  const sessionStartTime = useProcessingSession(transfer?.transferId);
   const [isVisible, setIsVisible] = useState(false);
   useEffect(() => {
     const t = setTimeout(() => setIsVisible(true), 50);
@@ -38,6 +43,7 @@ const OrderProcessing = () => {
       transferStatus?.status === TransferStatusEnum.TransferComplete &&
       !isLoading
     ) {
+      clearProcessingSession(transfer?.transferId);
       updateSelection({ orderStep: OrderStep.PaymentCompleted });
     }
 
@@ -45,11 +51,13 @@ const OrderProcessing = () => {
       transferStatus?.status === TransferStatusEnum.TransferFailed &&
       !isLoading
     ) {
+      clearProcessingSession(transfer?.transferId);
       updateSelection({ orderStep: OrderStep.PaymentFailed });
     }
   }, [transferStatus?.status, isLoading]);
 
   const handleCancel = () => {
+    clearProcessingSession(transfer?.transferId);
     resetQuote();
     resetTransfer();
     resetToDefault();
@@ -82,6 +90,7 @@ const OrderProcessing = () => {
               transfer={transfer || undefined}
               onCancel={handleCancel}
               onGetReceipt={handleGetReceipt}
+              sessionStartTime={sessionStartTime}
             />
           )}
         </div>

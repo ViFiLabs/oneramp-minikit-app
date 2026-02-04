@@ -1,6 +1,10 @@
 "use client";
 
 import { getTransferStatus } from "@/src/actions/transfer";
+import {
+  useProcessingSession,
+  clearProcessingSession,
+} from "@/src/hooks/useProcessingSession";
 import { useQuoteStore } from "@/src/store/quote-store";
 import { useTransferStore } from "@/src/store/transfer-store";
 import { useUserSelectionStore } from "@/src/store/user-selection";
@@ -13,6 +17,7 @@ import BuyStatusCard from "@/src/components/cards/buy-status-card";
 const BuyUnified = () => {
   const { resetToDefault, orderStep } = useUserSelectionStore();
   const { transfer, resetTransfer, setTransfer } = useTransferStore();
+  const sessionStartTime = useProcessingSession(transfer?.transferId);
   const { quote, resetQuote } = useQuoteStore();
   const router = useRouter();
 
@@ -129,6 +134,7 @@ const BuyUnified = () => {
   }, [orderStep]);
 
   const handleDone = () => {
+    clearProcessingSession(transfer?.transferId);
     resetQuote();
     resetTransfer();
     resetToDefault();
@@ -136,6 +142,7 @@ const BuyUnified = () => {
   };
 
   const handleTryAgain = () => {
+    clearProcessingSession(transfer?.transferId);
     resetQuote();
     resetTransfer();
     resetToDefault();
@@ -173,6 +180,7 @@ const BuyUnified = () => {
       isSuccess={isSuccess}
       onDone={isFailed ? handleTryAgain : handleDone}
       animationPhase={animationPhase}
+      sessionStartTime={sessionStartTime}
       onConfirmPaid={() => {
         // For Nigeria manual bank payment, let user declare they've paid
         // Advance to WaitingForPayment so polling continues while UI updates

@@ -4,6 +4,10 @@ import {
   submitTransactionHash,
   getTransferStatus,
 } from "@/src/actions/transfer";
+import {
+  useProcessingSession,
+  clearProcessingSession,
+} from "@/src/hooks/useProcessingSession";
 import { useQuoteStore } from "@/src/store/quote-store";
 import { useTransferStore } from "@/src/store/transfer-store";
 import { useUserSelectionStore } from "@/src/store/user-selection";
@@ -22,6 +26,7 @@ const PayOrderProcessing = () => {
   const { transfer, resetTransfer, transactionHash } = useTransferStore();
   const { quote, resetQuote } = useQuoteStore();
   const router = useRouter();
+  const sessionStartTime = useProcessingSession(transfer?.transferId);
   const hashSubmittedRef = useRef(false);
   const [isVisible, setIsVisible] = useState(false);
   useEffect(() => {
@@ -29,12 +34,6 @@ const PayOrderProcessing = () => {
     return () => clearTimeout(t);
   }, []);
 
-  // Debug the quote structure
-  useEffect(() => {
-    if (quote) {
-      console.log("Quote network:", quote.network);
-    }
-  }, [quote]);
 
   // Reset submitted flag when transaction hash changes
   useEffect(() => {
@@ -49,13 +48,13 @@ const PayOrderProcessing = () => {
     mutationFn: (payload: SubmitTransactionHashRequest) =>
       submitTransactionHash(payload),
     onSuccess: () => {
-      console.log("Transaction hash submitted successfully:");
       hashSubmittedRef.current = true;
       // Transition to regular transfer status polling
       updateSelection({ orderStep: OrderStep.GotTransfer });
     },
     onError: (error) => {
       console.error("Error submitting transaction hash:", error);
+      clearProcessingSession(transfer?.transferId);
       updateSelection({ orderStep: OrderStep.PaymentFailed });
     },
   });
@@ -104,6 +103,7 @@ const PayOrderProcessing = () => {
       transferStatus?.status === TransferStatusEnum.TransferComplete &&
       !isLoading
     ) {
+      clearProcessingSession(transfer?.transferId);
       updateSelection({ orderStep: OrderStep.PaymentCompleted });
     }
 
@@ -111,6 +111,7 @@ const PayOrderProcessing = () => {
       transferStatus?.status === TransferStatusEnum.TransferFailed &&
       !isLoading
     ) {
+      clearProcessingSession(transfer?.transferId);
       updateSelection({ orderStep: OrderStep.PaymentFailed });
     }
   }, [transferStatus?.status, isLoading]); // Removed updateSelection from dependencies
@@ -133,6 +134,7 @@ const PayOrderProcessing = () => {
   }
 
   const handleCancel = () => {
+    clearProcessingSession(transfer?.transferId);
     resetQuote();
     resetTransfer();
     resetToDefault();
@@ -164,6 +166,7 @@ const PayOrderProcessing = () => {
             transfer={transfer || undefined}
             onCancel={handleCancel}
             onGetReceipt={handleGetReceipt}
+            sessionStartTime={sessionStartTime}
           />
         </div>
       </div>

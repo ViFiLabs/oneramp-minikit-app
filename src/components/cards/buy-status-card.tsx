@@ -5,6 +5,7 @@ import { PAY_SUPPORTED_COUNTRIES } from "@/data/countries";
 import { Quote, Transfer } from "@/types";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { FiCheck, FiX } from "react-icons/fi";
+import { ProcessingCountdown } from "./processing-countdown";
 
 interface BuyStatusCardProps {
   quote: Quote;
@@ -16,6 +17,8 @@ interface BuyStatusCardProps {
   onClose?: () => void;
   animationPhase?: "initial" | "transition" | "final";
   onConfirmPaid?: () => void;
+  /** Session start timestamp for persistent countdown (survives tab close/reopen) */
+  sessionStartTime?: number | null;
 }
 
 const BuyStatusCard: React.FC<BuyStatusCardProps> = ({
@@ -28,6 +31,7 @@ const BuyStatusCard: React.FC<BuyStatusCardProps> = ({
   onClose,
   animationPhase = "initial",
   onConfirmPaid,
+  sessionStartTime,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [dragStartY, setDragStartY] = useState(0);
@@ -405,9 +409,9 @@ const BuyStatusCard: React.FC<BuyStatusCardProps> = ({
             </div>
           )}
 
-          {/* Header with Close Button */}
+          {/* Header with Countdown (left) and Close Button (right) */}
           <div
-            className={`flex justify-end p-4 pb-2 ${
+            className={`flex items-center justify-between p-4 pb-2 ${
               !isDesktop
                 ? "cursor-grab active:cursor-grabbing"
                 : "cursor-default"
@@ -422,6 +426,15 @@ const BuyStatusCard: React.FC<BuyStatusCardProps> = ({
               }
             }}
           >
+            <div className="w-9 shrink-0">
+              {isProcessing && sessionStartTime != null && (
+                <ProcessingCountdown
+                  sessionStartTime={sessionStartTime}
+                  size={36}
+                  strokeWidth={2.5}
+                />
+              )}
+            </div>
             <button
               onClick={handleClose}
               className="w-8 h-8 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-colors"
