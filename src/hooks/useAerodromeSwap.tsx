@@ -10,54 +10,14 @@ import {
 } from "viem";
 import { base } from "viem/chains";
 import { useWalletClient } from "wagmi";
+import {
+  V3_SWAP_ROUTER,
+  V3_SWAP_ROUTER_ABI,
+  V3_TICK_SPACING,
+} from "@/src/config/v3-swap-config";
 import { getTokenAddress, getTokenDecimals } from "@/data/token-config";
 import useWalletGetInfo from "@/src/hooks/useWalletGetInfo";
 import { getLiveExchangeRate, getV3Quote } from "@/src/utils/v3-rate-fetcher";
-// V3 SwapRouter (SlipStream) - your requested contract
-const AERODROME_V3_SWAP_ROUTER = "0xBE6D8f0d05cC4be24d5167a3eF062215bE6D18a5";
-// const AERODROME_V3_FACTORY = "0x5e7BB104d84c7CB9B682AaC2F3d509f5F406809A";
-
-// V3 SwapRouter ABI - from your provided JSON
-const AERODROME_V3_ROUTER_ABI = [
-  {
-    inputs: [
-      {
-        components: [
-          { internalType: "address", name: "tokenIn", type: "address" },
-          { internalType: "address", name: "tokenOut", type: "address" },
-          { internalType: "int24", name: "tickSpacing", type: "int24" },
-          { internalType: "address", name: "recipient", type: "address" },
-          { internalType: "uint256", name: "deadline", type: "uint256" },
-          { internalType: "uint256", name: "amountIn", type: "uint256" },
-          {
-            internalType: "uint256",
-            name: "amountOutMinimum",
-            type: "uint256",
-          },
-          {
-            internalType: "uint160",
-            name: "sqrtPriceLimitX96",
-            type: "uint160",
-          },
-        ],
-        internalType: "struct ISwapRouter.ExactInputSingleParams",
-        name: "params",
-        type: "tuple",
-      },
-    ],
-    name: "exactInputSingle",
-    outputs: [{ internalType: "uint256", name: "amountOut", type: "uint256" }],
-    stateMutability: "payable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "factory",
-    outputs: [{ internalType: "address", name: "", type: "address" }],
-    stateMutability: "view",
-    type: "function",
-  },
-] as const;
 
 interface SwapParams {
   tokenASymbol: string;
@@ -83,7 +43,7 @@ const publicClient = createPublicClient({
   transport: http(
     process.env.NEXT_PUBLIC_INFURA_API_KEY
       ? `https://base-mainnet.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_API_KEY}`
-      : "https://mainnet.base.org"
+      : "https://mainnet.base.org",
   ),
 });
 
@@ -161,7 +121,7 @@ export function useAerodromeSwap() {
   // Check allowance for a token
   const checkAllowance = async (
     tokenSymbol: string,
-    amount: string
+    amount: string,
   ): Promise<boolean> => {
     const tokenAddress = getTokenAddress(tokenSymbol, base.id);
     const decimals = getTokenDecimals(tokenSymbol, base.id);
@@ -176,7 +136,7 @@ export function useAerodromeSwap() {
         functionName: "allowance",
         args: [
           address as `0x${string}`,
-          AERODROME_V3_SWAP_ROUTER as `0x${string}`,
+          V3_SWAP_ROUTER as `0x${string}`,
         ],
       });
 
@@ -190,7 +150,7 @@ export function useAerodromeSwap() {
   // Approve token spending
   const approveToken = async (
     tokenSymbol: string,
-    amount: string
+    amount: string,
   ): Promise<string> => {
     const tokenAddress = getTokenAddress(tokenSymbol, base.id);
     const decimals = getTokenDecimals(tokenSymbol, base.id);
@@ -204,19 +164,17 @@ export function useAerodromeSwap() {
     try {
       if (!walletClient) {
         throw new Error(
-          "Wallet not ready. Please ensure you're connected via the app's wallet modal."
+          "Wallet not ready. Please ensure you're connected via the app's wallet modal.",
         );
       }
       const amountBigInt = parseUnits(amount, decimals);
 
-      const hash = await (
-        walletClient as WalletClient
-      ).writeContract({
+      const hash = await (walletClient as WalletClient).writeContract({
         chain: base,
         address: tokenAddress as `0x${string}`,
         abi: erc20Abi,
         functionName: "approve",
-        args: [AERODROME_V3_SWAP_ROUTER as `0x${string}`, amountBigInt],
+        args: [V3_SWAP_ROUTER as `0x${string}`, amountBigInt],
         account: address as `0x${string}`,
       });
 
@@ -262,15 +220,14 @@ export function useAerodromeSwap() {
     try {
       if (!walletClient) {
         throw new Error(
-          "Wallet not ready. Please ensure you're connected via the app's wallet modal."
+          "Wallet not ready. Please ensure you're connected via the app's wallet modal.",
         );
       }
       const amountInBigInt = parseUnits(amountIn, tokenADecimals);
       const deadlineTimestamp = Math.floor(Date.now() / 1000) + deadline * 60;
 
-      // V3 doesn't use routes - it uses direct token pairs with tick spacing
-      // Using correct tick spacing for USDC/CNGN pool with 0.05% fee tier
-      const tickSpacing = 10; // ✅ Confirmed working tick spacing for 0.05% fee tier
+      // V3 uses direct token pairs with tick spacing from config (e.g. 0.05% fee tier)
+      const tickSpacing = V3_TICK_SPACING;
 
       // Get live exchange rate instead of hardcoding
       console.log("🔍 Fetching live V3 exchange rate...");
@@ -291,17 +248,10 @@ export function useAerodromeSwap() {
         ) {
           effectiveRate = liveRate.usdcTocNGN;
           rateSource = liveRate.source || "Live Rate";
-          console.log(
-            `✅ Using live rate: 1 USDC = ${effectiveRate} cNGN from ${rateSource}`
-          );
         } else {
-          console.log(
-            `⚠️ Invalid live rate (${liveRate?.usdcTocNGN}), using fallback: ${effectiveRate}`
-          );
         }
       } catch (rateError) {
         console.error("❌ Rate fetching failed:", rateError);
-        console.log(`⚠️ Using fallback rate: ${effectiveRate}`);
       }
 
       if (!amountIn || amountIn === "0" || isNaN(parseFloat(amountIn))) {
@@ -314,26 +264,20 @@ export function useAerodromeSwap() {
       if (tokenASymbol === "USDC" && tokenBSymbol === "CNGN") {
         // USDC → CNGN: multiply by rate
         estimatedOutputAmount = parseFloat(amountIn) * effectiveRate;
-        console.log(
-          `📊 USDC → CNGN: ${amountIn} * ${effectiveRate} = ${estimatedOutputAmount}`
-        );
       } else if (tokenASymbol === "CNGN" && tokenBSymbol === "USDC") {
         // CNGN → USDC: divide by rate
         estimatedOutputAmount = parseFloat(amountIn) / effectiveRate;
-        console.log(
-          `📊 CNGN → USDC: ${amountIn} / ${effectiveRate} = ${estimatedOutputAmount}`
-        );
       } else {
         throw new Error(
-          `Unsupported conversion pair: ${tokenASymbol} → ${tokenBSymbol}`
+          `Unsupported conversion pair: ${tokenASymbol} → ${tokenBSymbol}`,
         );
       }
 
       if (isNaN(estimatedOutputAmount)) {
         throw new Error(
           `Calculated output amount is NaN: ${parseFloat(
-            amountIn
-          )} * ${effectiveRate} = ${estimatedOutputAmount}`
+            amountIn,
+          )} * ${effectiveRate} = ${estimatedOutputAmount}`,
         );
       }
 
@@ -344,41 +288,19 @@ export function useAerodromeSwap() {
       try {
         const estimatedOutputBigInt = parseUnits(
           outputAmountString,
-          tokenBDecimals
+          tokenBDecimals,
         );
 
         // Display rate information based on conversion direction
         if (tokenASymbol === "USDC" && tokenBSymbol === "CNGN") {
-          console.log(
-            `📈 Live rate: 1 USDC = ${effectiveRate.toFixed(
-              4
-            )} cNGN (${rateSource})`
-          );
         } else if (tokenASymbol === "CNGN" && tokenBSymbol === "USDC") {
           const reverseRate = 1 / effectiveRate;
-          console.log(
-            `📈 Live rate: 1 cNGN = ${reverseRate.toFixed(
-              8
-            )} USDC (${rateSource})`
-          );
-          console.log(
-            `📈 (Equivalent: 1 USDC = ${effectiveRate.toFixed(4)} cNGN)`
-          );
         }
 
         // Calculate minimum amount out with slippage protection
         const slippageMultiplier = BigInt(Math.floor((100 - slippage) * 100));
         const amountOutMin =
           (estimatedOutputBigInt * slippageMultiplier) / BigInt(10000);
-
-        console.log(
-          "💱 Estimated V3 output:",
-          estimatedOutputBigInt.toString()
-        );
-        console.log(
-          "💱 Minimum output (with slippage):",
-          amountOutMin.toString()
-        );
 
         // V3 ExactInputSingle parameters
         const exactInputSingleParams = {
@@ -392,19 +314,10 @@ export function useAerodromeSwap() {
           sqrtPriceLimitX96: BigInt(0), // No price limit
         };
 
-        console.log("🔄 Executing V3 swap with exactInputSingle:", {
-          tokenIn: exactInputSingleParams.tokenIn,
-          tokenOut: exactInputSingleParams.tokenOut,
-          tickSpacing: exactInputSingleParams.tickSpacing,
-          amountIn: exactInputSingleParams.amountIn.toString(),
-          amountOutMinimum: exactInputSingleParams.amountOutMinimum.toString(),
-          deadline: exactInputSingleParams.deadline.toString(),
-        });
-
         const hash = await (walletClient as WalletClient).writeContract({
           chain: base,
-          address: AERODROME_V3_SWAP_ROUTER as `0x${string}`,
-          abi: AERODROME_V3_ROUTER_ABI,
+          address: V3_SWAP_ROUTER as `0x${string}`,
+          abi: V3_SWAP_ROUTER_ABI,
           functionName: "exactInputSingle",
           args: [exactInputSingleParams],
           account: address as `0x${string}`,
@@ -423,7 +336,7 @@ export function useAerodromeSwap() {
       } catch (parseUnitsError) {
         console.error(
           "❌ Error in parseUnits or swap execution:",
-          parseUnitsError
+          parseUnitsError,
         );
         // Use user-friendly error instead of technical details
         throw new Error(getUserFriendlyError(parseUnitsError));
@@ -452,26 +365,18 @@ export function useAerodromeSwap() {
       // Check if we need approval first
       const needsApproval = !(await checkAllowance(
         params.tokenASymbol,
-        params.amountIn
+        params.amountIn,
       ));
 
       if (needsApproval) {
-        console.log("🔐 Token approval needed, requesting approval...");
         await approveToken(params.tokenASymbol, params.amountIn);
-        console.log("✅ Token approved successfully");
 
         // Wait 1.5 seconds for the approve transaction to settle onchain
-        console.log(
-          "⏳ Waiting 0.5 seconds for approval transaction to settle..."
-        );
         await new Promise((resolve) => setTimeout(resolve, 500));
-        console.log("⌛ Approval settlement wait completed");
       }
 
       // Execute the swap
-      console.log("🔄 Starting swap...");
       const swapHash = await executeSwap(params);
-      console.log("✅ Swap completed successfully!", { hash: swapHash });
     } catch (error) {
       console.error("❌ Swap failed:", error);
       throw error;
@@ -500,7 +405,7 @@ export function useAerodromeSwap() {
           amountIn,
           tokenASymbol,
           "->",
-          tokenBSymbol
+          tokenBSymbol,
         );
         console.log("Token A address:", tokenAAddress);
         console.log("Token B address:", tokenBAddress);
@@ -529,7 +434,7 @@ export function useAerodromeSwap() {
             tokenASymbol,
             "=>",
             quote.amountOut,
-            tokenBSymbol
+            tokenBSymbol,
           );
           console.log(
             "📈 Live exchange rate:",
@@ -537,7 +442,7 @@ export function useAerodromeSwap() {
             tokenASymbol,
             "=",
             quote.rate,
-            tokenBSymbol
+            tokenBSymbol,
           );
           console.log("🔧 Source:", quote.source);
 
@@ -570,21 +475,21 @@ export function useAerodromeSwap() {
             amountOut = parseFloat(amountIn) * fallbackRate;
             displayRate = fallbackRate.toFixed(4);
             console.log(
-              `📍 Using emergency fallback: ${amountIn} USDC * ${fallbackRate} = ${amountOut} CNGN`
+              `📍 Using emergency fallback: ${amountIn} USDC * ${fallbackRate} = ${amountOut} CNGN`,
             );
           } else if (tokenASymbol === "CNGN" && tokenBSymbol === "USDC") {
             // CNGN → USDC: divide by rate
             amountOut = parseFloat(amountIn) / fallbackRate;
             displayRate = (1 / fallbackRate).toFixed(8);
             console.log(
-              `📍 Using emergency fallback: ${amountIn} CNGN / ${fallbackRate} = ${amountOut} USDC`
+              `📍 Using emergency fallback: ${amountIn} CNGN / ${fallbackRate} = ${amountOut} USDC`,
             );
           } else {
             // Unsupported pair
             amountOut = 0;
             displayRate = "0";
             console.log(
-              `❌ Unsupported conversion pair: ${tokenASymbol} → ${tokenBSymbol}`
+              `❌ Unsupported conversion pair: ${tokenASymbol} → ${tokenBSymbol}`,
             );
           }
 
@@ -601,7 +506,7 @@ export function useAerodromeSwap() {
         return null;
       }
     },
-    []
+    [],
   );
 
   // Check if approval is successful and ready to swap

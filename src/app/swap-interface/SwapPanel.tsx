@@ -2,7 +2,7 @@
 
 import { assets } from "@/data/currencies";
 import { SUPPORTED_NETWORKS_WITH_RPC_URLS } from "@/data/networks";
-import { useAerodromeSwap } from "@/src/hooks/useAerodromeSwap";
+import { useSwap } from "@/src/hooks/useSwap";
 import {
   useProcessingSession,
   clearProcessingSession,
@@ -107,7 +107,7 @@ export function SwapPanel() {
     isSwapSuccess,
     markSuccessHandled,
     clearError,
-  } = useAerodromeSwap();
+  } = useSwap();
 
   // Refetch balances when currency changes (especially for CNGN)
   useEffect(() => {
