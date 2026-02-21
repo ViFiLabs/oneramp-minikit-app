@@ -112,13 +112,13 @@ export function BuyInterface() {
   // Countries disabled for BuyPanel testing
   const DISABLED_COUNTRIES_FOR_BUY = useMemo(
     () => ["Zambia", "South Africa"],
-    [],
+    []
   );
 
   // Filter out disabled countries for BuyPanel
   const buyPanelCountries = useMemo(() => {
     return countries.filter(
-      (country) => !DISABLED_COUNTRIES_FOR_BUY.includes(country.name),
+      (country) => !DISABLED_COUNTRIES_FOR_BUY.includes(country.name)
     );
   }, [DISABLED_COUNTRIES_FOR_BUY]);
 

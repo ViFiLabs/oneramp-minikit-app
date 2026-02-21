@@ -18,12 +18,15 @@ interface SelectCountryProps {
   exchangeRate?: ExchangeRateResponse; // Optional exchange rate from suspense data for current country
   nigeriaRate?: ExchangeRateResponse; // Optional Nigeria rate from suspense data
   exchangeRates?: Record<string, ExchangeRateResponse>; // Optional all exchange rates map
+  /** Country codes to disable in the picker (e.g. ["NG"] for Nigeria on withdraw tab) */
+  disabledCountryCodes?: string[];
 }
 
 const SelectCountry = ({
   exchangeRate: exchangeRateProp,
   nigeriaRate: nigeriaRateProp,
   exchangeRates: exchangeRatesMap,
+  disabledCountryCodes,
 }: SelectCountryProps = {}) => {
   const { country, updateSelection, paymentMethod, countryPanelOnTop, asset } =
     useUserSelectionStore();
@@ -158,7 +161,10 @@ const SelectCountry = ({
   return (
     <>
       <div className="flex items-center rounded-t-[2rem] gap-3">
-        <SelectCountryModal handleCountrySelect={handleCountrySelect} />
+        <SelectCountryModal
+          handleCountrySelect={handleCountrySelect}
+          disabledCountryCodes={disabledCountryCodes}
+        />
 
         {countryPanelOnTop ? (
           <CurrencyValueInput />
