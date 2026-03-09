@@ -14,7 +14,7 @@ import { v4 as uuidv4 } from "uuid";
 import { AxiosError } from "axios";
 
 export const createTransferIn = async (
-  payload: TransferMomoRequest | TransferBankRequest
+  payload: TransferMomoRequest | TransferBankRequest,
 ) => {
   try {
     if (!payload.operator || !payload.quoteId) {
@@ -43,7 +43,7 @@ export const createTransferIn = async (
 };
 
 export const createTransferOut = async (
-  payload: TransferMomoRequest | TransferBankRequest
+  payload: TransferMomoRequest | TransferBankRequest,
 ) => {
   try {
     if (!payload.operator || !payload.quoteId) {
@@ -58,6 +58,7 @@ export const createTransferOut = async (
 
     return response.data;
   } catch (error) {
+    console.error("Failed to create transfer out", error);
     throw new Error("Failed to create transfer out", { cause: error });
   }
 };
@@ -78,7 +79,7 @@ export const getTransferStatus = async (transferId: string) => {
 
 export const submitTransactionHash = async (
   payload: SubmitTransactionHashRequest,
-  maxRetries: number = 3
+  maxRetries: number = 3,
 ): Promise<{
   success: boolean;
   status?: number;
@@ -156,7 +157,7 @@ export const submitTransactionHash = async (
 
 export const getTransactions = async (
   address: string,
-  status: TransactionStatus
+  status: TransactionStatus,
 ): Promise<Transaction[]> => {
   try {
     if (!address) {
@@ -164,7 +165,7 @@ export const getTransactions = async (
     }
 
     const response = await oneRampApi.get(
-      `/address-orders/${address}/${status}`
+      `/address-orders/${address}/${status}`,
     );
 
     return response.data as Transaction[];
@@ -226,7 +227,7 @@ export const createPayoutTransfer = async (payload: BillTillRequest) => {
 };
 
 export const getBusinessAccountName = async (
-  payload: GetBusinessAccountNameRequest
+  payload: GetBusinessAccountNameRequest,
 ) => {
   try {
     const response = await oneRampApi.post(`/account-details`, payload);

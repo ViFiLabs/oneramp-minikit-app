@@ -87,7 +87,10 @@ import {
 } from "./hooks/use-payinterface-suspense";
 import { useKYCStatusSuspense } from "@/src/hooks/useKYCSuspense";
 import { verifyKYC } from "@/src/utils/kyc-verification";
-import { DISABLED_COUNTRY_CODES } from "@/constants";
+import {
+  DISABLED_TABS,
+  WITHDRAW_DISABLED_COUNTRY_CODES,
+} from "@/constants";
 
 export function PaymentInterface() {
   const {
@@ -504,6 +507,15 @@ export function PaymentInterface() {
     return isPaymentTypeSupported(country.name, paymentType);
   };
 
+  // Map UI payment type to DISABLED_TABS key; returns true if that tab is disabled
+  const isPaymentTabDisabled = (
+    type: "Paybill" | "Buy Goods" | "Send Money",
+  ): boolean => {
+    if (type === "Paybill") return DISABLED_TABS.includes("bill");
+    if (type === "Buy Goods") return DISABLED_TABS.includes("till");
+    return false;
+  };
+
   // Reset payment type when country changes to countries that only support "Send Money"
   useEffect(() => {
     if (
@@ -514,6 +526,13 @@ export function PaymentInterface() {
       setSelectedPaymentType("Send Money");
     }
   }, [country?.name, selectedPaymentType]);
+
+  // When current payment type is disabled via DISABLED_TABS, switch to Send Money
+  useEffect(() => {
+    if (isPaymentTabDisabled(selectedPaymentType)) {
+      setSelectedPaymentType("Send Money");
+    }
+  }, [selectedPaymentType]);
 
   // Pre-fetch exchange rates for all supported countries when component mounts
   // (No default country - user must select one)
@@ -1667,20 +1686,26 @@ export function PaymentInterface() {
                     const isSupported = isPaymentTypeSupportedForCountry(type);
                     const isSelected = selectedPaymentType === type;
 
+                    const tabDisabled = isPaymentTabDisabled(
+                      type as "Paybill" | "Buy Goods" | "Send Money",
+                    );
                     return (
                       <Button
                         key={type}
                         variant="ghost"
-                        disabled={!isSupported || isProcessing}
+                        disabled={
+                          !isSupported || isProcessing || tabDisabled
+                        }
                         className={`h-12 rounded-lg text-sm sm:text-base font-medium transition-all w-full ${
-                          isSelected && isSupported
+                          isSelected && isSupported && !tabDisabled
                             ? "!bg-neutral-600 !border-neutral-500 text-white shadow-sm"
-                            : isSupported
+                            : isSupported && !tabDisabled
                               ? "!bg-neutral-800 !border-neutral-600 text-gray-300 hover:!bg-neutral-700 hover:text-white border"
                               : "!bg-neutral-900 !border-neutral-700 text-gray-500 border cursor-not-allowed opacity-50"
                         }`}
                         onClick={() =>
                           isSupported &&
+                          !tabDisabled &&
                           setSelectedPaymentType(
                             type as "Paybill" | "Buy Goods" | "Send Money",
                           )
@@ -2176,7 +2201,7 @@ export function PaymentInterface() {
         onClose={() => setShowCountryModal(false)}
         onSelect={handleCountrySelect}
         filteredCountries={payEnabledCountries}
-        disabledCountryCodes={DISABLED_COUNTRY_CODES}
+        disabledCountryCodes={WITHDRAW_DISABLED_COUNTRY_CODES}
       />
 
       {/* Institution Selection Modal */}

@@ -37,7 +37,7 @@ import { ToPanel } from "@/src/components/panels/ToPanel";
 import { SwipeToWithdrawButton } from "@/src/components/payment/swipe-to-withdraw";
 import SelectInstitution from "@/src/components/select-institution";
 import {
-  DISABLED_COUNTRY_CODES,
+  DEPOSIT_DISABLED_COUNTRY_CODES,
   WITHDRAW_DISABLED_COUNTRY_CODES,
 } from "@/constants";
 // Standalone cNGN action picker now lives in CNGNActionPanel
@@ -106,14 +106,14 @@ export function WithdrawInterface({
   }, [currentNetwork]);
 
   const [selectedCurrency, setSelectedCurrency] = useState<Asset>(
-    availableAssets[0] || assets[0]
+    availableAssets[0] || assets[0],
   );
 
   const { isValid: isAmountValid, setAmount, amount } = useAmountStore();
 
   // Get asset balance using the reusable hook
   const { currentBalance, isLoading: isBalanceLoading } = useAssetBalance(
-    selectedCurrency || null
+    selectedCurrency || null,
   );
 
   // EVM payment hook
@@ -354,7 +354,7 @@ export function WithdrawInterface({
 
           const accountNumberWithoutLeadingZero = accountNumber.replace(
             /^0+/,
-            ""
+            "",
           );
           const fullPhoneNumber = `${country.phoneCode}${accountNumberWithoutLeadingZero}`;
 
@@ -373,17 +373,17 @@ export function WithdrawInterface({
       if (userSelectionStore.paymentMethod === "bank") {
         const accountName =
           userSelectionStore.accountName === "OK"
-            ? fullKYC?.fullName ?? ""
+            ? (fullKYC?.fullName ?? "")
             : userSelectionStore.accountName || fullKYC?.fullName || "";
 
         if (isNigeriaOrSouthAfrican) {
           if (!phoneNumber)
             throw new Error(
-              "Phone number required for Nigeria/SA bank transfers"
+              "Phone number required for Nigeria/SA bank transfers",
             );
           if (!institution || !accountNumber) {
             throw new Error(
-              "Institution and account number required for Nigeria/SA bank transfers"
+              "Institution and account number required for Nigeria/SA bank transfers",
             );
           }
 
@@ -425,7 +425,7 @@ export function WithdrawInterface({
 
       throw new Error("No valid payment method found");
     },
-    [country, fullKYC, userSelectionStore, institution, accountNumber]
+    [country, fullKYC, userSelectionStore, institution, accountNumber],
   );
 
   const handleWithdrawTransfer = useCallback(async () => {
@@ -535,7 +535,7 @@ export function WithdrawInterface({
   // Blockchain transaction functions
   const makeBlockchainTransaction = async (
     quote: Quote,
-    transfer: Transfer
+    transfer: Transfer,
   ) => {
     if (!asset || !currentNetwork || !quote || !transfer) {
       console.log("Missing required data for blockchain transaction");
@@ -839,7 +839,7 @@ export function WithdrawInterface({
                   disabledCountryCodes={
                     mode === "withdraw"
                       ? WITHDRAW_DISABLED_COUNTRY_CODES
-                      : DISABLED_COUNTRY_CODES
+                      : DEPOSIT_DISABLED_COUNTRY_CODES
                   }
                 />
               </motion.div>
@@ -910,7 +910,7 @@ export function WithdrawInterface({
                   disabledCountryCodes={
                     mode === "withdraw"
                       ? WITHDRAW_DISABLED_COUNTRY_CODES
-                      : DISABLED_COUNTRY_CODES
+                      : DEPOSIT_DISABLED_COUNTRY_CODES
                   }
                 />
               </motion.div>

@@ -25,7 +25,10 @@ import {
 } from "@/src/lib/exchange-rates-data";
 import { toast } from "sonner";
 import { verifyKYC } from "@/src/utils/kyc-verification";
-import { BYPASS_NG_PHONE_VALIDATION, DISABLED_COUNTRY_CODES } from "@/constants";
+import {
+  BYPASS_NG_PHONE_VALIDATION,
+  DEPOSIT_DISABLED_COUNTRY_CODES,
+} from "@/constants";
 import SelectCountryModal from "@/src/components/modals/select-country-modal";
 import BuyValueInput from "@/src/components/inputs/BuyValueInput";
 import ExchangeRateComponent from "@/src/components/exchange-rate-component";
@@ -112,13 +115,13 @@ export function BuyInterface() {
   // Countries disabled for BuyPanel testing
   const DISABLED_COUNTRIES_FOR_BUY = useMemo(
     () => ["Zambia", "South Africa"],
-    []
+    [],
   );
 
   // Filter out disabled countries for BuyPanel
   const buyPanelCountries = useMemo(() => {
     return countries.filter(
-      (country) => !DISABLED_COUNTRIES_FOR_BUY.includes(country.name)
+      (country) => !DISABLED_COUNTRIES_FOR_BUY.includes(country.name),
     );
   }, [DISABLED_COUNTRIES_FOR_BUY]);
 
@@ -159,9 +162,8 @@ export function BuyInterface() {
       // Prepare userDetails consistent with TransactionReviewModal/select-institution
       // Access stores outside React via getState to avoid hook usage here
       const { useKYCStore } = await import("@/src/store/kyc-store");
-      const { useUserSelectionStore: selectionStore } = await import(
-        "@/src/store/user-selection"
-      );
+      const { useUserSelectionStore: selectionStore } =
+        await import("@/src/store/user-selection");
       const { kycData } = useKYCStore.getState();
       const {
         institution: inst,
@@ -471,7 +473,7 @@ export function BuyInterface() {
         <SelectCountryModal
           handleCountrySelect={handleCountrySelect}
           filteredCountries={buyPanelCountries}
-          disabledCountryCodes={DISABLED_COUNTRY_CODES}
+          disabledCountryCodes={DEPOSIT_DISABLED_COUNTRY_CODES}
         />
       </div>
       <div className="flex flex-col items-center justify-center gap-3 md:gap-4">
