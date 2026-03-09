@@ -25,7 +25,7 @@ import {
 } from "@/src/lib/exchange-rates-data";
 import { toast } from "sonner";
 import { verifyKYC } from "@/src/utils/kyc-verification";
-import { BYPASS_NG_PHONE_VALIDATION } from "@/constants";
+import { BYPASS_NG_PHONE_VALIDATION, DISABLED_COUNTRY_CODES } from "@/constants";
 import SelectCountryModal from "@/src/components/modals/select-country-modal";
 import BuyValueInput from "@/src/components/inputs/BuyValueInput";
 import ExchangeRateComponent from "@/src/components/exchange-rate-component";
@@ -471,6 +471,7 @@ export function BuyInterface() {
         <SelectCountryModal
           handleCountrySelect={handleCountrySelect}
           filteredCountries={buyPanelCountries}
+          disabledCountryCodes={DISABLED_COUNTRY_CODES}
         />
       </div>
       <div className="flex flex-col items-center justify-center gap-3 md:gap-4">

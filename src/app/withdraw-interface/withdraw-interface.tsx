@@ -36,6 +36,10 @@ import { SwapHeader } from "@/src/components/panels/SwapHeader";
 import { ToPanel } from "@/src/components/panels/ToPanel";
 import { SwipeToWithdrawButton } from "@/src/components/payment/swipe-to-withdraw";
 import SelectInstitution from "@/src/components/select-institution";
+import {
+  DISABLED_COUNTRY_CODES,
+  WITHDRAW_DISABLED_COUNTRY_CODES,
+} from "@/constants";
 // Standalone cNGN action picker now lives in CNGNActionPanel
 import { supportedAssetsUI } from "@/data/assets-ui";
 import { cNGNTabsUI } from "./cNGN/utils";
@@ -833,7 +837,9 @@ export function WithdrawInterface({
                   nigeriaRate={nigeriaRate}
                   exchangeRates={exchangeRates}
                   disabledCountryCodes={
-                    mode === "withdraw" ? ["NG"] : undefined
+                    mode === "withdraw"
+                      ? WITHDRAW_DISABLED_COUNTRY_CODES
+                      : DISABLED_COUNTRY_CODES
                   }
                 />
               </motion.div>
@@ -902,7 +908,9 @@ export function WithdrawInterface({
                   nigeriaRate={nigeriaRate}
                   exchangeRates={exchangeRates}
                   disabledCountryCodes={
-                    mode === "withdraw" ? ["NG"] : undefined
+                    mode === "withdraw"
+                      ? WITHDRAW_DISABLED_COUNTRY_CODES
+                      : DISABLED_COUNTRY_CODES
                   }
                 />
               </motion.div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { WITHDRAW_DISABLED_COUNTRY_CODES } from "@/constants";
 import Image from "next/image";
 import { useCallback, useMemo, useState, useRef, useEffect } from "react";
 import { useUserSelectionStore } from "@/src/store/user-selection";
@@ -690,6 +691,7 @@ export default function CNGNWithdrawPanel() {
               exchangeRate={exchangeRate}
               nigeriaRate={nigeriaRate}
               exchangeRates={exchangeRates}
+              disabledCountryCodes={WITHDRAW_DISABLED_COUNTRY_CODES}
             />
           </div>
         </div>
