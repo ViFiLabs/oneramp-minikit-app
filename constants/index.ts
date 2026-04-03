@@ -7,6 +7,7 @@ export const MOCK_NIGERIAN_ACCOUNT_NUMBER_SUCCESS = "1111111111";
 export const MOCK_NIGERIAN_ACCOUNT_NUMBER_FAILED = "0000000000";
 
 export const DISABLED_TABS = ["bill", "till"];
+export const BACKEND_OUTAGE_MODE = true;
 
 // Feature flags
 // Toggle to bypass Nigerian phone number validation in Buy flow
