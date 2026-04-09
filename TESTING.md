@@ -50,3 +50,31 @@ The tests provide comprehensive coverage for the cashout fees utility functions:
 - **Jest Configuration**: `jest.config.js`
 - **Setup File**: `jest.setup.js`
 - **TypeScript Support**: Configured in `tsconfig.json` with `"jest"` in types array
+
+## Environment Variables for Tests
+
+Jest is wired up through `next/jest`, which automatically loads Next.js env
+files when `NODE_ENV=test`. The load order is:
+
+1. `.env.test.local` — your personal test secrets, gitignored
+2. `.env.test` — committed test defaults (if any)
+3. `.env` — committed shared defaults
+
+`.env.local` is intentionally **not** loaded in test mode, so anything a test
+needs must live in one of the files above.
+
+To set up test-only variables, copy the template:
+
+```bash
+cp .env.test.example .env.test.local
+```
+
+Then fill in the values. `.env.test.example` lists every variable a test
+reads and describes what it's for.
+
+### On-chain integration tests
+
+`__tests__/onchain-swaps.test.js` signs real transactions against Base
+mainnet and requires `PRIVATE_KEY` to be set in `.env.test.local`. Use a
+disposable test wallet — never a key that holds real funds or is shared with
+any other environment.
