@@ -58,7 +58,6 @@ export const createTransferOut = async (
 
     return response.data;
   } catch (error) {
-    console.error("Failed to create transfer out", error);
     throw new Error("Failed to create transfer out", { cause: error });
   }
 };

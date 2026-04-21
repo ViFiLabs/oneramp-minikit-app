@@ -260,10 +260,6 @@ export function WithdrawInterface({
       const isNigeriaOrSouthAfrican =
         country.countryCode === "NG" || country.countryCode === "ZA";
 
-      if (!fullKYC) {
-        throw new Error("Missing country or KYC data");
-      }
-
       let phoneNumber: string | undefined;
       let baseUserDetails: {
         name: string;
@@ -296,11 +292,11 @@ export function WithdrawInterface({
           updatedDocumentTypeSubType = "BVN";
           updatedDocumentType = "NIN";
         } else if (documentType === "ID") {
-          updatedDocumentType = "NIN";
+          updatedDocumentType = "National Id";
         } else if (documentType === "P") {
           updatedDocumentType = "Passport";
         } else {
-          updatedDocumentType = "License";
+          updatedDocumentType = "Driver License";
         }
 
         baseUserDetails = {
@@ -323,8 +319,8 @@ export function WithdrawInterface({
           address: country.name || "",
           dob: "",
           idNumber: "",
-          idType: "License",
-          additionalIdType: "License",
+          idType: "Driver License",
+          additionalIdType: "Driver License",
           additionalIdNumber: "",
         };
       }
