@@ -30,6 +30,8 @@ import SubmitButton from "./buttons/submit-button";
 import { InstitutionModal } from "./modals/InstitutionModal";
 import { useRecipientStore } from "@/src/store/recipient-store";
 import { verifyAccountDetails } from "@/src/actions/institutions";
+import { useVerifyPhoneNumber } from "../hooks/useVerifyPhoneNumber";
+import { useDebouncedAccountNumber } from "../hooks/useDebouncedAccountNumber";
 
 interface FormInputs {
   accountNumber: string;
@@ -51,6 +53,7 @@ const SelectInstitution = ({
   const [showInstitutionModal, setShowInstitutionModal] = useState(false);
   const [buttonDisabled, setButtonDisabled] = useState(true);
   const [buttonText, setButtonText] = useState("Connect Wallet");
+  const [isVerifyingPhoneNumber, setIsVerifyingPhoneNumber] = useState(false);
   const {
     isValid: isAmountValid,
     amount: userAmountEntered,
@@ -94,12 +97,35 @@ const SelectInstitution = ({
     }
   }, [userPayLoad.pastedAddress, address, setValue, updateSelection]);
 
-  // Save account number to global state when it changes
-  useEffect(() => {
-    if (accountNumber) {
-      updateSelection({ accountNumber });
-    }
-  }, [accountNumber, updateSelection]);
+  const cleanAccountNumber = (accountNumber: string) => {
+    // const isNigeria = userPayLoad.country?.countryCode === "NG";
+    // if (userPayLoad.paymentMethod !== "momo" || isNigeria) {
+    //   return accountNumber;
+    // }
+
+    // Rules:
+    // 1. Not adding a country code
+    // 2. No adding a leading 0
+    const digitsOnly = accountNumber.replace(/\D/g, "");
+    const phoneCode = String(country?.phoneCode || "").replace(/\D/g, "");
+    const withoutCountryCode =
+      phoneCode && digitsOnly.startsWith(phoneCode)
+        ? digitsOnly.slice(phoneCode.length)
+        : digitsOnly;
+    const cleaned = withoutCountryCode.replace(/^0+/, "");
+
+    return cleaned;
+  };
+
+  // Debounced save of account number to global state
+  useDebouncedAccountNumber({
+    value: accountNumber || "",
+    delayMs: 400,
+    clean: cleanAccountNumber,
+    setValue,
+    onCleaned: (cleaned) => updateSelection({ accountNumber: cleaned }),
+    debugLabel: "SelectInstitution",
+  });
 
   // Prefill institution and account number when country changes
   useEffect(() => {
@@ -156,9 +182,12 @@ const SelectInstitution = ({
       country?.countryCode &&
       (institution || accountNumber || userPayLoad.accountName)
     ) {
+      const cleanedAccountNumber = accountNumber
+        ? cleanAccountNumber(accountNumber)
+        : undefined;
       saveRecipient(country.countryCode, {
         institution: institution || undefined,
-        accountNumber: accountNumber || undefined,
+        accountNumber: cleanedAccountNumber || undefined,
         accountName: userPayLoad.accountName || undefined,
         paymentMethod: userPayLoad.paymentMethod || undefined,
       });
@@ -233,7 +262,13 @@ const SelectInstitution = ({
     mutationFn: async (payload: QuoteRequest) =>
       buy ? await createQuoteIn(payload) : await createQuoteOut(payload),
     onSuccess: async (data) => {
-      updateSelection({ accountNumber, orderStep: OrderStep.GotQuote });
+      const cleanedAccountNumber = accountNumber
+        ? cleanAccountNumber(accountNumber)
+        : accountNumber;
+      updateSelection({
+        accountNumber: cleanedAccountNumber,
+        orderStep: OrderStep.GotQuote,
+      });
 
       if (!userPayLoad.paymentMethod) {
         updateSelection({ paymentMethod: "momo" });
@@ -623,12 +658,14 @@ const SelectInstitution = ({
       // Update both account number and wallet address in global state
       updateSelection({
         pastedAddress: data.walletAddress,
-        accountNumber: data.accountNumber,
+        accountNumber: cleanAccountNumber(data.accountNumber),
       });
     } else {
       walletAddress = address;
       // Update account number in global state
-      updateSelection({ accountNumber: data.accountNumber });
+      updateSelection({
+        accountNumber: cleanAccountNumber(data.accountNumber),
+      });
     }
 
     const payload: QuoteRequest = {
@@ -708,6 +745,9 @@ const SelectInstitution = ({
     }
     return name;
   };
+
+  const isNigeria = userPayLoad?.country?.countryCode === "NG";
+
   return (
     <form onSubmit={onSubmit}>
       <div className={`mb-2 bg-[#232323] rounded-xl p-5 flex flex-col gap-4 `}>
@@ -742,95 +782,105 @@ const SelectInstitution = ({
           </Button>
 
           {/* Account Number - only show after institution is selected (hidden for NG buy flow) */}
-          {institution &&
-            !(buy && userPayLoad?.country?.countryCode === "NG") && (
-              <>
-                <div className="flex-1 h-full w-full relative">
-                  <Input
-                    type="number"
-                    placeholder="Account number"
-                    onInput={(e) => {
-                      // For Uganda, Kenya, Tanzania - prevent typing more than 10 characters
-                      if (
-                        userPayLoad?.country &&
-                        ["UG", "KE", "TZ"].includes(
-                          userPayLoad.country.countryCode
-                        )
-                      ) {
-                        const target = e.target as HTMLInputElement;
-                        if (target.value.length > 10) {
-                          target.value = target.value.slice(0, 10);
-                        }
-                      }
-                    }}
-                    {...register("accountNumber", {
-                      required: "Account number is required",
-                      validate: {
-                        validLength: (value) => {
-                          if (!userPayLoad?.country?.accountNumberLength)
-                            return true;
-
-                          // Check for Uganda, Kenya, Tanzania - limit to 10 characters
-                          const isEastAfricanCountry = [
-                            "UG",
-                            "KE",
-                            "TZ",
-                          ].includes(userPayLoad.country.countryCode);
-                          if (isEastAfricanCountry && value.length > 10) {
-                            return "Account number cannot exceed 10 characters";
-                          }
-
-                          if (userPayLoad.paymentMethod === "bank") {
-                            const minLength =
-                              userPayLoad.country.accountNumberLength
-                                .bankLength;
-                            return (
-                              value.length >= minLength ||
-                              `Account number must be at least ${minLength} digits`
-                            );
-                          }
-                          if (userPayLoad.paymentMethod === "momo") {
-                            const minLength =
-                              userPayLoad.country.accountNumberLength
-                                .mobileLength;
-                            return (
-                              value.length >= minLength ||
-                              `Mobile number must be at least ${minLength} digits`
-                            );
-                          }
-                          return true;
-                        },
-                      },
-                    })}
-                    className={`bg-transparent border !border-neutral-600 text-lg text-white font-medium rounded-full h-14 pl-6 pr-12 w-full focus:outline-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-inner-spin-button]:m-0 [&]:appearance-none ${
-                      touchedFields.accountNumber && errors.accountNumber
-                        ? "border-red-500 focus:border-red-500"
-                        : "focus:border-purple-400"
-                    }`}
+          {institution && !(buy && isNigeria) && (
+            <>
+              <div className="flex-1 h-full w-full relative flex items-center justify-between ">
+                {/* only show this if the institution is not Nigeria */}
+                {!isNigeria && (
+                  <div
+                    className="flex items-center h-12 px-4 gap-2 bg-white !border-neutral-600  p-2"
                     style={{
-                      WebkitAppearance: "none",
-                      MozAppearance: "textfield",
+                      borderRadius: "2rem 0 0 2rem",
                     }}
-                  />
-                  {/* Status indicator inside input */}
-                  {accountNumber && isAccountNumberValid() && (
-                    <AccountStatusIndicator accountNumber={accountNumber} />
-                  )}
-                </div>
+                  >
+                    <div className="size-4  rounded-full relative">
+                      <img
+                        src={country?.logo}
+                        alt={country?.name}
+                        className="size-full object-cover"
+                      />
+                    </div>
+                    <h1 className="text-base font-semibold ">
+                      {country?.phoneCode}
+                    </h1>
+                  </div>
+                )}
+                <Input
+                  type="number"
+                  placeholder="7XXXXXXXX"
+                  disabled={isVerifyingPhoneNumber}
+                  onInput={(e) => {
+                    const target = e.target as HTMLInputElement;
+                    if (target.value.length > 15) {
+                      target.value = target.value.slice(0, 15);
+                    }
+                  }}
+                  {...register("accountNumber", {
+                    required: "Account number is required",
+                    validate: {
+                      validLength: (value) => {
+                        if (!userPayLoad?.country?.accountNumberLength)
+                          return true;
 
-                {/* Account name display below input */}
+                        if (value.length > 15) {
+                          // return "Account number cannot exceed 15 characters";
+                          toast.error(
+                            "Account number cannot exceed 15 characters"
+                          );
+                          return false;
+                        }
+
+                        // if (userPayLoad.paymentMethod === "momo") {
+                        //   const minLength =
+                        //     userPayLoad.country.accountNumberLength
+                        //       .mobileLength;
+                        //   toast.error(
+                        //     `Mobile number must be at least ${minLength} digits`
+                        //   );
+                        //   return false;
+                        // }
+                        return true;
+                      },
+                    },
+                  })}
+                  className={`bg-transparent border   !border-neutral-600 text-lg  text-white font-medium h-12 pl-2 pr-12 w-full focus:outline-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-inner-spin-button]:m-0 [&]:appearance-none ${
+                    touchedFields.accountNumber && errors.accountNumber
+                      ? "border-red-500 focus:border-red-500"
+                      : "focus:border-purple-400"
+                  }`}
+                  style={{
+                    WebkitAppearance: "none",
+                    MozAppearance: "textfield",
+                    borderRadius: isNigeria ? "2rem" : "0 2rem 2rem 0",
+                    paddingLeft: "1rem",
+                    // borderLeft: isNigeria ? "none" : "1px solid #444",
+                  }}
+                />
+                {/* Status indicator inside input */}
                 {accountNumber && isAccountNumberValid() && (
-                  <AccountNameDisplay accountNumber={accountNumber} />
+                  <AccountStatusIndicator accountNumber={accountNumber} />
                 )}
 
-                {/* Nigeria-specific KYC phone feedback under account input when buying */}
-                {isNgPhoneInvalid && (
-                  <p className="mt-1 text-[10px] text-red-500">
-                    Invalid Nigerian phone number in KYC.
-                  </p>
+                {isVerifyingPhoneNumber && (
+                  <div className="absolute right-3 top-0 bottom-0 flex items-center justify-center">
+                    <Loader className="size-4 animate-spin text-neutral-400" />
+                  </div>
                 )}
-              </>
-            )}
+              </div>
+
+              {/* Account name display below input */}
+              {accountNumber && isAccountNumberValid() && (
+                <AccountNameDisplay accountNumber={accountNumber} />
+              )}
+
+              {/* Nigeria-specific KYC phone feedback under account input when buying */}
+              {isNgPhoneInvalid && (
+                <p className="mt-1 text-[10px] text-red-500">
+                  Invalid Nigerian phone number in KYC.
+                </p>
+              )}
+            </>
+          )}
 
           {/* Nigeria-specific KYC phone feedback below institution selector when account input is hidden */}
           {institution &&
@@ -1005,7 +1055,8 @@ const SelectInstitution = ({
                 Object.keys(errors).length > 0 ||
                 !isAmountValid ||
                 !currentNetwork ||
-                !institution
+                !institution ||
+                isVerifyingPhoneNumber
               }
               className={`w-full  text-white text-base font-bold h-14 mt-2 rounded-2xl ${
                 buttonDisabled ||

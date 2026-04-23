@@ -1,7 +1,6 @@
 "use client";
 
 import * as Sentry from "@sentry/nextjs";
-import Error from "next/error";
 import { Button } from "@/src/components/ui/button";
 import { useEffect } from "react";
 
@@ -46,20 +45,11 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                 error that prevents the app from loading properly.
               </p>
 
-              {/* Error Details (only in development) */}
-              {process.env.NODE_ENV === "development" && (
+              {error.digest && (
                 <div className="mt-4 p-4 bg-gray-900/50 rounded-lg border border-gray-700">
-                  <p className="text-xs text-gray-500 mb-2">
-                    Error Details (Development):
+                  <p className="text-xs text-gray-500">
+                    Reference ID: {error.digest}
                   </p>
-                  <p className="text-xs text-red-400 font-mono break-all">
-                    {error.toString()}
-                  </p>
-                  {error.digest && (
-                    <p className="text-xs text-gray-500 mt-2">
-                      Error ID: {error.digest}
-                    </p>
-                  )}
                 </div>
               )}
 

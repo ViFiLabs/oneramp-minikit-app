@@ -31,7 +31,7 @@ const StateContextProvider = () => {
   // const { isCheckingKyc } = useKYCStore();
 
   const { data: kycData, isLoading: isKYCStatusLoading } = useKYCStatusSuspense(
-    { address: address || "" }
+    { address: address || "" },
   );
 
   // Fetch KYC data only when we have an address and not actively checking KYC
@@ -115,7 +115,8 @@ const StateContextProvider = () => {
     if (quote?.transferType === TransferType.TransferIn) {
       return <BuyUnified />;
     }
-    return <OrderFailed />;
+    // return <OrderFailed />;
+    return <OrderProcessing />;
   }
 
   return null;

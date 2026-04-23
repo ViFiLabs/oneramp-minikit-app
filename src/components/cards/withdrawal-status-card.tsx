@@ -6,6 +6,7 @@ import { useUserSelectionStore } from "@/src/store/user-selection";
 import { Quote, Transfer } from "@/types";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { FiCheck, FiX } from "react-icons/fi";
+import { ProcessingCountdown } from "./processing-countdown";
 
 interface WithdrawalStatusCardProps {
   quote: Quote;
@@ -16,6 +17,8 @@ interface WithdrawalStatusCardProps {
   onDone: () => void;
   onClose?: () => void;
   animationPhase?: "initial" | "transition" | "final";
+  /** Session start timestamp for persistent countdown (survives tab close/reopen) */
+  sessionStartTime?: number | null;
 }
 
 const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
@@ -26,6 +29,7 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
   onDone,
   onClose,
   animationPhase = "initial",
+  sessionStartTime,
 }) => {
   const { resetToDefault, stableAsset } = useUserSelectionStore();
   const [isVisible, setIsVisible] = useState(false);
@@ -333,9 +337,9 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
             </div>
           )}
 
-          {/* Header with Close Button */}
+          {/* Header with Countdown (left) and Close Button (right) */}
           <div
-            className={`flex justify-end p-4 pb-2 ${
+            className={`flex items-center justify-between p-4 pb-2 ${
               !isDesktop
                 ? "cursor-grab active:cursor-grabbing"
                 : "cursor-default"
@@ -350,6 +354,15 @@ const WithdrawalStatusCard: React.FC<WithdrawalStatusCardProps> = ({
               }
             }}
           >
+            <div className="w-9 shrink-0">
+              {isProcessing && sessionStartTime != null && (
+                <ProcessingCountdown
+                  sessionStartTime={sessionStartTime}
+                  size={36}
+                  strokeWidth={2.5}
+                />
+              )}
+            </div>
             <button
               onClick={handleClose}
               className="w-8 h-8 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-colors z-10"

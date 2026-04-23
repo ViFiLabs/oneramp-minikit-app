@@ -11,6 +11,7 @@ import {
 import { countries } from "@/data/countries";
 import { Institution } from "@/types";
 import { TRPCError } from "@trpc/server";
+import axios from "axios";
 
 export const appRouter = createTRPCRouter({
   hello: baseProcedure
@@ -222,7 +223,6 @@ export const appRouter = createTRPCRouter({
         const response = await oneRampApi.get(`/kyc/${address}`);
         return response.data;
       } catch (error) {
-        console.error("Error fetching KYC:", error);
         // throw new Error("Failed to fetch KYC");
         return null;
       }
@@ -253,6 +253,35 @@ export const appRouter = createTRPCRouter({
         //   message: "Failed to fetch account details",
         //   cause: error,
         // });
+        return null;
+      }
+    }),
+  verifyPhoneNumber: baseProcedure
+    .input(
+      z.object({
+        phoneNumber: z.string().min(1, "Phone number is required"),
+        countryCode: z.string().min(1, "Country code is required"),
+      })
+    )
+    .query(async ({ input }) => {
+      const { phoneNumber, countryCode } = input;
+      try {
+        const result = await axios.get(`http://apilayer.net/api/validate`, {
+          params: {
+            access_key: process.env.PHONE_NUMBER_VERIFICATION_API_KEY,
+            number: phoneNumber,
+            country_code: countryCode,
+            format: 1,
+          },
+        });
+
+        return result.data;
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to verify phone number",
+          cause: error,
+        });
         return null;
       }
     }),

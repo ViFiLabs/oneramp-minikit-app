@@ -36,6 +36,10 @@ import { SwapHeader } from "@/src/components/panels/SwapHeader";
 import { ToPanel } from "@/src/components/panels/ToPanel";
 import { SwipeToWithdrawButton } from "@/src/components/payment/swipe-to-withdraw";
 import SelectInstitution from "@/src/components/select-institution";
+import {
+  DEPOSIT_DISABLED_COUNTRY_CODES,
+  WITHDRAW_DISABLED_COUNTRY_CODES,
+} from "@/constants";
 // Standalone cNGN action picker now lives in CNGNActionPanel
 import { supportedAssetsUI } from "@/data/assets-ui";
 import { cNGNTabsUI } from "./cNGN/utils";
@@ -102,14 +106,14 @@ export function WithdrawInterface({
   }, [currentNetwork]);
 
   const [selectedCurrency, setSelectedCurrency] = useState<Asset>(
-    availableAssets[0] || assets[0]
+    availableAssets[0] || assets[0],
   );
 
   const { isValid: isAmountValid, setAmount, amount } = useAmountStore();
 
   // Get asset balance using the reusable hook
   const { currentBalance, isLoading: isBalanceLoading } = useAssetBalance(
-    selectedCurrency || null
+    selectedCurrency || null,
   );
 
   // EVM payment hook
@@ -256,10 +260,6 @@ export function WithdrawInterface({
       const isNigeriaOrSouthAfrican =
         country.countryCode === "NG" || country.countryCode === "ZA";
 
-      if (!fullKYC) {
-        throw new Error("Missing country or KYC data");
-      }
-
       let phoneNumber: string | undefined;
       let baseUserDetails: {
         name: string;
@@ -292,11 +292,11 @@ export function WithdrawInterface({
           updatedDocumentTypeSubType = "BVN";
           updatedDocumentType = "NIN";
         } else if (documentType === "ID") {
-          updatedDocumentType = "NIN";
+          updatedDocumentType = "National Id";
         } else if (documentType === "P") {
           updatedDocumentType = "Passport";
         } else {
-          updatedDocumentType = "License";
+          updatedDocumentType = "Driver License";
         }
 
         baseUserDetails = {
@@ -319,8 +319,8 @@ export function WithdrawInterface({
           address: country.name || "",
           dob: "",
           idNumber: "",
-          idType: "License",
-          additionalIdType: "License",
+          idType: "Driver License",
+          additionalIdType: "Driver License",
           additionalIdNumber: "",
         };
       }
@@ -350,7 +350,7 @@ export function WithdrawInterface({
 
           const accountNumberWithoutLeadingZero = accountNumber.replace(
             /^0+/,
-            ""
+            "",
           );
           const fullPhoneNumber = `${country.phoneCode}${accountNumberWithoutLeadingZero}`;
 
@@ -369,17 +369,17 @@ export function WithdrawInterface({
       if (userSelectionStore.paymentMethod === "bank") {
         const accountName =
           userSelectionStore.accountName === "OK"
-            ? fullKYC?.fullName ?? ""
+            ? (fullKYC?.fullName ?? "")
             : userSelectionStore.accountName || fullKYC?.fullName || "";
 
         if (isNigeriaOrSouthAfrican) {
           if (!phoneNumber)
             throw new Error(
-              "Phone number required for Nigeria/SA bank transfers"
+              "Phone number required for Nigeria/SA bank transfers",
             );
           if (!institution || !accountNumber) {
             throw new Error(
-              "Institution and account number required for Nigeria/SA bank transfers"
+              "Institution and account number required for Nigeria/SA bank transfers",
             );
           }
 
@@ -421,7 +421,7 @@ export function WithdrawInterface({
 
       throw new Error("No valid payment method found");
     },
-    [country, fullKYC, userSelectionStore, institution, accountNumber]
+    [country, fullKYC, userSelectionStore, institution, accountNumber],
   );
 
   const handleWithdrawTransfer = useCallback(async () => {
@@ -531,7 +531,7 @@ export function WithdrawInterface({
   // Blockchain transaction functions
   const makeBlockchainTransaction = async (
     quote: Quote,
-    transfer: Transfer
+    transfer: Transfer,
   ) => {
     if (!asset || !currentNetwork || !quote || !transfer) {
       console.log("Missing required data for blockchain transaction");
@@ -832,6 +832,11 @@ export function WithdrawInterface({
                   exchangeRate={exchangeRate}
                   nigeriaRate={nigeriaRate}
                   exchangeRates={exchangeRates}
+                  disabledCountryCodes={
+                    mode === "withdraw"
+                      ? WITHDRAW_DISABLED_COUNTRY_CODES
+                      : DEPOSIT_DISABLED_COUNTRY_CODES
+                  }
                 />
               </motion.div>
 
@@ -898,6 +903,11 @@ export function WithdrawInterface({
                   exchangeRate={exchangeRate}
                   nigeriaRate={nigeriaRate}
                   exchangeRates={exchangeRates}
+                  disabledCountryCodes={
+                    mode === "withdraw"
+                      ? WITHDRAW_DISABLED_COUNTRY_CODES
+                      : DEPOSIT_DISABLED_COUNTRY_CODES
+                  }
                 />
               </motion.div>
             </motion.div>

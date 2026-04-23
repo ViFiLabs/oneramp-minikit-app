@@ -6,9 +6,18 @@ export const MOCK_NIGERIAN_PHONE_NUMBER_FAILED = "+2340000000000";
 export const MOCK_NIGERIAN_ACCOUNT_NUMBER_SUCCESS = "1111111111";
 export const MOCK_NIGERIAN_ACCOUNT_NUMBER_FAILED = "0000000000";
 
+export const DISABLED_TABS = ["bill", "till"];
+export const BACKEND_OUTAGE_MODE = false;
+
 // Feature flags
 // Toggle to bypass Nigerian phone number validation in Buy flow
 export const BYPASS_NG_PHONE_VALIDATION = true;
+
+/** Country codes disabled in the country selector (buy, swap, etc.). */
+export const DEPOSIT_DISABLED_COUNTRY_CODES: string[] = ["NG", "KE"];
+
+/** Country codes disabled only on withdraw flows (includes DISABLED_COUNTRY_CODES). */
+export const WITHDRAW_DISABLED_COUNTRY_CODES: string[] = ["NG"];
 
 // BETA URLS
 export const ONERAMP_API_URL = process.env.ONERAMP_API_URL;
@@ -26,7 +35,7 @@ export const oneRampApi = axios.create({
 
 // Create a oneRampApi with a custom headers passed in
 export const oneRampApiWithCustomHeaders = (
-  headers: Record<string, string>
+  headers: Record<string, string>,
 ) => {
   return axios.create({
     baseURL: ONERAMP_API_URL,
