@@ -31,7 +31,7 @@ export function KYCVerificationModal({ open }: KYCVerificationModalProps) {
   const { data: kycData } = useKYCStatusSuspense({ address: address || "" });
 
   useEffect(() => {
-    if (kycData && kycData.kycStatus === "VERIFIED") {
+    if (kycData && kycData.status === "VERIFIED") {
       setShowKYCModal(false);
       setIsCheckingKyc(false);
     }
@@ -178,7 +178,7 @@ export function KYCVerificationModal({ open }: KYCVerificationModalProps) {
             </div>
           </div>
 
-          <div className="">{JSON.stringify(kycData?.kycStatus, null, 2)}</div>
+          <div className="">{JSON.stringify(kycData?.status, null, 2)}</div>
 
           <div className="mt-6 bg-[#232323] rounded-xl p-4">
             <h3 className="text-white font-medium mb-4">
@@ -297,7 +297,7 @@ export function KYCVerificationModal({ open }: KYCVerificationModalProps) {
   }
 
   // Prevent new KYC submission if user has REJECTED or IN_REVIEW status
-  if (kycData?.kycStatus === "REJECTED" || kycData?.kycStatus === "IN_REVIEW") {
+  if (kycData?.status === "REJECTED" || kycData?.status === "IN_REVIEW") {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1c1c1c] md:bg-black/60 md:backdrop-blur-lg">
         <div
@@ -325,7 +325,7 @@ export function KYCVerificationModal({ open }: KYCVerificationModalProps) {
               KYC Already in Progress
             </h2>
             <p className="text-neutral-400 text-sm mb-6">
-              {kycData?.kycStatus === "REJECTED"
+              {kycData?.status === "REJECTED"
                 ? "Your previous KYC verification was rejected. Please wait for the review process to complete before submitting a new verification."
                 : "Your KYC verification is currently under review. Please wait for the review process to complete before submitting a new verification."}
             </p>
@@ -337,7 +337,7 @@ export function KYCVerificationModal({ open }: KYCVerificationModalProps) {
                     <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
                   </div>
                   <p className="text-neutral-400 text-sm">
-                    {kycData?.kycStatus === "REJECTED"
+                    {kycData?.status === "REJECTED"
                       ? "Your verification was not approved and is being reviewed"
                       : "Your verification is being reviewed by our team"}
                   </p>
@@ -368,7 +368,7 @@ export function KYCVerificationModal({ open }: KYCVerificationModalProps) {
   }
 
   // Show KYC status based on current status
-  if (kycData?.kycStatus === "REJECTED") {
+  if (kycData?.status === "REJECTED") {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1c1c1c] md:bg-black/60 md:backdrop-blur-lg">
         <div
@@ -456,7 +456,7 @@ export function KYCVerificationModal({ open }: KYCVerificationModalProps) {
   }
 
   // Show IN_REVIEW KYC status
-  if (kycData?.kycStatus === "IN_REVIEW") {
+  if (kycData?.status === "IN_REVIEW") {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1c1c1c] md:bg-black/60 md:backdrop-blur-lg">
         <div
@@ -543,7 +543,7 @@ export function KYCVerificationModal({ open }: KYCVerificationModalProps) {
   }
 
   // Show pending KYC status
-  if (kycData?.kycStatus === "PENDING") {
+  if (kycData?.status === "PENDING") {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1c1c1c] md:bg-black/60 md:backdrop-blur-lg">
         <div
@@ -664,7 +664,7 @@ export function KYCVerificationModal({ open }: KYCVerificationModalProps) {
   }
 
   // Show successful KYC status
-  if (kycData?.kycStatus === "VERIFIED") {
+  if (kycData?.status === "VERIFIED") {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1c1c1c] md:bg-black/60 md:backdrop-blur-lg">
         <div

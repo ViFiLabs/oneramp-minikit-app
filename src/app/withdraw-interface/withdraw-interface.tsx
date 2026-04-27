@@ -670,14 +670,14 @@ export function WithdrawInterface({
   // Handle KYC start
   const handleStartKYC = () => {
     // Check KYC status and show modal
-    if (kycData && kycData.kycStatus !== "VERIFIED") {
+    if (kycData && kycData.status !== "VERIFIED") {
       setShowKYCModal(true);
       toast.error("KYC verification required");
       return;
     }
 
     // If somehow KYC is already verified, proceed with withdrawal
-    if (kycData?.kycStatus === "VERIFIED") {
+    if (kycData?.status === "VERIFIED") {
       console.log("KYC already verified, proceeding...");
     }
   };

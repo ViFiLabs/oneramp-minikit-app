@@ -55,14 +55,14 @@ export const useKYCStatus = () => {
           try {
             const response = await getKYC(address);
             if (response) {
-              console.log("KYC status update:", response.kycStatus);
+              console.log("KYC status update:", response.status);
               setKycData(response);
 
               // Stop polling if verification is complete (VERIFIED, REJECTED, or IN_REVIEW)
               if (
-                response.kycStatus === "VERIFIED" ||
-                response.kycStatus === "REJECTED" ||
-                response.kycStatus === "IN_REVIEW"
+                response.status === "VERIFIED" ||
+                response.status === "REJECTED" ||
+                response.status === "IN_REVIEW"
               ) {
                 console.log("KYC verification complete, stopping polling");
                 cleanupPolling();
@@ -100,9 +100,9 @@ export const useKYCStatus = () => {
 
         // If verification is complete, stop polling
         if (
-          response.kycStatus === "VERIFIED" ||
-          response.kycStatus === "REJECTED" ||
-          response.kycStatus === "IN_REVIEW"
+          response.status === "VERIFIED" ||
+          response.status === "REJECTED" ||
+          response.status === "IN_REVIEW"
         ) {
           cleanupPolling();
         }

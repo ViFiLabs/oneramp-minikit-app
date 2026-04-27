@@ -54,7 +54,7 @@ export interface KYCVerificationOptions {
    * KYC data from the store/API
    */
   kycData?: {
-    kycStatus?: string;
+    status?: string;
     [key: string]: unknown;
   } | null;
 
@@ -174,7 +174,7 @@ export function verifyKYC(
   }
 
   // Check KYC status (handle both string and typed values)
-  const kycStatus = kycData.kycStatus?.toString().toUpperCase();
+  const kycStatus = kycData.status?.toString().toUpperCase();
 
   // If verified, proceed
   if (kycStatus === "VERIFIED") {

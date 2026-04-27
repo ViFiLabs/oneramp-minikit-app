@@ -337,7 +337,7 @@ export function BuyInterface() {
 
   // Handle KYC completion and auto-retry buy
   // useEffect(() => {
-  //   if (kycTriggered && kycData && kycData.kycStatus === "VERIFIED") {
+  //   if (kycTriggered && kycData && kycData.status === "VERIFIED") {
   //     setKycTriggered(false);
   //     setShowKYCModal(false);
   //     // Auto-retry the buy flow after KYC completion
