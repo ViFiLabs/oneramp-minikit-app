@@ -600,14 +600,14 @@ const SelectInstitution = ({
 
     if (!allowKycBypassForMomo) {
       // Default KYC gates
-      if (kycData && kycData.kycStatus !== "VERIFIED") {
+      if (kycData && kycData.status !== "VERIFIED") {
         toast.error("KYC verification required");
         return;
       }
 
       if (
-        kycData?.kycStatus === "REJECTED" ||
-        kycData?.kycStatus === "IN_REVIEW"
+        kycData?.status === "REJECTED" ||
+        kycData?.status === "IN_REVIEW"
       ) {
         toast.error(
           "KYC verification is not complete. Please wait for verification to finish."

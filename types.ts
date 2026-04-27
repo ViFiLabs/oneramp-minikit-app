@@ -238,10 +238,25 @@ export interface ExchangeRateResponse {
 
 // Institution interface of type key value pair
 
+/**
+ * Response from `GET /kyc?address=…` (and `?email=…` / `?phone_number=…`).
+ *
+ * `id`, `status`, `createdAt` are the canonical fields from the
+ * consolidated endpoint. `addressKYC` and `fullKYC` carry PII used by
+ * withdraw/buy auto-fill UX — the api retains them for now; a future
+ * authorized "/kyc/:id/details" split could move PII behind a stronger
+ * gate, but until that exists the frontend depends on these fields
+ * being present.
+ *
+ * `status` is typed as `string` (not the enum) to keep the compile-time
+ * surface compatible with the legacy code that compared loosely.
+ */
 export interface KYCVerificationResponse {
+  id: string;
+  status: string;
+  createdAt: string;
   error?: string;
-  kycStatus: string;
-  message: {
+  message?: {
     link: string;
   };
   addressKYC: {

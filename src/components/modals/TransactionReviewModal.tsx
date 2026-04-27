@@ -252,15 +252,15 @@ export function TransactionReviewModal() {
     if (!quote) return;
 
     // Verify KYC status before proceeding
-    if (kycData && kycData.kycStatus !== "VERIFIED") {
+    if (kycData && kycData.status !== "VERIFIED") {
       console.error("KYC verification required");
       return;
     }
 
     // Additional check for rejected or in-review KYC
     if (
-      kycData?.kycStatus === "REJECTED" ||
-      kycData?.kycStatus === "IN_REVIEW"
+      kycData?.status === "REJECTED" ||
+      kycData?.status === "IN_REVIEW"
     ) {
       console.error("KYC verification is not complete");
       return;

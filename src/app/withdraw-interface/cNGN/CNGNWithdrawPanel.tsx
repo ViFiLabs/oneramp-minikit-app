@@ -620,7 +620,7 @@ export default function CNGNWithdrawPanel() {
 
   const handleConnectWallet = () => setShowWalletModal(true);
   const handleStartKYC = () => {
-    if (kycData && kycData.kycStatus !== "VERIFIED") {
+    if (kycData && kycData.status !== "VERIFIED") {
       setShowKYCModal(true);
       toast.error("KYC verification required");
       return;

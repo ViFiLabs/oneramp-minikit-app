@@ -219,11 +219,17 @@ export const appRouter = createTRPCRouter({
       }
 
       try {
-        const response = await oneRampApi.get(`/kyc/${address}`);
+        const response = await oneRampApi.get(`/kyc`, {
+          params: { address },
+        });
         return response.data;
       } catch (error) {
-        console.error("Error fetching KYC:", error);
-        // throw new Error("Failed to fetch KYC");
+        // 404 = no KYC record bound; treat as empty state.
+        const status = (error as { response?: { status?: number } })?.response
+          ?.status;
+        if (status !== 404) {
+          console.error("Error fetching KYC:", error);
+        }
         return null;
       }
     }),
